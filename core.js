@@ -1,12 +1,12 @@
 /**
- * The main Sproutcore UI (SCUI) object.
+ * The main Sproutcore User Interface Development (SCUI) object.
  *
  * TODO: More comprehensive docs. [EG]
  *
  * @author Evin Grano
  */
 SCUI = SC.Object.create(
-/** @scope SCUID.prototype */ {
+/** @scope SCUI.prototype */ {
   
   /**
     Postition Constants

@@ -1,5 +1,5 @@
 // ==========================================================================
-// SCUID.DateView
+// SCUI.DateView
 // ==========================================================================
 
 sc_require('core');
@@ -14,20 +14,20 @@ sc_require('core');
   @since 0.1
 */
 
-SCUID.PAST = 'past';
-SCUID.PRESENT = 'present';
-SCUID.TODAY = 'today';
-SCUID.FUTURE = 'future';
+SCUI.PAST = 'past';
+SCUI.PRESENT = 'present';
+SCUI.TODAY = 'today';
+SCUI.FUTURE = 'future';
 
 SCUI.DateView = SC.View.extend(
-/** @scope SCUID.DateView.prototype */ {
-  classNames: ['scuid-date'],
+/** @scope SCUI.DateView.prototype */ {
+  classNames: ['scui-date'],
   
   // Necessary Elements
   date: 1,
-  timing: SCUID.PRESENT,
+  timing: SCUI.PRESENT,
   content: null,
-  datePosition: SCUID.TOP_LEFT,
+  datePosition: SCUI.TOP_LEFT,
   
   // display properties that should automatically cause a refresh.
   displayProperties: ['date', 'datePosition', 'timing', 'content', 'content.[]'],
@@ -43,10 +43,10 @@ SCUI.DateView = SC.View.extend(
     }
     else {
       // First, Set the right timing classes
-      context.setClass(SCUID.PAST, SCUID.PAST === timing); // addClass if YES, removeClass if NO
-      context.setClass(SCUID.PRESENT, SCUID.PRESENT === timing); // addClass if YES, removeClass if NO
-      context.setClass(SCUID.TODAY, SCUID.TODAY === timing); // addClass if YES, removeClass if NO
-      context.setClass(SCUID.FUTURE, SCUID.FUTURE === timing); // addClass if YES, removeClass if NO
+      context.setClass(SCUI.PAST, SCUI.PAST === timing); // addClass if YES, removeClass if NO
+      context.setClass(SCUI.PRESENT, SCUI.PRESENT === timing); // addClass if YES, removeClass if NO
+      context.setClass(SCUI.TODAY, SCUI.TODAY === timing); // addClass if YES, removeClass if NO
+      context.setClass(SCUI.FUTURE, SCUI.FUTURE === timing); // addClass if YES, removeClass if NO
       
       // Set the right date number
       this.$('.date_number').replaceWith('<div class="date_number" style="position: absolute; %@">%@</div>'.fmt( posString, date ));
@@ -55,7 +55,7 @@ SCUI.DateView = SC.View.extend(
   
   _formatPosition: function(){
     var datePos = this.get('datePosition');
-    if (datePos === SCUID.TOP_LEFT){
+    if (datePos === SCUI.TOP_LEFT){
       return 'left: 5px; top: 5px;';
     }
     else{

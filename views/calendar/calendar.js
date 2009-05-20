@@ -1,5 +1,5 @@
 // ==========================================================================
-// SCUID.CalendarView
+// SCUI.CalendarView
 // ==========================================================================
 
 sc_require('core');
@@ -17,8 +17,8 @@ sc_require('mixins/simple_button');
 */
 
 SCUI.CalendarView = SC.View.extend(
-/** @scope SCUID.CalendarView.prototype */ {
-  classNames: ['scuid-calendar'],
+/** @scope SCUI.CalendarView.prototype */ {
+  classNames: ['scui-calendar'],
   
   // Necessary Elements
   monthStartOn: null,
@@ -26,9 +26,10 @@ SCUI.CalendarView = SC.View.extend(
   titleKey: 'title',
   dateKey: 'date',
   dateSize: {width: 100, height: 100},
+  dateBorderWidth: 1,
   headerHeight: null,
   weekdayHeight: 20,
-  exampleDateView: SCUID.DateView,
+  exampleDateView: SCUI.DateView,
   
   _dateGrid: [],
   
@@ -53,20 +54,24 @@ SCUI.CalendarView = SC.View.extend(
   
   render: function(context, firstTime){
     //console.log('Render called');
+    var borderWidth = this.get('dateBorderWidth');
     var dateSize = this.get('dateSize');
+    var trueWidth = (2*borderWidth)+dateSize.width;
+    var trueHeight = (2*borderWidth)+dateSize.height;
     var headerHeight = this.get('headerHeight');
     var weekdayHeight = this.get('weekdayHeight');
-    var totalWidth = dateSize.width * 7;
-    var totalHeight = (dateSize.height * 6) + (headerHeight+weekdayHeight);
+    var totalWidth = trueWidth*7;
+    var totalHeight = (trueHeight*6) + (headerHeight+weekdayHeight);
     var layout = this.get('layout');
     layout = SC.merge(layout, {width: totalWidth, height: totalHeight});
     this.set('layout', layout);
     // Date stuff
     var monthStartOn = this.get('monthStartOn');
+    
     if (firstTime){
       context.push(
         '<div class="month_header" style="position: absolute; left: %@1px; right: %@1px; height: %@2px;">%@3 %@4</div>'.fmt( 
-          dateSize.width,
+          trueWidth,
           headerHeight, 
           this._toMonthString(monthStartOn.getMonth()),
           monthStartOn.getFullYear()
@@ -80,11 +85,11 @@ SCUI.CalendarView = SC.View.extend(
           '<div class="weekday" style="position: absolute; left: %@1px; top: %@2px; width: %@3px; height: 20px;">%@4</div>'.fmt( 
             startLeft,
             headerHeight,
-            dateSize.width,
+            trueWidth,
             this._toWeekdayString(i)
           )
         );
-        startLeft += dateSize.width;
+        startLeft += trueWidth;
       }
     }
     else {
@@ -98,15 +103,20 @@ SCUI.CalendarView = SC.View.extend(
     Create the main childviews
   */
   createChildViews: function() {
-    console.log('SCUID.CalendarView#createChildViews()');
+    console.log('SCUI.CalendarView#createChildViews()');
     var childViews = [], view=null;
+    
+    var borderWidth = this.get('dateBorderWidth');
     var dateSize = this.get('dateSize');
+    var trueWidth = (2*borderWidth)+dateSize.width;
+    var trueHeight = (2*borderWidth)+dateSize.height;
     var headerHeight = this.get('headerHeight');
+    
     // Create the Next And Previous Month Buttons
     view = this.createChildView( 
-      SC.View.design( SCUID.SimpleButton, {
-        classNames: ['scuid-cal-button'],
-        layout: {left: 0, top: 0, width: dateSize.width, height: headerHeight},
+      SC.View.design( SCUI.SimpleButton, {
+        classNames: ['scui-cal-button'],
+        layout: {left: 0, top: 0, width: trueWidth, height: headerHeight},
         title: "<< Previous",
         target: this,
         action: 'previousMonth'
@@ -117,9 +127,9 @@ SCUI.CalendarView = SC.View.extend(
     
     // Next Month Button
     view = this.createChildView( 
-      SC.View.design(SCUID.SimpleButton, {
-        classNames: ['scuid-cal-button'],
-        layout: {right: 0, top: 0, width: dateSize.width, height: headerHeight},
+      SC.View.design(SCUI.SimpleButton, {
+        classNames: ['scui-cal-button'],
+        layout: {right: 0, top: 0, width: trueWidth, height: headerHeight},
         title: "Next >>",
         target: this,
         action: 'nextMonth'
@@ -136,7 +146,7 @@ SCUI.CalendarView = SC.View.extend(
       view = this.createChildView( 
         exampleView.design({
           layout: {left: startLeft, top: startTop, width: dateSize.width, height: dateSize.height},
-          timing: SCUID.PAST,
+          timing: SCUI.PAST,
           date: i
         }),
         { rootElementPath: [i+2] }
@@ -146,11 +156,11 @@ SCUI.CalendarView = SC.View.extend(
       
       // Increment the position
       if (((i+1) % 7) === 0) {
-        startTop += dateSize.height;
+        startTop += trueHeight;
         startLeft = 0;
       }
       else {
-        startLeft += dateSize.width;
+        startLeft += trueWidth;
       }
     }
     this.set('childViews', childViews);
@@ -198,19 +208,19 @@ SCUI.CalendarView = SC.View.extend(
     for (var gIdx = 0; gIdx < 42; gIdx++)
     {
       if (gIdx < startDay){
-        this._dateGrid[gIdx].set('timing', SCUID.PAST);
+        this._dateGrid[gIdx].set('timing', SCUI.PAST);
       }
       else if(currDay.getMonth() === month){
         // Start the Date Count
         if (this._checkForSameDate(today, currDay)) {
-          this._dateGrid[gIdx].set('timing', SCUID.TODAY);
+          this._dateGrid[gIdx].set('timing', SCUI.TODAY);
         }
         else {
-          this._dateGrid[gIdx].set('timing', SCUID.PRESENT);
+          this._dateGrid[gIdx].set('timing', SCUI.PRESENT);
         }
       }
       else {
-        this._dateGrid[gIdx].set('timing', SCUID.FUTURE);
+        this._dateGrid[gIdx].set('timing', SCUI.FUTURE);
       }
       this._dateGrid[gIdx].set('date', currDay.getDate());
       currDay = new Date(currDay.getTime() + 86400000);

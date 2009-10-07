@@ -1,0 +1,7 @@
+.sc-theme .scui-date.today{
+  background-color: green;
+}
+
+.sc-theme .scui-date.future{
+  background-color: #080808;
+}

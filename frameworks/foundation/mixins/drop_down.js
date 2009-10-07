@@ -15,8 +15,7 @@ sc_require('core');
 
   @author Jonathan Lewis
   @author Brandon Blatnick
-  @version FR1
-  @since AB2
+
 */
 
 SCUI.DropDown = {  

@@ -40,8 +40,7 @@
   @extends SC.MenuPane
   @author Josh Holt
   @author Jonathan Lewis
-  @version FR3
-  @since FR3
+
 
 */
 

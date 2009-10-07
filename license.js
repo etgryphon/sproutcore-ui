@@ -1,7 +1,8 @@
 /*! @license
 ==========================================================================
 CoreUI -- Sproutcore UI Framework
-copyright 2009, Evin Grano and contributors.
+copyright 2009, Evin Grano, Mike Ball, Jonathan Lewis, Josh Holt, 
+                Mohammed Taher, Michael Harris, Brandon Blatnick
 
 Permission is hereby granted, free of charge, to any person obtaining a 
 copy of this software and associated documentation files (the "Software"), 

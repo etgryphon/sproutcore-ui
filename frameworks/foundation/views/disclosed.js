@@ -8,8 +8,7 @@ require('core');
   slim disclosure titlebar.
   
   @author Josh Holt [JH2]
-  @version FR3
-  @since FR1
+
 */
 
 SCUI.DisclosedView = SC.View.extend({

@@ -19,8 +19,6 @@ sc_require('core');
 
   @Mixin
   @author Jonathan Lewis
-  @version FR3
-  @since FR3
 
 */
 

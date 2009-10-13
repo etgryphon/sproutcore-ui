@@ -8,7 +8,11 @@
       +shape: SCUI.LINE,
       +start: {x: 0, y: 0},
       +end: {x: 100, y: 100},
-      ?type: SCUI.FILL | SCUI.STROKE
+      ?style: {
+        ?width: 5,
+        ?color: 'orange' | '#FFA500' | 'rgb(255,165,0)' | 'rgba(255,165,0,1)'
+        ?transparency: 0.2
+      }
     }
   For a Rectangle:
     {
@@ -16,6 +20,11 @@
       +start: {x: 0, y: 0},
       +size: {width: 100, height: 100},
       ?type: SCUI.FILL | SCUI.STROKE
+      ?style: {
+        ?width: 5,
+        ?color: 'orange' | '#FFA500' | 'rgb(255,165,0)' | 'rgba(255,165,0,1)'
+        ?transparency: 0.2
+      }
     }
   For a Circle:
     {
@@ -23,6 +32,11 @@
       +center: {x: 0, y: 0},
       +radius: 20,
       ?type: SCUI.FILL | SCUI.STROKE
+      ?style: {
+        ?width: 5,
+        ?color: 'orange' | '#FFA500' | 'rgb(255,165,0)' | 'rgba(255,165,0,1)'
+        ?transparency: 0.2
+      }
     }
   For a Polygon:
     {
@@ -32,7 +46,12 @@
         +{x: 10, y: 10},
         ?{x: 0, y: 50}
       ],
-      type: SCUI.FILL | SCUI.STROKE
+      ?type: SCUI.FILL | SCUI.STROKE
+      ?style: {
+        ?width: 5,
+        ?color: 'orange' | '#FFA500' | 'rgb(255,165,0)' | 'rgba(255,165,0,1)'
+        ?transparency: 0.2
+      }
     }
   
   @extends SC.Pane
@@ -51,15 +70,9 @@ SCUI.DrawingView = SC.View.extend({
   
   classNames: 'scui-drawing-view',
   
-  viewsToDecorate: [],
   shapes: [],
   
   _drawingManager: {},
-  
-  viewsToDecorateDidChange: function(){
-    this.set('layerNeedsUpdate', YES);
-    this.updateLayerIfNeeded();
-  }.observes('viewsToDecorate.[]'),
   
   shapesDidChange: function(){
     this.set('layerNeedsUpdate', YES);
@@ -73,15 +86,24 @@ SCUI.DrawingView = SC.View.extend({
     
     // Drawing a Line
     this.registerShapeDrawing( SCUI.LINE, function(ctx, params){
+      if (params.style){
+        if (params.style.width) ctx.lineWidth = params.style.width;
+        if (params.style.color) ctx.strokeStyle = params.style.color;
+        if (params.style.transparency) ctx.globalAlpha = params.style.transparency;
+      }
       ctx.beginPath();
       ctx.moveTo(params.start.x, params.start.y);
       ctx.lineTo(params.end.x, params.end.y);
-      if (params.type === SCUI.FILL) ctx.fill();
-      else ctx.stroke();
+      ctx.stroke();
     });
     
     // Drawing a Rectangle
     this.registerShapeDrawing( SCUI.RECT, function(ctx, params){
+      if (params.style){
+        if (params.style.width) ctx.lineWidth = params.style.width;
+        if (params.style.color) ctx.fillStyle =  ctx.strokeStyle = params.style.color;
+        if (params.style.transparency) ctx.globalAlpha = params.style.transparency;
+      }
       switch(params.type){
         case SCUI.FILL:
           ctx.fillRect(params.start.x, params.start.y, params.size.width, params.size.height);
@@ -97,8 +119,12 @@ SCUI.DrawingView = SC.View.extend({
     
     // Drawing a Circle
     this.registerShapeDrawing( SCUI.CIRCLE, function(ctx, params){
+      if (params.style){
+        if (params.style.width) ctx.lineWidth = params.style.width;
+        if (params.style.color) ctx.fillStyle =  ctx.strokeStyle = params.style.color;
+        if (params.style.transparency) ctx.globalAlpha = params.style.transparency;
+      }
       ctx.beginPath();
-      ctx.moveTo(params.start.x, params.start.y);
       ctx.arc(params.center.x,params.center.y,params.radius,0,Math.PI*2,true);
       if (params.type === SCUI.FILL) ctx.fill();
       else ctx.stroke();
@@ -106,11 +132,14 @@ SCUI.DrawingView = SC.View.extend({
     
     // Drawing a Polygon
     this.registerShapeDrawing( SCUI.POLY, function(ctx, params){
+      if (params.style){
+        if (params.style.width) ctx.lineWidth = params.style.width;
+        if (params.style.color) ctx.fillStyle =  ctx.strokeStyle = params.style.color;
+        if (params.style.transparency) ctx.globalAlpha = params.style.transparency;
+      }
       ctx.beginPath();
-      
       var len = params.path ? params.path.length : 0;
-      if (len > 1) start = {x: , y: params.path[0].y};
-      else return;
+      if (len < 2) return;
       
       var path = params.path, curr;
       ctx.moveTo(path[0].x, path[0].y);
@@ -142,7 +171,6 @@ SCUI.DrawingView = SC.View.extend({
           if (cntx) {
             cntx.clearRect(0, 0, frame.width, frame.height);
             this._drawShapes(cntx);
-            //this._drawViewDecorations(cntx);
           }
           else {
             console.error("SCUI.DrawingView.render(): Canvas object context is not accessible.");

@@ -18,6 +18,7 @@ config :all,
 config :foundation, :required => []
 config :calendar, :required => [:foundation]
 config :dashboard, :required => [:foundation]
+config :drawing, :required => [:foundation]
 
 # SPECIAL THEMES
 # These do not require any of the built-in SproutCore frameworks

@@ -1,5 +1,5 @@
 // ==========================================================================
-// CoreUI JavaScript Framework - Buildfile
+// SCUI JavaScript Framework - Buildfile
 // copyright (c) 2009 - Evin Grano, and contributors
 // ==========================================================================
 
@@ -12,11 +12,11 @@
 /**
   @namespace
   
-  The CoreUI namespace.  All CoreUI methods and functions are defined
+  The SCUI namespace.  All SCUI methods and functions are defined
   inside of this namespace.  You generally should not add new properties to
-  this namespace as it may be overwritten by future versions of CoreUI.
+  this namespace as it may be overwritten by future versions of SCUI.
   
-  You can also use the shorthand "SCUI" instead of "SproutCore".
+  You can also use the shorthand "SCUI" instead of "CoreUI".
 */
 var CoreUI = CoreUI || {};
 var CUI = CUI || CoreUI;

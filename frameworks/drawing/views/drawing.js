@@ -54,7 +54,7 @@
       }
     }
   
-  @extends SC.Pane
+  @extends SC.View
   @since SproutCore 1.0
 */
 SCUI.LINE = 'line';

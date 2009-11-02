@@ -1,8 +1,8 @@
 /*! @license
 ==========================================================================
 SCUI -- Sproutcore UI Framework
-copyright 2009, Evin Grano, Mike Ball, Jonathan Lewis, Josh Holt, 
-                Mohammed Taher, Michael Harris, Brandon Blatnick
+Copyright: ©2009 Eloqua Inc All rights reserved.
+          Portions ©2009 Evin Grano
 
 Permission is hereby granted, free of charge, to any person obtaining a 
 copy of this software and associated documentation files (the "Software"), 

@@ -1,5 +1,5 @@
 # ==========================================================================
-# CoreUI JavaScript Framework - Buildfile
+# SCUI JavaScript Framework - Buildfile
 # copyright (c) 2009 - Evin Grano, and contributors
 # ==========================================================================
 
@@ -19,6 +19,7 @@ config :foundation, :required => []
 config :calendar, :required => [:foundation]
 config :dashboard, :required => [:foundation]
 config :drawing, :required => [:foundation]
+config :linkit, :required => [:foundation, :drawing]
 
 # SPECIAL THEMES
 # These do not require any of the built-in SproutCore frameworks

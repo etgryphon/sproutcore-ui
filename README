@@ -1,0 +1,31 @@
+== Welcome to the Sproutcore-UI (SCUI) Library: ==
+
+This is a basic library for some great native Sproutcore UI functionality includes view, mixins and objects.
+
+CONTRIBUTORS:
+  Main Architect: Evin Grano
+  Contributors:
+    - Mike Ball
+    - Jonathan Lewis
+    - Josh Holt
+    - Mohammed Taher
+    - Michael Harris
+    - Brandon Blatnick
+
+CURRENT FRAMEWORKS:
+  - Foundation:
+    [ALPHA] Basic View and Mixin framework that has general oriented UI treatments that are helpful
+  - Calendar:
+    [ALPHA] Basic Calendar Functionality: Datepicker, CalendarView
+  - Dashboard:
+    [EXPERIMENTAL] Basic iGoogle-like framework, very early stages with lots of bugs
+  - Drawing
+    [ALPHA] Basic drawing framework that uses the canvas tag, SVG to be added soon.
+  
+FUTURE DEVELOPMENT:
+  - Harden the Dashboard Functionality
+  - Added the ability to delete\move lines
+  
+=== License ===
+
+Sproutcore-UI is under the MIT License

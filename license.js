@@ -1,6 +1,6 @@
 /*! @license
 ==========================================================================
-CoreUI -- Sproutcore UI Framework
+SCUI -- Sproutcore UI Framework
 copyright 2009, Evin Grano, Mike Ball, Jonathan Lewis, Josh Holt, 
                 Mohammed Taher, Michael Harris, Brandon Blatnick
 
@@ -22,8 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 DEALINGS IN THE SOFTWARE.
 
-For more information about CoreUI, visit http://www.itsgotwhatplanscrave.com
-
+For more information about SCUI, visit http://www.itsgotwhatplanscrave.com
 
 ==========================================================================
 @license */

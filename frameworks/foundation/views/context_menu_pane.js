@@ -2,6 +2,8 @@
 // SCUI.ContextMenuPane
 // ========================================================================
 
+sc_require('core');
+
 /**
 
   Extends SC.MenuPane to position a right-click menu pane.
@@ -77,6 +79,7 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   
       // Popup the menu pane
       this.beginPropertyChanges();
+      var it = this.get('displayItems');
       this.set('anchorElement', anchor) ;
       this.set('anchor', anchorView);
       this.set('preferType', SC.PICKER_MENU) ;

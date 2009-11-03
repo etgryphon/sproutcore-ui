@@ -204,8 +204,10 @@ SCUI.CalendarView = SC.View.extend(
       else if(currDate.get('month') === month){
         
         // First Check to see if the Date is selected
-        isSelected = SC.DateTime.compareDate(currDate, selectedDate) === 0 ? YES : NO;
-        this._dateGrid[gIdx].set('isSelected', isSelected);
+        if (selectedDate) {
+          isSelected = SC.DateTime.compareDate(currDate, selectedDate) === 0 ? YES : NO;
+          this._dateGrid[gIdx].set('isSelected', isSelected);
+        }
         
         // Check to see if the current date is to day
         // or in the present month

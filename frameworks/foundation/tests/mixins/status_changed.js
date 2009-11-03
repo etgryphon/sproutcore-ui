@@ -10,11 +10,12 @@ var content, controller, statusChangeCount;
 // CONTENT CHANGING
 // 
 
-module("SCUI.StatusChanged Mixin - empty_case - NULL", {
+module("SCUI.StatusChanged Mixin", {
   setup: function() {
     content = null;
     statusChangeCount = 0;
-    controller = SC.ObjectController.create(SC.StatusChanged,{ content: content, 
+    controller = SC.ObjectController.create(SCUI.StatusChanged,{ 
+                                        content: content, 
                                         contentStatusDidChange: function(){
                                           statusChangeCount+=1;
                                         }});

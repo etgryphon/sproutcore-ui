@@ -22,6 +22,7 @@ SCUI.SimpleButton = {
   _hover: NO,
   stateClass: 'state',
   hoverClass: 'hover',
+  activeClass: 'active', // Used to show the button as being active (pressed)
   
   _isMouseDown: NO, 
   
@@ -35,6 +36,7 @@ SCUI.SimpleButton = {
     if (!this.get('isEnabledInPane')) return YES ; // handled event, but do nothing
     //this.set('isActive', YES);
     this._isMouseDown = YES;
+    this.displayDidChange();
     return YES ;
   },
 
@@ -86,19 +88,23 @@ SCUI.SimpleButton = {
     if (this.get('hasState')) {
       this.set('inState', !this.get('inState'));
     }
+    this.displayDidChange();
     return YES;
   },
   
-  renderMixin: function(context, firstTime){
-    if (this.get('hasHover')){
+  renderMixin: function(context, firstTime) {
+    if (this.get('hasHover')) { 
       var hoverClass = this.get('hoverClass');
-      context.setClass(hoverClass, this._hover); // addClass if YES, removeClass if NO
+      context.setClass(hoverClass, this._hover && !this._isMouseDown); // addClass if YES, removeClass if NO
     }
-    if (this.get('hasState'))
-    {
+    
+    if (this.get('hasState')) {
       var stateClass = this.get('stateClass');
       context.setClass(stateClass, this.inState); // addClass if YES, removeClass if NO
     }
+    
+    var activeClass = this.get('activeClass');
+    context.setClass(activeClass, this._isMouseDown);
     
     // If there is a toolTip set, grab it and localize if necessary.
     var toolTip = this.get('toolTip') ;
@@ -123,8 +129,15 @@ SCUI.SimpleButton = {
 
   /** @private */
   _triggerLegacyActionHandler: function(evt){
+    var target = this.get('target');
     var action = this.get('action');
-    if (SC.typeOf(action) == SC.T_FUNCTION) this.action(evt);
+
+    // TODO: [MB/EG] Review: MH added the else if so that the action executes
+    // in the scope of the target, if it is specified.
+    if (target === undefined && SC.typeOf(action) == SC.T_FUNCTION)
+      this.action(evt);
+    else if (target !== undefined && SC.typeOf(action) === SC.T_FUNCTION)
+      action.apply(target, [evt]);
     if (SC.typeOf(action) == SC.T_STRING) {
       eval("this.action = function(e) { return "+ action +"(this, e); };");
       this.action(evt);

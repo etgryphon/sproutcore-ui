@@ -16,7 +16,7 @@ sc_require('mixins/widget_content');
   @version 0.1
   @since 0.1
 */
-SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, {
+SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, SCUI.DynamicListItem, {
 /* DashboardWidget Mixin */
 
   isDashboardWidget: YES,
@@ -94,10 +94,14 @@ SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, {
   /**
    semi-public properties
   */
-  state: SCUI.WIDGET_MAX,
+  state: null,
   isEnabled: YES,
   isSelected: NO,
   isLocked: NO,
+  
+  // initMixin: function(){
+  //   this.state = SCUI.WIDGET_MAX;
+  // },
   
   /*
     Function for creating the actual widget view.
@@ -114,10 +118,9 @@ SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, {
     var c = this.get('content');
     var view;
     if (c){
-      var viewContent = c.get('content');
-      var exView = c.get('exampleView');
-      var sizeKey = c.get('sizeKey') || this.get('sizeKey');
-      var size = viewContent ? viewContent.get(sizeKey) : null; 
+      var exView = this.get('exampleView');
+      var sizeKey = this.get('sizeKey');
+      var size = c.get(sizeKey);
       
       // Start with the generic top position of the widget layout
       var widgetLayout = {top: margins.top};
@@ -158,7 +161,7 @@ SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, {
       
       view = this.createChildView( exView, {
         layout: widgetLayout,
-        content: viewContent
+        content: c
       });
   
       // update this widget view layout to the right size.
@@ -166,8 +169,31 @@ SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, {
       this.set('maxHeight', openHeight);
       this.set('editHeight', openHeight);
       this.set('minHeight', (margins.top || 25));
-      this.set('currentHeight', openHeight);
       this.set('widgetMinWidth', margins.left+minWidth+margins.right);
+      
+      var viewMetadata = this.get('viewMetadata');
+      var state, height;
+      if (viewMetadata) {
+        state = viewMetadata.state;
+      }
+      // Figure out the right height and state
+      switch(state){
+        case SCUI.WIDGET_MAX:
+          height = this.get('maxHeight');
+          break;
+        case SCUI.WIDGET_EDIT:
+          height = this.get('editHeight');
+          break;
+        case SCUI.WIDGET_MIN:
+          height = this.get('minHeight');
+          break;
+        default:
+          state = SCUI.WIDGET_MAX;
+          height = this.get('maxHeight');
+          break;
+      }
+      this.set('state', state);
+      this.set('viewMetadata', {height: height, state: state});
     }
     
     return view;
@@ -188,7 +214,23 @@ SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, {
     return NO; 
   },
   
+  toggle: function(){
+    var state = this.get('state');
+    if (state === SCUI.WIDGET_MIN || state === SCUI.WIDGET_EDIT){
+      console.log('toggle(%@): calling maximize from %@ mode...'.fmt(this, state));
+      this.maximize();
+    }
+    else if (state === SCUI.WIDGET_MAX){
+      console.log('toggle(%@): calling minimize from %@ mode...'.fmt(this, state));
+      this.minimize();
+    }
+  },
+  
   minimize: function(){ 
+    console.log('DashboardWidget: minimize()');
+    // call information on the DynamicListItem
+    this.set('viewMetadata', {height: this.get('minHeight'), state: SCUI.WIDGET_MIN});
+    this.viewMetadataHasChanged();
     var c = this.get('content');
     if (c){
       var viewContent = c.get('content');
@@ -200,7 +242,23 @@ SCUI.DashboardWidget = SC.merge(SCUI.WidgetContent, {
   },
   
   maximize: function(){ 
-   var c = this.get('content');
+    console.log('DashboardWidget: maximize()');
+    this.set('viewMetadata', {height: this.get('maxHeight'), state: SCUI.WIDGET_MAX});
+    this.viewMetadataHasChanged();
+    var c = this.get('content');
+    if (c){
+      var viewContent = c.get('content');
+      if (viewContent && viewContent.get('isWidget')){
+        return viewContent.maximize();
+      }
+    }
+    return NO;
+  },
+  
+  edit: function(){ 
+    this.set('viewMetadata', {height: this.get('maxHeight'), state: SCUI.WIDGET_MAX});
+    this.viewMetadataHasChanged();
+    var c = this.get('content');
     if (c){
       var viewContent = c.get('content');
       if (viewContent && viewContent.get('isWidget')){

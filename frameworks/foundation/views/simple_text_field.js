@@ -21,42 +21,51 @@ sc_require('core');
   @since 0.1
 */
 
-SCUI.SimpleTextFieldView = SC.View.extend( SC.Editable, SC.Control, {
+SCUI.SimpleTextFieldView = SC.View.extend( SC.StaticLayout, SC.Editable, {
 
   // PUBLIC PROPERTIES
 
-  classNames: ['sc-text-field-view'],
+  tagName: 'label',
+  classNames: ['scui-simple-text-field-view'],
   
   isEditable: function() {
-    return this.get('isEnabled');
-  }.property('isEnabled').cacheable(),
+    return this.get('isEnabledInPane');
+  }.property('isEnabledInPane').cacheable(),
 
   acceptsFirstResponder: function() {
-    return this.get('isEnabled');
-  }.property('isEnabled').cacheable(),
+    return this.get('isEnabledInPane');
+  }.property('isEnabledInPane').cacheable(),
+
+  /**
+    The string in the text field
+  */
+  value: null,
   
   /**
-    Setter/getter for the text in the text field.
-    This property is automatically notified when someone types in the field.
+    Set this to an object that implements keyDown() and keyUp() and that object
+    will be offered the first chance to respond to a key event coming from the
+    text field.  Return YES to absorb it and this text field will not use the event.
   */
-  value: function(key, value) {
-    if (value) {
-      this._setFieldValue(value);
-      return value;
-    }
-    else {
-      return this._getFieldValue();
-    }
-  }.property().cacheable(),
+  keyDelegate: null,
+
+  /**
+    Set this to an object that implements SC.Editable and calls to beginEditing() and
+    commitEditing() will be delegated to that object when the text field gets and loses
+    focus respectively.  If null, this text field view will call those methods on itself.
+  */
+  editableDelegate: null,
+  
+  displayProperties: ['isEnabledInPane', 'isEditing', 'value', 'isEnabled'],
   
   // PUBLIC METHODS
-  
+
   /**
     Attaches event handlers to the input field's focus, blur, and change events.
   */
   didCreateLayer: function() {
     //console.log('%@.didCreateLayer()'.fmt(this));
-    var input = this.$('input');
+    sc_super();
+    var input = this.$input();
     SC.Event.add(input, 'change', this, this._textField_fieldValueDidChange);
     SC.Event.add(input, 'focus', this, this._textField_fieldDidFocus);
     SC.Event.add(input, 'blur',  this, this._textField_fieldDidBlur);
@@ -67,22 +76,70 @@ SCUI.SimpleTextFieldView = SC.View.extend( SC.Editable, SC.Control, {
   */
   willDestroyLayer: function() {
     //console.log('%@.willDestroyLayer()'.fmt(this));
-    var input = this.$('input');
+    var input = this.$input();
     SC.Event.remove(input, 'change', this, this._textField_fieldValueDidChange);
     SC.Event.remove(input, 'focus', this, this._textField_fieldDidFocus);
     SC.Event.remove(input, 'blur',  this, this._textField_fieldDidBlur);
+    sc_super();
   },
   
   /**
     Push an input field onto the DOM.
   */
   render: function(context, firstTime) {
+    var value = this.get('value') || '';
+    var disabled, style = null, element, layer, p;
+
     sc_super();
-    //var value = this.get('value') || '';
-    var name = SC.guidFor(this);
+
+    //console.log('%@.render()'.fmt(this));
+
+    style = 'position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px;';
+
     if (firstTime) {
-      context.push('<input type="text" name="%@"></input>'.fmt(name));
+      disabled = this.get('isEnabledInPane') ? '' : 'disabled="disabled"';
+      context.push('<input type="text" name="%@" %@ value="%@" style="%@"></input>'.fmt(SC.guidFor(this), disabled, value, style));
     }
+    else {
+      element = this.$input();
+      layer = element.get(0);
+
+      if (this.get('isEnabledInPane')) {
+        layer.disabled = null;
+      }
+      else {
+        layer.disabled = 'true';
+      }
+
+      if (SC.browser.mozilla) {
+        if (this._isFocused) {
+          p = SC.$(layer).offset();
+          style = 'position: fixed; top: %@px; left: %@px; width: %@px; height: %@px;'.fmt(p.top, p.left, layer.parentNode.clientWidth, layer.parentNode.clientHeight);
+          //console.log('Firefox fix: ' + style);
+        }
+        else {
+          style += ' width: %@px;'.fmt(layer.parentNode.clientWidth);
+        }
+      }
+
+      element.attr('style', style);
+    }
+  },
+
+  parentViewDidResize: function() {
+    sc_super();
+    if (SC.browser.mozilla) {
+      //console.log('%@.parentDidResize()'.fmt(this));
+      this.displayDidChange();
+    }
+  },
+
+  focus: function() {
+    this.$input().get(0).focus();
+  },
+
+  blur: function() {
+    this.$input().get(0).blur();
   },
   
   mouseDown: function(evt) {
@@ -98,18 +155,30 @@ SCUI.SimpleTextFieldView = SC.View.extend( SC.Editable, SC.Control, {
   },
   
   fieldDidFocus: function(evt) {
+    var del;
+    
+    //console.log('%@.fieldDidFocus()'.fmt(this));
     if (!this._isFocused) {
       this._isFocused = YES ;
-      this._applyFirefoxCursorFix();
-      this.beginEditing();
+
+      del = this.get('editableDelegate') || this;
+      if (del && del.beginEditing) {
+        del.beginEditing();
+      }
     }
   },
   
   fieldDidBlur: function(evt) {
+    var del;
+
+    //console.log('%@.fieldDidBlur()'.fmt(this));
     if (this._isFocused) {
       this._isFocused = NO ;
-      this._removeFirefoxCursorFix();
-      this.commitEditing();
+
+      del = this.get('editableDelegate') || this;
+      if (del && del.commitEditing) {
+        del.commitEditing();
+      }
     }
   },
   
@@ -118,20 +187,73 @@ SCUI.SimpleTextFieldView = SC.View.extend( SC.Editable, SC.Control, {
     Forces notification that 'value' property has changed to start off the kvo/kvc process.
   */
   fieldValueDidChange: function(evt) {
-    this.notifyPropertyChange('value', this._getFieldValue());
+    //console.log('%@.fieldValueDidChange(%@)'.fmt(this, this._getFieldValue()));
+    this.setIfChanged('value', this._getFieldValue());
   },
   
   keyDown: function(evt) {
-    //console.log('%@.keyDown()'.fmt(this));
-    evt.allowDefault(); // allow key event to pass through to text field
+    var del = this.get('keyDelegate');
+
+    // let the key delegate take the event if it wants it (it returns YES if it takes it)
+    if (del && del.keyDown && del.keyDown(evt)) {
+      evt.stop();
+    }
+    else { // else if we're handling the key events ourselves
+
+      // ignore the return and escape keys
+      if ((evt.which === 13) || (evt.which === 27)) {
+        return NO ;
+      }
+
+      //console.log('%@.keyDown()'.fmt(this));
+
+      this._isKeyDown = YES; // enter the key pressed state
+      evt.allowDefault();
+    }
+
     return YES;
   },
   
   keyUp: function(evt) {
-    //console.log('%@.keyUp()'.fmt(this));
-    this.invokeOnce(this.fieldValueDidChange);
-    evt.allowDefault();
+    var del = this.get('keyDelegate');
+
+    if (del && del.keyUp && del.keyUp(evt)) {
+      evt.stop();
+    }
+    else {
+      if (this._isKeyDown) { // only handle key up after there has been a key down
+        //console.log('%@.keyUp()'.fmt(this));
+        this.invokeOnce(this.fieldValueDidChange);
+      }
+      evt.allowDefault();
+    }
+
+    this._isKeyDown = NO; // exit the key pressed state
     return YES;
+  },
+  
+  /**
+    Helper function
+  */
+  $input: function() {
+    //return this.$('input');
+    return this.$('input').andSelf().filter('input');
+  },
+  
+  willBecomeKeyResponderFrom: function(view) {
+    //console.log('%@.willBecomeKeyResponderFrom()'.fmt(this));
+    if (!this._isFocused) {
+      if (this.get('isVisibleInWindow')) {
+        this.$input().get(0).focus();
+      }
+    }
+  },
+
+  didLoseKeyResponderTo: function(view) {
+    //console.log('%@.didLoseKeyResponderTo()'.fmt(this));
+    if (this._isFocused) {
+      this.$input().get(0).blur();
+    }
   },
   
   // PRIVATE METHODS
@@ -167,7 +289,7 @@ SCUI.SimpleTextFieldView = SC.View.extend( SC.Editable, SC.Control, {
     Accessor function for text in the input field.
   */
   _getFieldValue: function() {
-    return this.$('input').val();
+    return this.$input().val();
   },
 
   /** @private
@@ -177,37 +299,21 @@ SCUI.SimpleTextFieldView = SC.View.extend( SC.Editable, SC.Control, {
     if (SC.none(newValue)) {
       newValue = '';
     }
-    this.$('input').val(newValue);
-  },
-  
-  /**
-    This lets you click to position the cursor and select text in Firefox.
-  */
-  _applyFirefoxCursorFix: function() {
-    if (SC.browser.mozilla) {
-      var layer = this.get('layer');
-      var p = SC.viewportOffset(this.get('layer')) ;
-      var top    = p.y, 
-          left   = p.x, 
-          width  = layer.offsetWidth, 
-          height = layer.offsetHeight ;
-          
-      top -= 2; 
-      left -= 2;  
-      
-      var style = 'position: fixed; top: %@px; left: %@px; width: %@px; height: %@px;'.fmt(top, left, width, height) ;
-      this.$('input').attr('style', style) ;
-    }
+    this.$input().val(newValue);
   },
 
-  _removeFirefoxCursorFix: function() {
-    if (SC.browser.mozilla) {
-      this.$('input').attr('style', '') ;
+  _stfv_valueDidChange: function() {
+    //console.log('%@._stfv_valueDidChange(%@)'.fmt(this, this.get('value')));
+    var currentText = this._getFieldValue();
+    var value = this.get('value');
+    if (value !== currentText) {
+      this._setFieldValue(value);
     }
-  },
-  
+  }.observes('value'),
+    
   // PRIVATE PROPERTIES
   
+  _isKeyDown: NO,
   _isFocused: NO
   
 });

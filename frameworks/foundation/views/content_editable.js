@@ -17,7 +17,7 @@ require('views/context_menu_pane');
   @version 0.1
   
 */
-SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
+SCUI.ContentEditableView = SC.WebView.extend(
 /** @scope SCUI.ContentEditableView.prototype */ {
   
   /**
@@ -82,11 +82,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
   fixedDimensions: YES,  
   
   /**
-    Set to YES to remove margins from the body of the iframe.
-  */
-  removeMargins: NO,
-  
-  /**
     Set to YES to pass CSS styles from the inlineStyle object to the body of the iframe
   */  
   useInlineStyle: NO,
@@ -97,16 +92,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
     collection
   */
   frameName: '',
-
-  /**
-    If set to yes, then the HTML from the body of the iframe will be persisted back
-    to the value property after each,
-    
-    1. keyup
-    2. paste
-    3. mouseup
-    4. state change (bold, italics, underlined... etc)
-  */
   
   /**
     This is set to true everytime the user changes the state of the html and set
@@ -121,9 +106,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
   commitInstantly: NO,
   
   /**
-    Set to NO to prevent automatic cleaning of text pasted into editor
+    Set to NO to prevent automatic cleaning of text inserted into editor
   */
-  filterWordOnPaste: YES,
+  filterWordOnSave: YES,
   
   /**
     A pointer to the document/contentDocument of the iframe
@@ -131,9 +116,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
   _editor: null,
   
   displayProperties: ['value'],
-
-	rightClickMenuOptions: [],
   
+  /**
+    List of menu options to display on right click
+  */
+	rightClickMenuOptions: [],
+
   render: function(context, firstTime) {
     var value = this.get('value');
     var allowTransparency = this.get('allowTransparency');
@@ -144,8 +132,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
     
     if (firstTime) {
       context.push('<iframe frameBorder="'+ frameBorder + '" name="' + this.get('frameName') + '" scrolling="' + allowScrolling + '" src="" allowTransparency="' + allowTransparency + '" style="' + styleString + '"></iframe>');
+      
     } else if(commitInstantly === NO && this._editor){
-        this._editor.body.innerHTML = value;
+      this._editor.body.innerHTML = value;
     }
   },
   
@@ -168,34 +157,27 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
       this._iframe = this.$('iframe').firstObject();
       this._editor = this._iframe.contentDocument;
     }
-
-    // allows for style inheritance from a defined object
-    var useInlineStyle = this.get('useInlineStyle');
-    if (useInlineStyle === YES) {
-      var inlineStyle = this.get('inlineStyle');
-      this.setFrameInlineStyle(inlineStyle);
-    }
-    
-    if (this.get('allowTransparency') === YES) {
-      this._editor.body.style.background = 'transparent';       
-      // the sc-web-view adds a gray background to the WebView... removing in the
-      // case allowTransparency is YES
-      this.$().setClass('sc-web-view', NO);
-    }
-    
-    // removes margins from the body of the iframe if removeMargins is set to YES
-    if (this.get('removeMargins') === YES) {
-      this._editor.body.style.margin = '0px';
-    }
     
     // set contentEditable to true... this is the heart and soul of the editor
     var value = this.get('value');
     var iframeBody = this._editor.body;
-    iframeBody.contentEditable = true;    
+    iframeBody.contentEditable = true;
+    
+    if (this.get('allowTransparency') === YES) {
+      iframeBody.style.background = 'transparent';       
+      // the sc-web-view adds a gray background to the WebView... removing in the
+      // case allowTransparency is YES
+      this.$().setClass('sc-web-view', NO);
+    }
+
+    if (this.get('useInlineStyle')) {
+      var inlineStyle = this.get('inlineStyle');
+      this.setFrameInlineStyle(inlineStyle);
+    }
     
     // we have to do this differently in FF and IE... execCommand('inserthtml', false, val) fails
     // in IE and iframeBody.innerHTML is resulting in a FF bug
-    if (SC.browser.msie) {
+    if (SC.browser.msie || SC.browser.safari) {
       iframeBody.innerHTML = value;
     } else {
       this.selectionInsertHTML(value);
@@ -233,13 +215,15 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
   },
 
 	mouseDownHandler: function(evt) {
+	  
 		
 		var menuOptions = this.get('rightClickMenuOptions');
+		var numOptions = menuOptions.get('length');
 		
 		if (menuOptions.length > 0) {
 			var pane = this.contextMenuView.create({
 	      contentView: SC.View.design({}),
-	      layout: { width: 194, height: 0 },
+	      layout: { width: 200, height: (20 * numOptions) },
 	      itemTitleKey: 'title',
 	      itemTargetKey: 'target',
 	      itemActionKey: 'action',
@@ -276,6 +260,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
 
 	      // Popup the menu pane
 	      this.beginPropertyChanges();
+	      var it = this.get('displayItems');
 	      this.set('anchorElement', anchor) ;
 	      this.set('anchor', anchorView);
 	      this.set('preferType', SC.PICKER_MENU) ;
@@ -332,7 +317,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
     }
     
     if (!this.get('fixedDimensions')) {
-      this._updateLayout();      
+      this.invokeLast(this._updateLayout);
     }
     
     this.set('isDirty', YES);
@@ -344,7 +329,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
     SC.RunLoop.begin();
     this.querySelection();
     if (!this.get('fixedDimensions')) {
-      this._updateLayout();      
+      this.invokeLast(this._updateLayout);
     }
     
     this.set('isDirty', YES);
@@ -357,7 +342,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
 
     this.querySelection();
     if (!this.get('fixedDimensions')) {
-      this._updateLayout();      
+      this.invokeLast(this._updateLayout);
     }
     this.set('isDirty', YES);
     
@@ -741,8 +726,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
         ret = val;
         
       } else {      
-        ret = this._editor.queryCommandValue('forecolor');         
-        ret = '#' + this.RGB2Hex(this.getR(ret), this.getG(ret), this.getB(ret));
+        ret = this._editor.queryCommandValue('forecolor');    
+        ret = SC.parseColor(ret);
       }
     }
     
@@ -771,7 +756,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
       }
 
       if (ret !== 'transparent') {
-        ret = '#' + this.RGB2Hex(this.getR(ret), this.getG(ret), this.getB(ret));
+        ret = SC.parseColor(ret);
 
       } else {
         ret = '';
@@ -901,7 +886,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
   saveHTML: function() {
     if (this._editor) {
       var value = this._editor.body.innerHTML;
-      value = this.cleanWordHTML(value);
+      
+      if (this.get('filterWordOnSave')) {
+        value = this.cleanWordHTML(value);
+      }
       
       // Any line feed character (\n), and carriage return (\r) characters have to be encoded as &#10;
       // and &#13; so that the awesome editors rendering wouldn't break.
@@ -923,7 +911,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
   */
   getEditorHTML: function() {
     if (this._editor) {
-      return this.cleanWordHTML(this._editor.body.innerHTML);
+      if (this.get('filterWordOnSave')) {
+        return this.cleanWordHTML(this._editor.body.innerHTML);
+      } else {
+        return this._editor.body.innerHTML;
+      }
     }
   },
   
@@ -982,7 +974,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
     Filters out junk tags when copying/pasting from MS word. This function is called
     automatically everytime the users paste into the editor. 
     
-    To prevent this, set filterWordOnPaste to NO/false.
+    To prevent this, set filterWordOnSave to NO/false.
     
     @param {String} html html to be cleaned up and pasted into editor
     @returns {Boolean} if operation was successul or not 
@@ -1093,49 +1085,38 @@ SCUI.ContentEditableView = SC.WebView.extend(SCUI.ColorTranslation,
     this.selectionInsertHTML(html);
   },
   
-  _updateLayout: function() {    
-     var that = this;
-
-     function f() {
-       
-       var width; 
-       var height;
-       
-       if (SC.browser.msie) {
-         width = that._editor.body.scrollWidth;
-         height = that._editor.body.scrollHeight;
-       } else {
-         width = that.$('iframe')[0].contentDocument.body.offsetWidth;
-         height = that.$('iframe')[0].contentDocument.body.offsetHeight;
-       }
-
-       // make sure height/width doesn't shrink beyond the initial value when the
-       // ContentEditableView is first created
-       if (height < that._minHeight) height = that._minHeight;
-       if (width < that._minWidth) width = that._minWidth;
-
-       that.set('offsetWidth', width);
-       that.set('offsetHeight', height);
-
-       if (that.get('isAttachedView')) {
-         that._updateAttachedViewLayout();
-       }
-
-       if (!that.get('fixedDimensions')) {
-         var layout = that.get('layout');
-         layout = SC.merge(layout, { width: width, height: height });
-
-         that.propertyWillChange('layout');
-         that.adjust(layout);
-         that.propertyDidChange('layout');
-       }
+  _updateLayout: function() {
+     var width, height;
+     
+     if (SC.browser.msie) {
+       width = this._editor.body.scrollWidth;
+       height = this._editor.body.scrollHeight;
+     } else {
+       width = this._editor.body.offsetWidth;
+       height = this._editor.body.offsetHeight;
      }
 
-     // execution of this funciton is delayed by a few milliseconds
-     // to be able to capture correct offsetWidth/offsetHeight.
-     this.invokeLater(f, 50);
+     // make sure height/width doesn't shrink beyond the initial value when the
+     // ContentEditableView is first created
+     if (height < this._minHeight) height = this._minHeight;
+     if (width < this._minWidth) width = this._minWidth;
+
+     this.set('offsetWidth', width);
+     this.set('offsetHeight', height);
+
+     if (this.get('isAttachedView')) {
+       this._updateAttachedViewLayout();
+     }
+
+     if (!this.get('fixedDimensions')) {
+       var layout = this.get('layout');
+       layout = SC.merge(layout, { width: width, height: height });
+
+       this.propertyWillChange('layout');
+       this.adjust(layout);
+       this.propertyDidChange('layout');
+     }
    },
-   
 
    _updateAttachedViewLayout: function() {
      var width = this.get('offsetWidth');

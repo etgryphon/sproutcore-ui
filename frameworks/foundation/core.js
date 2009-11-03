@@ -21,3 +21,11 @@
 var CoreUI = CoreUI || {};
 var CUI = CUI || CoreUI;
 var SCUI = SCUI || CoreUI ;
+
+// ..........................................................
+// Disclosed View Constants
+// 
+SCUI.DISCOLSED_STAND_ALONE    = 'standAlone';
+SCUI.DISCLOSED_LIST_DEPENDENT = 'listDependent';
+SCUI.DISCLOSED_OPEN = 'open';
+SCUI.DISCLOSED_CLOSED = 'closed';

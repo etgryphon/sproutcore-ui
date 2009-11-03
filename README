@@ -21,10 +21,12 @@ CURRENT FRAMEWORKS:
     [EXPERIMENTAL] Basic iGoogle-like framework, very early stages with lots of bugs
   - Drawing
     [ALPHA] Basic drawing framework that uses the canvas tag, SVG to be added soon.
+  - LinkIt
+    [ALPHA] Complex framework for building directed and non-directed graphs much like Yahoo Pipes and WireIt
   
-FUTURE DEVELOPMENT:
-  - Harden the Dashboard Functionality
-  - Added the ability to delete\move lines
+FUTURE FRAMEWORK DEVELOPMENT:
+  - Dashboard
+    - Harden the Dashboard Functionality
   
 === License ===
 

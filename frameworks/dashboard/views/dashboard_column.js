@@ -11,7 +11,7 @@ sc_require('views/widget');
   @version 0.1
 */
 
-SCUI.DashboardColumnView = SC.CollectionView.extend({
+SCUI.DashboardColumnView = SC.ListView.extend( SCUI.DynamicCollection, {
 
   // PUBLIC PROPERTIES
 
@@ -22,66 +22,38 @@ SCUI.DashboardColumnView = SC.CollectionView.extend({
   isDropTarget: YES,
   
   /**
-    @public: space between widgets
-  */
-  widgetSpacing: 10,
-  widgetMargin: 5,
-  
-  // Internal height calculation...
-  _currentHeight: null,
-  
-  init: function(){
-    sc_super();
-    this._currentHeight = [];
-  },
-
-  /**
-    Overrides SC.CollectionView.createItemView().
-    In addition to creating new view instance, it also overrides the layout
-    to position the view according to size of all the other views...
-  */
-  createItemView: function(exampleClass, idx, attrs) {
-    var margin = this.get('widgetMargin');
-    var view = exampleClass.create(attrs); // create the new view
-    var currHeight = view.get('currentHeight') + margin;
-    var top = this._calculateTopPosition(idx);
-    // override the layout so we can control positioning of this widget view
-    var layout = { top: top, left: margin, right: margin, height: currHeight };
-    view.set('layout', layout);
-    this._currentHeight[idx] = currHeight;
-    this._sc_itemViews[idx] = view;
+    Get the preferred insertion point for the given location, including 
+    an insertion preference of before, after or on the named index.
     
-    console.log('Widget View: %@ '.fmt(idx));
-  
-    return view;
-  },
-  
-  _calculateTopPosition: function(idx){
-    var total = 0;
-    var spacing = this.get('widgetSpacing') || 0;
-    var heightLen = this._currentHeight.length ;
-    var len = idx < heightLen ? idx : heightLen ;
-    for (var i = 0; i < len; i++){
-      total += this._currentHeight[i] + spacing;
-    }
+    You can implement this method in a subclass if you like to perform a 
+    more efficient check.  The default implementation will loop through the 
+    item views looking for the first view to "switch sides" in the orientation 
+    you specify.
     
-    return spacing + total;
-  },
-
+    This method should return an array with two values.  The first value is
+    the insertion point index and the second value is the drop operation,
+    which should be one of SC.DROP_BEFORE, SC.DROP_AFTER, or SC.DROP_ON. 
+    
+    The preferred drop operation passed in should be used as a hint as to 
+    the type of operation the view would prefer to receive. If the 
+    dropOperation is SC.DROP_ON, then you should return a DROP_ON mode if 
+    possible.  Otherwise, you should never return DROP_ON.
+    
+    For compatibility, you can also return just the insertion index.  If you
+    do this, then the collction view will assume the drop operation is 
+    SC.DROP_BEFORE.
+    
+    If an insertion is NOT allowed, you should return -1 as the insertion 
+    point.  In this case, the drop operation will be ignored.
+    
+    @param loc {Point} the mouse location.
+    @param dropOperation {DropOp} the preferred drop operation.
+    @returns {Array} [proposed drop index, drop operation] 
+  */
   insertionIndexForLocation: function(loc, dropOperation) { 
-    //console.log('\nDashboardColumnView: insertionIndexForLocation begin...');
-    var len = this.get('length'), ret = 0, total = 0, height, midpoint;
-    var spacing = this.get('widgetSpacing') || 0;
-    var heights = this._currentHeight;
-    for (var i = 0; i < len; i++){
-      ret = i;
-      height = heights[i];
-      midpoint = total + (height/2);
-      if (loc.y < midpoint) break;
-      total += height + spacing;
-    }
-    //console.log('(%@): Insertion Index: %@'.fmt(this, ret));
-    return ret;
+    var ret = 0 ;
+    
+    return [ret, SC.DROP_BEFORE];
   },
   
   /*******************************
@@ -114,25 +86,23 @@ SCUI.DashboardColumnView = SC.CollectionView.extend({
   },
   
   _updateHeight: function() {
-    
     var childViews = this.get('childViews'),
         len        = childViews.get('length'),
-        view, layer, height,
-        margin = this.get('widgetMargin');
+        view, layer, height;
         
     if (len === 0) {
       height = 1; 
     } else {
       view = childViews.objectAt(len-1);
       layer = view ? view.get('layer') : null ;
-      height = layer ? (layer.offsetTop + layer.offsetHeight + margin) : 1 ;
+      height = layer ? (layer.offsetTop + layer.offsetHeight) + 25: 1 ;
       layer = null ; // avoid memory leaks
     }
     
     // Adjust the height of the Dashboard
-    var del = this.get('delegate');
+    var pv = this.get('parentView');
     var colIdx = this.get('columnIndex');
-    del.adjustColumnHeight(colIdx, height);
+    pv.adjustColumnHeight(colIdx, height);
   },
   
   // ..........................................................

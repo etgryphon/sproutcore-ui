@@ -50,7 +50,7 @@ var pane = SC.ControlTestPane.design()
         type: SCUI.STROKE,
         style: {
           width: 2,
-          color: 'rgba(255,165,0,0.7)'
+          color: 'rgba(255,165,0,0.9)'
         }
       }
     ]
@@ -96,7 +96,7 @@ var pane = SC.ControlTestPane.design()
         ],
         type: SCUI.FILL,
         style: {
-          color: 'rgba(255,165,0,0.7)'
+          color: 'rgba(255,165,0,0.9)'
         }
       }
     ]

@@ -3,7 +3,7 @@
 // ==========================================================================
 
 require('core');
-require('views/context_menu_pane');
+require('panes/context_menu_pane');
 
 /** @class
 

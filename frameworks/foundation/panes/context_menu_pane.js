@@ -77,10 +77,11 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   
       // Popup the menu pane
       this.beginPropertyChanges();
+      var it = this.get('displayItems');
       this.set('anchorElement', anchor) ;
       this.set('anchor', anchorView);
       this.set('preferType', SC.PICKER_MENU) ;
-      this.set('preferMatrix', [offsetX + 5, offsetY + 5, 1]) ;
+      this.set('preferMatrix', [offsetX + 2, offsetY + 2, 1]) ;
       this.endPropertyChanges();
       this.append();
       this.positionPane();

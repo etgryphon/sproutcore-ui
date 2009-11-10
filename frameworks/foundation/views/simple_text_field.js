@@ -251,7 +251,7 @@ SCUI.SimpleTextFieldView = SC.View.extend( SC.StaticLayout, SC.Editable, {
 
   didLoseKeyResponderTo: function(view) {
     //console.log('%@.didLoseKeyResponderTo()'.fmt(this));
-    if (this._isFocused) {
+    if (this._isFocused && this.$input().get(0)) {
       this.$input().get(0).blur();
     }
   },

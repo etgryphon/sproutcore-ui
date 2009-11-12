@@ -26,6 +26,11 @@ SCUI.READY = 'READY';
 SCUI.BUSY  = 'BUSY';
 SCUI.DONE  = 'DONE';
 
+// Upload Constants
+SCUI.READY = 'READY';
+SCUI.BUSY  = 'BUSY';
+SCUI.DONE  = 'DONE';
+
 // ..........................................................
 // Disclosed View Constants
 // 

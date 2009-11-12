@@ -21,10 +21,15 @@
 var Scui = Scui || {};
 var SCUI = SCUI || Scui ;
 
+// Upload Constants
+SCUI.READY = 'READY';
+SCUI.BUSY  = 'BUSY';
+SCUI.DONE  = 'DONE';
+
 // ..........................................................
 // Disclosed View Constants
 // 
-SCUI.DISCOLSED_STAND_ALONE    = 'standAlone';
+SCUI.DISCLOSED_STAND_ALONE    = 'standAlone';
 SCUI.DISCLOSED_LIST_DEPENDENT = 'listDependent';
 SCUI.DISCLOSED_OPEN = 'open';
 SCUI.DISCLOSED_CLOSED = 'closed';

@@ -21,7 +21,7 @@ SCUI.Upload = SC.View.extend(
   /**
     Status of the current upload. Can be one of 3 values,
       1. 'READY'
-      2. 'IN-PROGRESS'
+      2. 'BUSY'
       3. 'DONE'
   */
   status: '',
@@ -52,8 +52,8 @@ SCUI.Upload = SC.View.extend(
       context.push('<iframe frameBorder="0" src="#" id="' + frameId + '" name="' + frameId + '" style="width:0; height:0;"></iframe>');
       
     } else {
-      this.$('form').get(0).action = uploadTarget;
-      
+      var f = this._getForm();
+      if (f) f.action = uploadTarget;
     }
     sc_super();
   },
@@ -72,11 +72,14 @@ SCUI.Upload = SC.View.extend(
   },
   
   /**
-    Starts the file upload (by submitting the form) and alters the status from READY to IN-PROGRESS.
+    Starts the file upload (by submitting the form) and alters the status from READY to BUSY.
   */
   startUpload: function() {
-    this.$('form').get(0).submit();
-    this.set('status', 'IN-PROGRESS');
+    var f = this._getForm();
+    if (f) {
+      f.submit();
+      this.set('status', SCUI.BUSY);
+    }
   },
   
   /**
@@ -84,25 +87,32 @@ SCUI.Upload = SC.View.extend(
     to work across all browsers. Also resets the status to READY.
   */
   clearFileUpload: function() {
-    if (this.$('form').length > 0) {
-      this.$('form').get(0).innerHTML = this.$('form').get(0).innerHTML;
-      this.set('status', 'READY');
+    var f = this._getForm();
+    if (f) {
+      f.innerHTML = f.innerHTML;
+      this.set('status', SCUI.READY);
     }
   },
   
   /**
     This function is called when the upload is done and the iframe loads. It'll
     execute the uploadSuccessfullAction/uploadSuccessfullTarget function and change
-    the status from IN-PROGRESS to DONE.
+    the status from BUSY to DONE.
   */
   _uploadDone: function() {
-    this.set('status', 'DONE');
+    this.set('status', SCUI.DONE);
 
     var action = this.get('uploadSuccessfullAction');
     var target = this.get('uploadSuccessfullTarget');
     if (action && target) {
       this.getPath('pane.rootResponder').sendAction(action, target, this, this.get('pane'));
     }
+  },
+  
+  _getForm: function(){
+    var forms = this.$('form');
+    if (forms && forms.length > 0) return forms.get(0);
+    return null;
   } 
 
 });

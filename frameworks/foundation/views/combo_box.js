@@ -2,7 +2,6 @@
 // SCUI.ComboBoxView
 // ==========================================================================
 
-sc_require('views/simple_text_field');
 sc_require('mixins/simple_button');
 
 /** @class
@@ -10,10 +9,8 @@ sc_require('mixins/simple_button');
   This view creates a combo-box text field view with a dropdown list view
   for type ahead suggestions; useful as a search field.
 
-  @extends SCUI.SimpleTextFieldView
+  @extends SC.View, SC.Editable
   @author Jonathan Lewis
-  @version 0.1
-  @since 0.1
 */
 
 SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
@@ -24,10 +21,21 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
 
   isEditable: YES,
   
-  dropDownButtonWidth: 11,
+  /**
+    The width of the drop-down button which is right-justified
+    next to the text field.
+  */
+  dropDownButtonWidth: 24,
+
+  /**
+    Override this if you want to set your own CSS classes on the
+    drop-down button.  Should be an array of class names.
+  */
+  dropDownButtonClassNames: ['scui-combobox-dropdown-button-view'],
   
   /**
-    An array of available items; may be strings.
+    An array of available items; may be strings.  These values show
+    up in the drop-down pane when you start typing in the text field.
   */
   content: null,
   contentValueKey: null,
@@ -68,27 +76,66 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
   
   createChildViews: function() {
     var childViews = [];
-    var dropDownButtonWidth = this.get('dropDownButtonWidth') || 11;
+    var dropDownButtonWidth = this.get('dropDownButtonWidth') || 24;
 
     // Create the text field view
     this._textFieldView = this.createChildView(
-      SCUI.SimpleTextFieldView.design({
-        layout: { left: 0, top: 0, right: dropDownButtonWidth, height: 22 },
+      SC.TextFieldView.design({
+        classNames: ['scui-combobox-text-field-view'],
+        layout: { left: 0, top: 0, bottom: 0, right: dropDownButtonWidth },
         valueBinding: SC.Binding.from('.textFieldValue', this),
         keyDelegate: this, // the text field will offer key events to this combobox view first
         editableDelegate: this, // the text field will tell us when to start / stop editing (i.e. when it gets or loses focus)
-        isEnabledBinding: SC.Binding.from('.isEnabledInPane', this).oneWay()
+        isEnabledBinding: SC.Binding.from('.isEnabledInPane', this).oneWay(),
+
+        keyDown: function(evt) {
+          var del = this.get('keyDelegate');
+          // let the key delegate take the event if it wants it (it returns YES if it takes it)
+          if (del && del.keyDown && del.keyDown(evt)) {
+            evt.stop();
+            return YES;
+          }
+          return sc_super();
+        },
+
+        keyUp: function(evt) {
+          var del = this.get('keyDelegate');
+          if (del && del.keyUp && del.keyUp(evt)) {
+            evt.stop();
+            return YES;
+          }
+          return sc_super();
+        },
+
+        beginEditing: function() {
+          var del = this.get('editableDelegate');
+          var ret = sc_super();
+          if (ret && del && del.beginEditing) {
+            del.beginEditing();
+          }
+          return ret;
+        },
+        
+        commitEditing: function() {
+          var del = this.get('editableDelegate');
+          var ret = sc_super();
+          if (ret && del && del.commitEditing) {
+            del.commitEditing();
+          }
+          return ret;
+        }
       })
     );
     childViews.push(this._textFieldView);
 
     // Add a button to show/hide the drop-down list
     this._dropDownButtonView = this.createChildView(
-      SC.View.design( SCUI.SimpleButton, SC.Border, {
-        classNames: ['scui-combobox-button-view'],
-        layout: { right: 18, top: 9,  width: dropDownButtonWidth, height: 7 },
+      SC.View.design( SCUI.SimpleButton, {
+        classNames: this.get('dropDownButtonClassNames') || [],
+        layout: { right: 0, top: 0,  width: dropDownButtonWidth, bottom: 0 },
         target: this,
-        action: 'toggleList'
+        action: 'toggleList',
+        backgroundColor: 'gray'
       })
     );
     childViews.push(this._dropDownButtonView);
@@ -104,23 +151,22 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
     if (!this.get('isEditable')) {
       return NO;
     }
-
+    
     if (this.get('isEditing')) {
       return YES;
     }
-
-    //console.log('%@.beginEditing()'.fmt(this));
-
+      
     this.set('isEditing', YES);
-    this._textFieldView.beginEditing(); // this will cause the text field to take first responder, which we want it to have
-
+      
     this._keyPressed = NO;
     this._proposedItem = null;
-
-    // Update the filter when we start editing just in case the selectedItem or text has changed since last time
-    //this.setIfChanged('filter', this.get('textFieldValue'));
+      
     this.set('filter', null);
-
+    
+    if (!this._textFieldView.get('isEditing')) {
+      this._textFieldView.beginEditing(); // this will cause the text field to take first responder, which we want it to have
+    }
+    
     return YES;
   },
   
@@ -134,21 +180,23 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
   commitEditing: function() {
     if (this.get('isEditing')) {
       this._keyPressed = NO;
-
+    
       if (!this.get('textFieldValue')) {
         this.setIfChanged('selectedItem', null);
       }
       
       this._setItemAsTextFieldValue(this.get('selectedItem'));
       this.set('isEditing', NO);
-      this._textFieldView.commitEditing(); // allow the text field itself to resign first responder
-
-      //console.log('%@.commitEditing(selected item is: %@)'.fmt(this, this.get('selectedItem')));
-
+    
       this.hideList(); // make sure this gets closed
     }
-
+    
     this._proposedItem = null;
+
+    if (this._textFieldView.get('isEditing')) {
+      this._textFieldView.commitEditing(); // allow the text field itself to resign first responder
+    }
+    
     return YES;
   },
   
@@ -168,7 +216,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
   showList: function() {
     //console.log('%@.showList()'.fmt(this));
     if (this._listPane && !this._listPane.get('isPaneAttached')) {
-      this._textFieldView.focus();
+      this._textFieldView.beginEditing();
       this._listPane.popup(this, SC.PICKER_MENU);
       this._listPane.get('contentView').scrollTo(0, 0);
       return YES;

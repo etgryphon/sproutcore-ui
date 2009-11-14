@@ -19,7 +19,7 @@ SCUI.Resizable = {
   mouseDown: function(evt) {
     var v, i = {};
     // save mouseDown information...
-    v = this.get('viewToResize');
+    v = this.get('viewToResize') || this.get('parentView');
     if (!v) return YES; // nothing to do...
     i.resizeView = v;
     var frame = v.get('frame');

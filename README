@@ -1,33 +1,42 @@
-== Welcome to the Sproutcore-UI (SCUI) Library: ==
+=== Welcome to the Sproutcore-UI (SCUI) Library: ===
 
-This is a basic library for some great native Sproutcore UI functionality includes view, mixins and objects.
+This is a basic library for some great native Sproutcore UI functionality includes views, panes, mixins and objects.
 
-CONTRIBUTORS:
-  Main Architect: Evin Grano
-  Contributors:
-    - Mike Ball
-    - Jonathan Lewis
-    - Josh Holt
-    - Mohammed Taher
-    - Michael Harris
-    - Brandon Blatnick
+=== FRAMEWORKS ===
 
-CURRENT FRAMEWORKS:
-  - Foundation:
-    [ALPHA] Basic View and Mixin framework that has general oriented UI treatments that are helpful
-  - Calendar:
-    [ALPHA] Basic Calendar Functionality: Datepicker, CalendarView
-  - Dashboard:
-    [EXPERIMENTAL] Basic iGoogle-like framework, very early stages with lots of bugs
-  - Drawing
-    [ALPHA] Basic drawing framework that uses the canvas tag, SVG to be added soon.
-  - LinkIt
-    [ALPHA] Complex framework for building directed and non-directed graphs much like Yahoo Pipes and WireIt
+- Foundation:
+  [ALPHA] Basic View and Mixin framework that has general oriented UI treatments that are helpful
+- Calendar:
+  [ALPHA] Basic Calendar Functionality: Datepicker, CalendarView
+- Dashboard:
+  [EXPERIMENTAL] Basic iGoogle-like framework, very early stages with lots of bugs
+- Drawing
+  [ALPHA] Basic drawing framework that uses the canvas tag, SVG to be added soon.
+- LinkIt
+  [ALPHA] Complex framework for building directed and non-directed graphs much like Yahoo Pipes and WireIt
+
+=== INSTALLATION ===
+
+In your frameworks directory, run:
+  git clone git://github.com/etgryphon/sproutcore-ui.git scui
+
+=== CONTRIBUTORS ===
+
+Main Architect: Evin Grano
+Contributors:
+  - Mike Ball
+  - Jonathan Lewis
+  - Josh Holt
+  - Mohammed Taher
+  - Michael Harris
+  - Brandon Blatnick
+  - Devin Torres
+
+=== FUTURE DEVELOPMENT ===
+- Dashboard
+  - Develop the OSX/Windows 7 Freeform Dashboard
+  - Harden the iGoogle Dashboard Functionality
   
-FUTURE FRAMEWORK DEVELOPMENT:
-  - Dashboard
-    - Harden the Dashboard Functionality
-  
-=== License ===
+=== LICENSE ===
 
 Sproutcore-UI is under the MIT License

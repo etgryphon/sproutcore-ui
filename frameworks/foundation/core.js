@@ -1,5 +1,5 @@
 // ==========================================================================
-// SCUI JavaScript Framework - Buildfile
+// SCUI Framework - Buildfile
 // copyright (c) 2009 - Evin Grano, and contributors
 // ==========================================================================
 
@@ -16,11 +16,10 @@
   inside of this namespace.  You generally should not add new properties to
   this namespace as it may be overwritten by future versions of SCUI.
   
-  You can also use the shorthand "SCUI" instead of "CoreUI".
+  You can also use the shorthand "SCUI" instead of "Scui".
 */
-var CoreUI = CoreUI || {};
-var CUI = CUI || CoreUI;
-var SCUI = SCUI || CoreUI ;
+var Scui = Scui || {};
+var SCUI = SCUI || Scui ;
 
 // ..........................................................
 // Disclosed View Constants

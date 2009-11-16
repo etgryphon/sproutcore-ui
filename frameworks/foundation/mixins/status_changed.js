@@ -1,5 +1,5 @@
 // ==========================================================================
-// SCUI.SimpleButton
+// SCUI.StatusChanged
 // ==========================================================================
 
 /**
@@ -7,7 +7,9 @@
   
   Implements common status observation.
   
-  @author Mike Ball
+  @author: Mike Ball
+  @version: 0.5
+  @since: 0.5
 */
 SCUI.StatusChanged = {
   

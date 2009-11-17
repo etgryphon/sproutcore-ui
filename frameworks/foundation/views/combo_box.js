@@ -106,6 +106,11 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
           }
           return sc_super();
         },
+        
+        fieldDidFocus: function(evt) {
+          this._isFocused = NO;
+          return sc_super();
+        },
 
         beginEditing: function() {
           var del = this.get('editableDelegate');

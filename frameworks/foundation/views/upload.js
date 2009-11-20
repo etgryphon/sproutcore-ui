@@ -91,6 +91,25 @@ SCUI.Upload = SC.View.extend(
   },
   
   /**
+    Returns true if a file has been chosen to be uploaded, otherwise returns
+    false. It would be ideal if this was a property instead of a function,
+    however, due to limitation of input=file it would be hard to do.
+    
+    @returns {Boolean} YES if a file is selected, NO if not
+  */
+  validateFileSelection: function() {
+    var input = this._getInput();
+    if (input) {
+      if (input.value !== '') {
+        return YES;
+      } else {
+        return NO;
+      }
+    }
+    return NO;
+  },
+  
+  /**
     This function is called when the upload is done and the iframe loads. It'll
     change the status from BUSY to DONE.
   */
@@ -102,6 +121,12 @@ SCUI.Upload = SC.View.extend(
     var forms = this.$('form');
     if (forms && forms.length > 0) return forms.get(0);
     return null;
-  } 
+  },
+  
+  _getInput: function() {
+    var inputs = this.$('input');
+    if (inputs && inputs.length > 0) return inputs.get(0);
+    return null;
+  }
 
 });

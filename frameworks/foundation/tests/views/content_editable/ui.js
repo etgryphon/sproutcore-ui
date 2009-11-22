@@ -4,6 +4,8 @@
 
 /* Test SCUI.ContentEditableView */
 
+// TODO: [MT] - Fix unit tests
+
 var pane = SC.ControlTestPane.design()
 
   .add("text", SCUI.ContentEditableView, {
@@ -431,7 +433,7 @@ test("Check that the get, set and save unctions are working correctly", function
   
   equals(html.toLowerCase(), '<span>Proin ut nibh nec ante tristique ultricies</span>'.toLowerCase(), 'setHTML is correctly setting the editor\'s HTML content');
   
-  webView.saveHTML();
+  webView.commitEditing();
   var value = webView.get('value');
   
   equals(value.toLowerCase(), '<span>Proin ut nibh nec ante tristique ultricies</span>'.toLowerCase(), 'saveHTML is correctly saving the content of the editor');

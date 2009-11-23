@@ -63,6 +63,7 @@ SCUI.CascadingComboView = SC.View.extend({
     var props = this.get('propertiesHash');
     var content = this.get('content');
     
+    
     // make sure the required props are there or complain.
     if (props) {
       required.forEach(function(key){
@@ -73,7 +74,7 @@ SCUI.CascadingComboView = SC.View.extend({
       }});
     }
     
-    if (meetsRequirements && content) {    
+    if (meetsRequirements) {    
       view = this.createChildView(
         SC.LabelView.design({
           layout: { left: 20, top: 10, right: 20, height: 22 },
@@ -97,7 +98,7 @@ SCUI.CascadingComboView = SC.View.extend({
 
       view = this.createChildView(
         SC.LabelView.design({
-          layout: { left: 80, top: 64, right: 20, height: 22 },
+          layout: { left: 50, top: 64, right: 20, height: 22 },
           isEditable: NO,
           value: this.get('detailLabel').loc(),
           isEnabled: NO,
@@ -108,7 +109,7 @@ SCUI.CascadingComboView = SC.View.extend({
 
       view = this.createChildView(
         SCUI.ComboBoxView.design({
-          layout: { left: 80, right: 20, top: 86, height: 22 },
+          layout: { left: 50, right: 20, top: 86, height: 22 },
           contentBinding: SC.Binding.from('*content.%@'.fmt(props.relationKey), this).oneWay(),
           contentValueKey: props.detailValueKey,
           isEnabled: NO,
@@ -124,7 +125,7 @@ SCUI.CascadingComboView = SC.View.extend({
         childViews: [
           SC.LabelView.design({
             layout: { centerX: 0 , centerY: 0, width: 300, height: 18 },
-            value: 'No Content || Setup did not meet requirements.'
+            value: meetsRequirements ? "No Content." : 'Setup did not meet requirements.'
           })
         ]
       }));

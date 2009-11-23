@@ -24,6 +24,6 @@ module("CascadingComboView", pane.standardSetup());
 test("Render Test && Elements", function() {
   var view = pane.view('CascadingComboView');
   ok(view, "View Rendered");
-  equals(view.$('div > .sc-label-view').get(0).innerHTML, "No Content || Setup did not meet requirements.","When no content is provided the view will only contain a label telling us that this is the case.");
+  equals(view.$('div > .sc-label-view').get(0).innerHTML, "Setup did not meet requirements.","When setup is incorrect the view will only contain a label telling us that this is the case.");
   
 });

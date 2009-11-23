@@ -21,6 +21,9 @@ config :dashboard, :required => [:foundation]
 config :drawing, :required => [:foundation]
 config :linkit, :required => [:foundation, :drawing]
 
+# WRAPPER FRAMEWORKS
+config :scui, :required => [:foundation, :calendar, :dashboard, :drawing, :linkit]
+
 # SPECIAL THEMES
 # These do not require any of the built-in SproutCore frameworks
 %w(standard_theme empty_theme).each do |target_name|

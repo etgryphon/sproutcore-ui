@@ -67,12 +67,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   attachedView: null,
   
   /**
-    offsetWidth of the body of the iframe. These values are read-only.
+    Read-only value
+    OffsetWidth of the body of the iframe.
   */
   offsetWidth: null,
   
   /**
-    offsetHeight of the body of the iframe. These values are read-only.
+    Read-only value.
+    OffsetHeight of the body of the iframe.
   */
   offsetHeight: null,
   
@@ -82,9 +84,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   hasFixedDimensions: YES,
   
   /**
-    This function takes a style object of keys/values and sets the style
-    property on the body of the editor's iframe. Dashed or CamelCase keys are both
-    acceptable. 
+    A set of values to be applied to the editor when it loads up.
+    Styles can be dashed or camelCase, both are acceptable.
     
     For example,
     
@@ -97,11 +98,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     {
       'color': 'blue',
       'backgroundColor': 'red' }
-  
-    @param {Object} inlineStyle object containing key/value pa
-    @returns void
   */
-  
   inlineStyle: {},
   
   /**
@@ -115,12 +112,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   */
   cleanInsertedText: YES,
   
-  displayProperties: ['value'],
-  
   /**
     List of menu options to display on right click
   */
 	rightClickMenuOptions: [],
+	
+	displayProperties: ['value'],
 	
 	// Setup ==================================================================
 	
@@ -195,7 +192,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       // case isOpaque is YES
       this.$().setClass('sc-web-view', NO);
     }
-
 
     var inlineStyle = this.get('inlineStyle');
     var editorBodyStyle = this._editor.body.style;
@@ -307,10 +303,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	  }
 	}),
 
-  /**
-    The 3 events handlers monitor for any change in user selection and update the
-    selection property accordingly
-  */
   keyUp: function(event) {
     SC.RunLoop.begin();
     var keyCode = event.keyCode;
@@ -580,49 +572,78 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }.property('selection').cacheable(),
   
   selectionFontSize: function(key, value) {
-    var editor = this._editor ;
+    var frame = this._iframe;
+    var editor = this._editor;
     if (!editor) return '';
     
     if (value !== undefined) {
-      if (editor.execCommand('fontsize', false, value)) {
-        this.set('isEditing', YES);
+    	if (editor.execCommand('fontname', false, 'ce-temp-font')) {
+    	  var tmpSpans = editor.getElementsByTagName('span');
+      	for (var i = 0, j = tmpSpans.length; i < j; i++) {
+      	  var tmpSpan = tmpSpans[i];
+      		if (tmpSpan.style.fontFamily.toLowerCase() === 'ce-temp-font') {
+      			var spanHTML = tmpSpan.innerHTML;
+
+      			var replacementSpan = document.createElement('span');
+      			replacementSpan.style.fontSize = value + 'px';
+      			tmpSpan.parentNode.replaceChild(replacementSpan, tmpSpan);
+
+      			replacementSpan.innerHTML = spanHTML;
+      		}
+      	}
+      	return value;
+    	}
+    }
+    
+    var selection = frame.contentWindow.getSelection();
+    if (selection) {
+      if (selection.anchorNode && selection.focusNode) {
+        var aNode = selection.anchorNode;
+        var fNode = selection.focusNode;
+        
+        if (aNode.nodeType === 3 && fNode.nodeType === 3) {
+          var aParentFontSize = aNode.parentNode.style.fontSize;
+          var fParentFontSize = fNode.parentNode.style.fontSize; 
+          
+          if (aParentFontSize === fParentFontSize) {
+            return aParentFontSize.substring(0, aParentFontSize.indexOf('p'));
+          }
+        }
       }
     }
     
-    var size = editor.queryCommandValue('fontsize');
-    if (size) return size;
     return '';
   }.property('selection').cacheable(),
   
-  selectionFontColor: function(key, val) {
+  // FIXME: [MT] Revisit this property, it doesn't always output the expected result
+  selectionFontColor: function(key, value) {
     var editor = this._editor ;
     if (!editor) return NO;
     
     // for now execute this in non IE browsers...
     if (!SC.browser.msie) {
-      if (val !== undefined) {
-        if (editor.execCommand('forecolor', false, val)) {
+      if (value !== undefined) {
+        if (editor.execCommand('forecolor', false, value)) {
           this.set('isEditing', YES);
         }
       }
       
-      var color = SC.parseColor(this._editor.queryCommandValue('forecolor'));
-      if (color) {
-        return color;
-      }
+      var color = SC.parseColor(editor.queryCommandValue('forecolor'));
+      if (color) return color;
     } 
     
     return '';
   }.property('selection').cacheable(),
   
-  selectionBackgroundColor: function(key, val) {
+  // FIXME: [MT] Revisit this property, it doesn't always output the expected result
+  selectionBackgroundColor: function(key, value) {
     var editor = this._editor ;
     if (!editor) return NO;
 
     // for now execute this in non IE browsers...
     if (!SC.browser.msie) {
-      if (val !== undefined) {
-        if (editor.execCommand('hilitecolor', false, val)) {
+      if (value !== undefined) {
+        if (editor.execCommand('hilitecolor', false, value)) {
           this.set('isEditing', YES);
         }
       }
@@ -679,16 +700,18 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   },
   
   querySelection: function() {
-    var selection = '';
+    var frame = this._iframe;
+    if (!frame) return;
     
+    var selection = '';
     if (SC.browser.msie) {
       selection = this._iframe.document.selection.createRange().text;
-      if (SC.none(selection)) selection = '';
-      
+      if (SC.none(selection)) {
+        selection = '';
+      }
     } else {
-      var targetIframe = this._iframe;
-      var targetIframeWindow = targetIframe.contentWindow;
-      selection = targetIframeWindow.getSelection();
+      var frameWindow = frame.contentWindow;
+      selection = frameWindow.getSelection();
     }
     
     this.propertyWillChange('selection');
@@ -698,15 +721,17 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   
   createLink: function(value) {
     var editor = this._editor;
-    if (!editor) return NO;
+    var frame = this._iframe;
+    if (!(editor && frame)) return NO;
     if (SC.none(value) || value === '') return NO;
     
     if (editor.execCommand('createlink', false, value)) { 
-      var node = this._iframe.contentWindow.getSelection().focusNode;
+      // FIXME: [MT] This fails to find the hyperlink node when the 
+      // whole text is highlighted
+      var node = frame.contentWindow.getSelection().focusNode;
       var hyperlink = node.parentNode;
       this.set('selectedHyperlink', hyperlink);
 
-      // var node = this._iframe.contentWindow.getSelection().focusNode;
       this.set('isEditing', YES);
       return YES;
     }
@@ -727,6 +752,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return NO;
   },
   
+  // FIXME: [MT] Should do something similar to what's being done on
+  // image creation (Assigning the newly created image to the selectedImage
+  // property)
   insertImage: function(value) {
     var editor = this._editor;
     if (!editor) return NO;
@@ -740,7 +768,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return NO;
   },
   
-  // FIXME: [MT] - execCommand('inserthml') occassionaly throws an error in FF,
+  // FIXME: [MT] execCommand('inserthml') occassionaly throws an error in FF,
   // have to find a better way to insert HTML snippets
   insertHTML: function(value) {
     var editor = this._editor;
@@ -758,13 +786,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         return YES;
       }
       return NO;
-      
     }
   },
   
   /**
     Inserts a SC view into the editor by first converting the view into html
-    then inserting it using selectionInsertHTML(). View objects, classes
+    then inserting it using insertHTML(). View objects, classes
     or path are all acceptable.
 
     For example,
@@ -782,8 +809,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     appName.pageName.viewName
 
     @param {View} SC view to be inserted
-
-    TODO: [MT] possibly allow the user to pass an object to style the view
   */
   insertView: function(view) {
     if(SC.typeOf(view) === SC.T_STRING){
@@ -816,7 +841,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       html = '<span contenteditable=false style="-moz-user-select: all">' + context + '</span>';
     }
 
-    this.selectionInsertHTML(html);
+    this.insertHTML(html);
   },
   
   /**  
@@ -906,7 +931,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     or a hyperlink.
   */  
   selectionDidChange: function() {
-    var node, range, currentImage = null, currentHyperlink = null;
+    var node, 
+        range, 
+        currentImage = null, 
+        currentHyperlink = null;
     
     if (SC.browser.msie) {
       var selection = this._iframe.document.selection;
@@ -973,36 +1001,38 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   
   /** @private */
   _updateLayout: function() {
-     var width, height;
-     
-     if (SC.browser.msie) {
-       width = this._editor.body.scrollWidth;
-       height = this._editor.body.scrollHeight;
-     } else {
-       width = this._editor.body.offsetWidth;
-       height = this._editor.body.offsetHeight;
-     }
+    var editor = this._editor;
+    if (!editor) return;
+    
+    var width, height;
+    if (SC.browser.msie) {
+      width = editor.body.scrollWidth;
+      height = editor.body.scrollHeight;
+    } else {
+      width = editor.body.offsetWidth;
+      height = editor.body.offsetHeight;
+    }
 
-     // make sure height/width doesn't shrink beyond the initial value when the
-     // ContentEditableView is first created
-     if (height < this._minHeight) height = this._minHeight;
-     if (width < this._minWidth) width = this._minWidth;
+    // make sure height/width doesn't shrink beyond the initial value when the
+    // ContentEditableView is first created
+    if (height < this._minHeight) height = this._minHeight;
+    if (width < this._minWidth) width = this._minWidth;
 
-     this.set('offsetWidth', width);
-     this.set('offsetHeight', height);
+    this.set('offsetWidth', width);
+    this.set('offsetHeight', height);
 
-     if (this.get('attachedView')) {
-       this._updateAttachedViewLayout();
-     }
+    if (this.get('attachedView')) {
+      this._updateAttachedViewLayout();
+    }
 
-     if (!this.get('hasFixedDimensions')) {
-       var layout = this.get('layout');
-       layout = SC.merge(layout, { width: width, height: height });
+    if (!this.get('hasFixedDimensions')) {
+      var layout = this.get('layout');
+      layout = SC.merge(layout, { width: width, height: height });
 
-       this.propertyWillChange('layout');
-       this.adjust(layout);
-       this.propertyDidChange('layout');
-     }
-   }
-
+      this.propertyWillChange('layout');
+      this.adjust(layout);
+      this.propertyDidChange('layout');
+    }
+  }
+  
 });

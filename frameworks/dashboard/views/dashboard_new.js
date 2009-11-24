@@ -4,6 +4,7 @@
 
 sc_require('views/widget_missing');
 sc_require('mixins/widget_overlay');
+sc_require('mixins/dashboard_delegate');
 
 /** @class
 
@@ -13,7 +14,7 @@ sc_require('mixins/widget_overlay');
   @author Jonathan Lewis
 */
 
-SCUI.DashboardView_New = SC.CollectionView.extend({
+SCUI.DashboardView_New = SC.CollectionView.extend( SCUI.DashboardDelegate_New, {
 
   // PUBLIC PROPERTIES
   
@@ -21,12 +22,13 @@ SCUI.DashboardView_New = SC.CollectionView.extend({
   
   acceptsFirstResponder: YES,
   
+  allowsEmptySelection: YES,
+  allowsMultipleSelection: NO,
+  
   /**
     Deletion of content via delete keys is not allowed as we have a special state to handle that.
   */
   canDeleteContent: NO,
-  
-  allowDeselectAll: YES,
   
   /**
     A fallback item view that will only be used if the dashboard cannot
@@ -35,7 +37,27 @@ SCUI.DashboardView_New = SC.CollectionView.extend({
   */
   exampleView: SCUI.WidgetMissingView,
 
+  /**
+    The delegate responsible for handing out appropriate widget view classes for
+    widgets in this dashboard.
+  */
+  dashboardDelegate: function() {
+    var del = this.get('delegate'), content = this.get('content');
+    return this.delegateFor('isDashboardDelegate', del, content, this);
+  }.property('delegate', 'content').cacheable(),
+
   // PUBLIC METHODS
+
+  init: function() {
+    var del;
+
+    sc_super();
+    
+    del = this.get('dashboardDelegate');
+    if (!del) {
+      this.set('dashboardDelegate', this);
+    }
+  },
 
   /**
     Just API for now...

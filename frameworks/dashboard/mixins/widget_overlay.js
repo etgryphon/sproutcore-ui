@@ -4,6 +4,8 @@ SCUI.WidgetOverlay = {
 
   // PUBLIC PROPERTIES
   
+  isWidgetOverlay: YES,
+  
   deleteHandleIsVisible: NO,
 
   // PUBLIC METHODS
@@ -13,7 +15,6 @@ SCUI.WidgetOverlay = {
   },
   
   renderMixin: function(context, firstTime) {
-    console.log('%@.renderMixin()'.fmt(this));
   },
   
   // PRIVATE METHODS

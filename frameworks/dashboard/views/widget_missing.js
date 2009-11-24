@@ -19,24 +19,44 @@ SCUI.WidgetMissingView = SC.LabelView.extend( SC.Border, {
   // PUBLIC PROPERTIES
   
   classNames: ['scui-widget-missing-view'],
+
+  layout: { width: 400, height: 200 },
   
   backgroundColor: 'gray',
-  borderStyle: SC.BORDER_BLACK,
-  
-  layout: { width: 400, height: 200 },
 
+  borderStyle: SC.BORDER_BLACK,
+
+  /**
+    The widget content model
+  */
   content: null,
 
-  value: "Widget view missing".loc(),
+  /**
+    Bound to '*content.name'
+  */
+  widgetName: null,
+
+  /**
+    @read-only
+    
+    The error message that will be displayed on the view.
+  */
+  message: function() {
+    var widgetName = this.get('widgetName') || '%@'.fmt(this.get('content'));
+    return "Widget view missing for '%@'".loc(widgetName);
+  }.property('widgetName').cacheable(),
 
   // PUBLIC METHODS
   
   init: function() {
+    var nameKey;
+
     sc_super();
 
-    // construct an error message
-    var content = this.get('content');
-    this.set('value', "Widget view missing for %@".loc(content));
+    nameKey = this.get('nameKey') || 'name';
+    this.bind('widgetName', SC.Binding.from('*content.%@'.fmt(nameKey), this).oneWay());
+
+    this.bind('value', SC.Binding.from('.message', this)).oneWay();
   }
   
 });

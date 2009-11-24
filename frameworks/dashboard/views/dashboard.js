@@ -219,20 +219,17 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       content = itemView.get('content');
 
       // width & height: first fetch from item if possible
-      if (content) {
-        size = content.get('size');
-        if (size) {
-          finalLayout.width = parseFloat(size.width) || 400;
-          finalLayout.height = parseFloat(size.height) || 200;
-        }
+      size = this._getItemSize(content); //  null if not found
+      if (size) {
+        finalLayout.width = size.width || 400;
+        finalLayout.height = size.height || 200;
       }
-
-      // width & height: if that didn't work, try using the itemView's frame size
-      if (!size) {
+      else {
+        // width & height: if that didn't work, try using the itemView's frame size
         frame = itemView.get('frame');
         if (frame) {
-          finalLayout.width = frame.width || 200;
-          finalLayout.height = frame.height || 100;
+          finalLayout.width = frame.width || 400;
+          finalLayout.height = frame.height || 200;
         }
         else {
           console.warn('%@. ItemView %@ does not have a valid layout.'.fmt(this, idx));
@@ -247,6 +244,10 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       }
       else if (content) { // if it had no position, use a default, and save it on the dashboard element
         this._setItemPosition(content, { x: finalLayout.left, y: finalLayout.top });
+
+        if (content.widgetDidMove) {
+          content.widgetDidMove({ x: finalLayout.left, y: finalLayout.top });
+        }
       }
 
       // finally, override the layout with the standard style
@@ -292,6 +293,10 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       // try to update the widget data model with the new position
       if (content && frame) {
         this._setItemPosition(content, { x: frame.x, y: frame.y });
+        
+        if (content.widgetDidMove) {
+          content.widgetDidMove({ x: frame.x, y: frame.y });
+        }
       }
     }
 
@@ -371,6 +376,20 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       posKey = item.get('positionKey') || 'position';
       item.set(posKey, pos);
     }
+  },
+
+  _getItemSize: function(item) {
+    var sizeKey, size;
+    
+    if (item) {
+      sizeKey = item.get('sizeKey') || 'size';
+      size = item.get(sizeKey);
+      if (size) {
+        return { width: (parseFloat(size.width) || 0), height: (parseFloat(size.height) || 0) };
+      }
+    }
+
+    return null;
   },
 
   // PRIVATE PROPERTIES

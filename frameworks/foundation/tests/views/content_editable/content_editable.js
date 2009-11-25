@@ -42,6 +42,8 @@ test("Properties Tests", function() {
   editor.execCommand('underline', false, null);
   equals(ce.get('selectionIsUnderlined'), YES, 'Text should be underlined');
   
+  // FIXME: [MT] queryCommandState('justifyXXXX') always returns fasle in safari...
+  // find a workaround
   editor.execCommand('justifycenter', false, null);
   equals(ce.get('selectionIsCenterJustified'), YES, 'Text should be center justified');
   

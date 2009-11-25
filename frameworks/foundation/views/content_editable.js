@@ -405,6 +405,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return this._editor.queryCommandState('underline');
   }.property('selection').cacheable(),
   
+  // FIXME: [MT] queryCommandState('justifyXXXX') always returns fasle in safari...
+  // find a workaround
   selectionIsCenterJustified: function(key, val) {
     var editor = this._editor ;
     if (!editor) return NO;

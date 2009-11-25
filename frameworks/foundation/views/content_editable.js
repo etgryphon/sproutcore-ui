@@ -577,36 +577,46 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!editor) return '';
     
     if (value !== undefined) {
-    	if (editor.execCommand('fontname', false, 'ce-temp-font')) {
-    	  var tmpSpans = editor.getElementsByTagName('span');
-      	
-      	for (var i = 0, j = tmpSpans.length; i < j; i++) {
-      	  var tmpSpan = tmpSpans[i];
-      	  
-      		if (tmpSpan.style.fontFamily.toLowerCase() === 'ce-temp-font') {
-      			var spanHTML = tmpSpan.innerHTML;
-      			var replacementSpan = document.createElement('span');
-      			
-      			replacementSpan.style.fontSize = value + 'px';
-      			tmpSpan.parentNode.replaceChild(replacementSpan, tmpSpan);
-      			replacementSpan.innerHTML = spanHTML;
-      			
-            var iterator = document.createNodeIterator(replacementSpan, NodeFilter.SHOW_ELEMENT, null, false);
+      
+      var identifier = this.get('layerId') + '-fs-identifier';
+      
+      // apply unique string to font size to act as identifier
+      if (editor.execCommand('fontsize', false, identifier)) {
+        
+        // get all newly created font tags
+        var fontTags = editor.getElementsByTagName('font');
+        for (var i = 0, j = fontTags.length; i < j; i++) {
+          var fontTag = fontTags[i];
+          
+          // verify using identifier
+          if (fontTag.size === identifier) {
+            fontTag.size = '';
+            fontTag.style.fontSize = value + 'px';
+            
+            // Doesn't work in IE... 
+            var iterator = document.createNodeIterator(fontTag, 
+                                                       NodeFilter.SHOW_ELEMENT,
+                                                       null,
+                                                       false);
+
+            // iterate over children and remove their font sizes... they're 
+            // inheriting that value from the parent node
             var node = iterator.nextNode();
             while (node) {
               if (node) {
-                if (node !== replacementSpan && node.nodeName.toLowerCase() === 'span') {
+                if (node !== fontTag && node.nodeName.toLowerCase() === 'font') {
                   node.style.fontSize = '';
                 }
                 node = iterator.nextNode();
               }
             }
       		}
-      	}
-      	return value;
-    	}
+        }
+        return value;
+      }      
     }
     
+    // a bit buggy...
     var selection = frame.contentWindow.getSelection();
     if (selection) {
       if (selection.anchorNode && selection.focusNode) {
@@ -618,7 +628,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
           var fParentFontSize = fNode.parentNode.style.fontSize; 
           
           if (aParentFontSize === fParentFontSize) {
-            return aParentFontSize.substring(0, aParentFontSize.indexOf('p'));
+            if (aParentFontSize.length >= 3) {
+              return aParentFontSize.substring(0, aParentFontSize.length - 2);
+            }
           }
         }
       }

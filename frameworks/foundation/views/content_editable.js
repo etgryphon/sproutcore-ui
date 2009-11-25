@@ -411,6 +411,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (editor.execCommand('justifycenter', false, val)) {
+        this.querySelection();
         this.set('isEditing', YES);
       }
     }
@@ -424,6 +425,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (editor.execCommand('justifyright', false, val)) {
+        this.querySelection();
         this.set('isEditing', YES);
       }
     }
@@ -437,6 +439,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (editor.execCommand('justifyleft', false, val)) {
+        this.querySelection();
         this.set('isEditing', YES);
       }
     }
@@ -450,6 +453,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (editor.execCommand('justifyfull', false, val)) {
+        this.querySelection();
         this.set('isEditing', YES);
       }
     }

@@ -12,7 +12,7 @@ require('panes/context_menu_pane');
   as attaching a mouseup, keyup and paste events on the body of the iframe to detect
   the current state of text at the current mouse position
   
-  TODO: [MT] - Add comments, examples and fix unit tests 
+  TODO: [MT] - Add comments and examples 
 
   @extends SC.WebView
   @author Mohammed Taher
@@ -558,7 +558,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   
   selectionFontName: function(key, val) {
     var editor = this._editor ;
-    if (!editor) return NO;
+    if (!editor) return '';
     
     if (val !== undefined) {
       if (editor.execCommand('fontname', false, val)) {
@@ -579,16 +579,28 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (value !== undefined) {
     	if (editor.execCommand('fontname', false, 'ce-temp-font')) {
     	  var tmpSpans = editor.getElementsByTagName('span');
+      	
       	for (var i = 0, j = tmpSpans.length; i < j; i++) {
       	  var tmpSpan = tmpSpans[i];
+      	  
       		if (tmpSpan.style.fontFamily.toLowerCase() === 'ce-temp-font') {
       			var spanHTML = tmpSpan.innerHTML;
-
       			var replacementSpan = document.createElement('span');
+      			
       			replacementSpan.style.fontSize = value + 'px';
       			tmpSpan.parentNode.replaceChild(replacementSpan, tmpSpan);
-
       			replacementSpan.innerHTML = spanHTML;
+      			
+            var iterator = document.createNodeIterator(replacementSpan, NodeFilter.SHOW_ELEMENT, null, false);
+            var node = iterator.nextNode();
+            while (node) {
+              if (node) {
+                if (node !== replacementSpan && node.nodeName.toLowerCase() === 'span') {
+                  node.style.fontSize = '';
+                }
+                node = iterator.nextNode();
+              }
+            }
       		}
       	}
       	return value;
@@ -615,10 +627,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return '';
   }.property('selection').cacheable(),
   
-  // FIXME: [MT] Revisit this property, it doesn't always output the expected result
   selectionFontColor: function(key, value) {
     var editor = this._editor ;
-    if (!editor) return NO;
+    if (!editor) return '';
     
     // for now execute this in non IE browsers...
     if (!SC.browser.msie) {
@@ -635,10 +646,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return '';
   }.property('selection').cacheable(),
   
-  // FIXME: [MT] Revisit this property, it doesn't always output the expected result
   selectionBackgroundColor: function(key, value) {
     var editor = this._editor ;
-    if (!editor) return NO;
+    if (!editor) return '';
 
     // for now execute this in non IE browsers...
     if (!SC.browser.msie) {

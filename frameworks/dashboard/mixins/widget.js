@@ -45,6 +45,11 @@ SCUI.Widget = {
     The property expected to hold the name of the widget.
   */
   nameKey: 'name',
+
+  /**
+    Controls whether or not the widget is allowed to move.
+  */
+  isLocked: NO,
   
   // PUBLIC METHODS
   

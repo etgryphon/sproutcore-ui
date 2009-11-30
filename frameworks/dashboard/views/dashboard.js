@@ -51,17 +51,6 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
 
   // PUBLIC METHODS
 
-  init: function() {
-    var del;
-
-    sc_super();
-    
-    del = this.get('dashboardDelegate');
-    if (!del) {
-      this.set('dashboardDelegate', this);
-    }
-  },
-
   /**
     Just API for now...
   */

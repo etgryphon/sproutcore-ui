@@ -97,9 +97,9 @@ var pane = SC.ControlTestPane.design({
         col: 1,
         colIndex: 0,
         content:  SC.Object.create({
-          name: 'Orion',
+          name: 'Test',
           size: {width: 350, height: 400},
-          value: '/orion'
+          value: '/test'
         })
       })//,
       // SC.Object.create({

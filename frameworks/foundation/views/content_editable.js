@@ -16,7 +16,7 @@ require('panes/context_menu_pane');
 
   @extends SC.WebView
   @author Mohammed Taher
-  @version 0.9
+  @version 0.91
   
 */
 SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
@@ -127,7 +127,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var allowScrolling = this.get('allowScrolling') ? 'yes' : 'no';
     var frameBorder = isOpaque ? '0' : '1';
     var styleString = 'position: absolute; width: 100%; height: 100%; border: 0px; margin: 0px; padding: 0p;';
-    var autoCommit = this.get('autoCommit');
     
     if (firstTime) {
       context.push(
@@ -138,8 +137,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         '" style="', styleString,
         '"></iframe>'
       );
-    } else if (autoCommit === NO && this._editor){
-      this._editor.body.innerHTML = value;
+      
+    } else if (this._editor) {
+      if (value !== this._editor.body.innerHTML) {
+        this._editor.body.innerHTML = value;
+      }
     }
   },
 
@@ -946,8 +948,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     // and &#13; so that the awesome editors rendering wouldn't break.
     value = value.replace(/\r/g, '&#13;');
     value = value.replace(/\n/g, '&#10;');
-    
-    this.set('value', value);
+
+    this.setIfChanged('value', value);
     this.set('isEditing', NO);
     return YES;
   },

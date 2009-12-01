@@ -5,19 +5,26 @@
 var pane = SC.ControlTestPane.design()
   .add("ce", SCUI.ContentEditableView, {
     layout: { left: 0, right: 0, top: 0, height: 150 },
-    value: 'Lorem ipsum dolor sit amet.'
+    value: 'Lorem ipsum dolor sit amet.',
+    autoCommit: YES
   });
   
 pane.show();
 module("SCUI.ContentEditableView");
 
-test("Verify value is being set properly on load", function() {
+test("Verify value is being set properly", function() {
   function f() {
     var ce = pane.view('ce');
     var frame = ce.$('iframe').get(0);
     var value = frame.contentDocument.body.innerHTML;
 
     equals(value, 'Lorem ipsum dolor sit amet.');
+    
+    ce.set('value', 'lorem ipsum');
+    SC.RunLoop.begin().end();
+    equals(frame.contentDocument.body.innerHTML, 'lorem ipsum');
+    window.start();
+    
     window.start();
   }
   
@@ -173,3 +180,4 @@ test("HTML/View Insertion", function() {
   
   /** TODO: [MT] Write unit tests for the view insertion */
 });
+

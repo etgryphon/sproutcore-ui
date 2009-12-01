@@ -199,8 +199,6 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
     var itemView, content, frame, position, size;
     var finalLayout = { left: 20, top: 20, width: 400, height: 200 }; // default, will overwrite if possible
 
-    console.log('%@.createItemView(%@)'.fmt(this, idx));
-
     attrs = SC.merge(attrs, SCUI.WidgetOverlay); // Mix in the widget overlay view additions    
     itemView = sc_super(); // call base method to create the view so we have valid frame info; we'll then override the layout
 

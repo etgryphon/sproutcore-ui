@@ -50,13 +50,6 @@ SCUI.Widget = {
     Controls whether or not the widget is allowed to move.
   */
   isLocked: NO,
-
-  /**
-    Read-only.
-    
-    True when this is the selected widget.
-  */
-  isSelected: NO,
   
   // PUBLIC METHODS
   

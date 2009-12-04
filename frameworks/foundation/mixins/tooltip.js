@@ -16,15 +16,27 @@ sc_require('core');
 SCUI.ToolTip = {
   
   toolTip: '',
+  /*
+    We only want to set the alt attribute if this is mixed-in to an image
+    otherwise the alt attribute is useless and pollutes the DOM.
+  */
+  isImage: NO,
 
   renderMixin: function(context, firstTime){
     var toolTip = this.get('toolTip');
-
-    var attr = {
-      title: toolTip,
-      alt: toolTip
-    };
-
+    var isImage = this.get('isImage'), attr;
+    
+    if (isImage) {
+      attr = {
+        title: toolTip,
+        alt: toolTip
+      };
+    } else {
+      attr = {
+        title: toolTip
+      };
+    }
+    
     context = context.attr(attr);
   }
 };

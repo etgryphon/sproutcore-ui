@@ -42,8 +42,17 @@ LinkIt.Node = {
   _invalidationAction: null,
   
   initMixin: function() {
+    var terminals, key;
+
+    // by this time we are in an object instance, so clone the terminals array
+    // so that we won't be sharing this array memory (a by-product of using mixins)
+    terminals = this.get('terminals');
+    if (SC.typeOf(terminals) === SC.T_ARRAY) {
+      this.set('terminals', SC.clone(terminals));
+    }
+
     // We want to observe the links array but we don't know what it'll be called until runtime.
-    var key = this.get('linksKey');
+    key = this.get('linksKey');
     if (key) {
       this.addObserver(key, this, '_linksDidChange');
     }

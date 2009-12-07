@@ -140,7 +140,6 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
         layout: { right: 0, top: 0,  width: dropDownButtonWidth, bottom: 0 },
         target: this,
         action: 'toggleList',
-        backgroundColor: 'gray'
       })
     );
     childViews.push(this._dropDownButtonView);

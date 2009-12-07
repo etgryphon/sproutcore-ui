@@ -212,7 +212,6 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
       SC.View.design( SCUI.SimpleButton, {
         classNames: ['scui-widget-delete-handle-view'],
         layout: { left: 0, top: 0, width: 24, height: 24 },
-        backgroundColor: 'red',
         target: this,
         action: 'deleteWidget'
       })
@@ -236,7 +235,6 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
       SC.View.design( SCUI.SimpleButton, {
         classNames: ['scui-widget-edit-handle-view'],
         layout: { right: 0, top: 0, width: 24, height: 24 },
-        backgroundColor: 'yellow',
         target: this,
         action: 'beginEditing'
       })

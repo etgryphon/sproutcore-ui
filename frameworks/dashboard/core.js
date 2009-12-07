@@ -10,6 +10,4 @@
 SCUI.WIDGET_TYPE = 'widget';
 
 // States for a dashboard widget
-SCUI.WIDGET_MIN = 'minimized';
-SCUI.WIDGET_MAX = 'maximized';
 SCUI.WIDGET_EDIT = 'editing';

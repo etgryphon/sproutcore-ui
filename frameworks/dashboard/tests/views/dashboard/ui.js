@@ -13,17 +13,11 @@ module("Dashboard View Tests", pane.standardSetup({
   layout: { width: 230 }
 }));
 
-test("Default dashboard delegate is the view itself", function() {
-  var view = pane.view('basic');
-  var del = view.get('dashboardDelegate');
-  ok(del === view, "View is the delegate");
-});
-
-test("Default widget view is WidgetMissingView", function() {
+test("Widget has a widget container", function() {
   var childView, position;
   var view = pane.view('basic');
   var content = [
-    SC.Object.create({ name: 'widget 1' })
+    SC.Object.create( SCUI.Widget, { name: 'widget 1' })
   ];
   
   SC.RunLoop.begin();
@@ -31,8 +25,8 @@ test("Default widget view is WidgetMissingView", function() {
   SC.RunLoop.end();
   
   childView = view.childViews[0];
-  ok(childView.kindOf(SCUI.WidgetMissingView), "Child view is SCUI.WidgetMissinView");
-  ok(childView.get('content') === content[0], "Child view content is dashboard content");
+  ok(childView.kindOf(SCUI.WidgetView), "Child view is SCUI.WidgetView");
+  ok(childView.get('content') === content[0], "WidgetView content is the widget object");
   
   position = childView.get('content').get('position');
   ok(position, "Widget has been assigned a default position");

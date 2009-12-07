@@ -182,11 +182,21 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
         this._doneButtonView = null;
       }
 
-      if (!this._editHandleView && this.getPath('content.isEditable')) {
-        this._editHandleView = this._createEditHandleView();
-        this.insertBefore(this._editHandleView, this._deleteHandleView);
+      if (this.getPath('content.isEditable')) { // if editable, show the edit handle
+        if (!this._editHandleView) {
+          this._editHandleView = this._createEditHandleView();
+          this.insertBefore(this._editHandleView, this._deleteHandleView);
+        }
+      }
+      else { // if not editable, make sure it has no edit handle
+        if (this._editHandleView) {
+          this.removeChild(this._editHandleView);
+          this._editHandleView.destroy();
+          this._editHandleView = null;
+        }
       }
     }
+    
     this._adjustLayoutToFitContent();
   }.observes('isEditing'),
   

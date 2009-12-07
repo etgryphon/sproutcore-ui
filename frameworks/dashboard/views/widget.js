@@ -152,7 +152,7 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
   },
   
   _isEditingDidChange: function() {
-    console.log('%@._isEditingDidChange(isEditing: %@)'.fmt(this, this.get('isEditing')));
+    //console.log('%@._isEditingDidChange(isEditing: %@)'.fmt(this, this.get('isEditing')));
     if (this.get('isEditing')) {
       if (this._activeView === this._widgetView) {
         this.replaceChild(this._editView, this._widgetView);

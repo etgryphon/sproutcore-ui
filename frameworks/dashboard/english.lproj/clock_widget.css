@@ -1,0 +1,13 @@
+.sc-view.scui-clock-widget-view {
+  border: 30px #888 solid;
+  background: black;
+  -webkit-border-radius: 40px;
+  -moz-border-radius: 40px;
+  color: red;
+}
+
+.scui-clock-widget-view .sc-label-view.sc-regular-size {
+  font-size: 48px !important;
+  text-align: center !important;
+  line-height: 1.0;
+}

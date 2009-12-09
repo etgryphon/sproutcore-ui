@@ -22,15 +22,15 @@ var TestObject = SC.Object.extend({
 module("SCUI.SearchableArrayController - search term", {
   setup: function() {
     content = [
-      TestObject.create({ title: "Blue Object 1" });
-      TestObject.create({ title: "Red Object 1" });
-      TestObject.create({ title: "Green Object 1" });
-      TestObject.create({ title: "Object Blue 2" });
-      TestObject.create({ title: "Object Red 2" });
-      TestObject.create({ title: "Object Green 2" });
-      TestObject.create({ title: "Object 3 Blue" });
-      TestObject.create({ title: "Object 3 Red" });
-      TestObject.create({ title: "Object 3 Green" });
+      TestObject.create({ title: "Blue Object 1" }),
+      TestObject.create({ title: "Red Object 1" }),
+      TestObject.create({ title: "Green Object 1" }),
+      TestObject.create({ title: "Object Blue 2" }),
+      TestObject.create({ title: "Object Red 2" }),
+      TestObject.create({ title: "Object Green 2" }),
+      TestObject.create({ title: "Object 3 Blue" }),
+      TestObject.create({ title: "Object 3 Red" }),
+      TestObject.create({ title: "Object 3 Green" })
     ];
     controller = SCUI.SearchableArrayController.create({ content: content });
   },

@@ -98,7 +98,7 @@ test("Test ExpandedView Did Change", function() {
     value: '<p>New Expanded!</p>'
   });
   var oldEV = view._expandedView;
-  view.set('expandedView', newView)
+  view.set('expandedView', newView);
   var content = view.get('contentView');
   var ev = view._expandedView;
   var ns = view.get('nowShowing');
@@ -118,7 +118,7 @@ test("Test CollapsedView Did Change", function() {
     value: '<p>New Collapsed!</p>'
   });
   var oldCV = view._collapsedView;
-  view.set('collapsedView', newView)
+  view.set('collapsedView', newView);
   var content = view.get('contentView');
   var cv = view._collapsedView;
   var ns = view.get('nowShowing');

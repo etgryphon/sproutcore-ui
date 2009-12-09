@@ -27,17 +27,19 @@ SCUI.DashboardDelegate = {
     to use the default SCUI.WidgetMissingView for that widget.
     
     dashboardView: the calling dashboard view.
-    content: the widget that needs a widget view.
+    content: the dashboard view's content.
     contentIndex: the index of 'content' in the widget array.
     item: for convenience, the item itself
 
     Return null, a view class, or a string containing the fully qualified name of a view class.
   */
   dashboardWidgetViewFor: function(dashboardView, content, contentIndex, item) {
+    console.log('%@.dashboardWidgetViewFor()'.fmt(this));
     return null;
   },
   
   dashboardWidgetEditViewFor: function(dashboardView, content, contentIndex, item) {
+    console.log('%@.dashboardWidgetEditViewFor()'.fmt(this));
     return null;
   }
 

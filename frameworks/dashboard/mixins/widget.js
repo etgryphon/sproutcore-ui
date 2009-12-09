@@ -21,7 +21,7 @@ SCUI.Widget = {
 
   isWidget: YES,
   
-  /**
+  /** @optional
     Defines the view class that should be shown as the face of the widget.
     May be a view class, i.e.
       
@@ -30,11 +30,14 @@ SCUI.Widget = {
     or a fully qualified class name string, i.e.
     
       widgetViewClass: 'MyApp.MyWidgetView'
+
+    If this is not defined, the dashboard will ask its delegate for the appropriate view class.
   */
   widgetViewClass: null,
 
-  /**
+  /** @optional
     Same as 'widgetViewClass', except this defines the view shown when 'isEditing' is true.
+    If this is not defined, the dashboard will ask its delegate for the appropriate view class.
   */
   widgetEditViewClass: null,
   

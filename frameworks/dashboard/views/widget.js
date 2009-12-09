@@ -42,6 +42,16 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
   */
   layout: { left: 0, top: 0, width: 400, height: 200 },
 
+  /**
+    The view class to be used as the widget face (set automatically by the dashboard)
+  */
+  widgetViewClass: null,
+
+  /**
+    The view class to be used as the widget's edit view (set automatically by the dashboard)
+  */
+  widgetEditViewClass: null,
+
   displayProperties: ['canDeleteWidget', 'isEditing'],
   
   // PUBLIC METHODS
@@ -252,8 +262,7 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
   },
   
   _getViewClass: function(viewKey) {
-    var content = this.get('content');
-    var c = content ? content.get(viewKey) : null; // hopefully the view class
+    var c = this.get(viewKey); // hopefully the view class
     var t, root, key;
     
     // if it's a string class name, try to materialize it

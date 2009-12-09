@@ -22,7 +22,7 @@ SCUI.Widget = {
   isWidget: YES,
   
   /** @optional
-    Defines the view class that should be shown as the face of the widget.
+    Defines the property containing the view class that should be shown as the face of the widget.
     May be a view class, i.e.
       
       widgetViewClass: SC.View.design({ ... })
@@ -33,13 +33,13 @@ SCUI.Widget = {
 
     If this is not defined, the dashboard will ask its delegate for the appropriate view class.
   */
-  widgetViewClass: null,
+  widgetViewClassKey: 'widgetViewClass',
 
   /** @optional
     Same as 'widgetViewClass', except this defines the view shown when 'isEditing' is true.
     If this is not defined, the dashboard will ask its delegate for the appropriate view class.
   */
-  widgetEditViewClass: null,
+  widgetEditViewClassKey: 'widgetEditViewClass',
   
   /**
     The property that stores this widget's position.  Position is expressed

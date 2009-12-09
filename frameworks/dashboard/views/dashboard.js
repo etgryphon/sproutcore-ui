@@ -100,7 +100,7 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
         groupIndexes = del.contentGroupIndexes(this, content),
         isGroupView = NO,
         key, ret, E, layout, layerId,
-        dashboardDelegate;
+        dashboardDelegate, widgetViewClass, widgetEditViewClass;
 
     // use cache if available
     if (!itemViews) itemViews = this._sc_itemViews = [] ;
@@ -108,14 +108,10 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
 
     // otherwise generate...
 
-    // First ask the dashboard delegate
-    dashboardDelegate = this.get('dashboardDelegate');
-    if (!item.get('widgetViewClass')) {
-      item.set('widgetViewClass', dashboardDelegate.dashboardWidgetViewFor(this, content, idx, item));
-    }
-    if (!item.get('widgetEditViewClass')) {
-      item.set('widgetEditViewClass', dashboardDelegate.dashboardWidgetEditViewFor(this, content, idx, item));
-    }
+    // First ask the item itself, then the dashboard delegate
+    dashboardDelegate = this.get('dashboardDelegate'); // defaults to this
+    widgetViewClass = item.get(item.get('widgetViewClassKey')) || dashboardDelegate.dashboardWidgetViewFor(this, content, idx, item);
+    widgetEditViewClass = item.get(item.get('widgetEditViewClassKey')) || dashboardDelegate.dashboardWidgetEditViewFor(this, content, idx, item);
     
     // first, determine the class to use
     isGroupView = groupIndexes && groupIndexes.contains(idx);
@@ -133,6 +129,8 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
 
     // collect some other state
     var attrs = this._TMP_ATTRS;
+    attrs.widgetViewClass = widgetViewClass; // tell the widget container what views to use as content
+    attrs.widgetEditViewClass = widgetEditViewClass;
     attrs.contentIndex = idx;
     attrs.content      = item ;
     attrs.owner        = attrs.displayDelegate = this;

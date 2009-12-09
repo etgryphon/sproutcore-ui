@@ -15,7 +15,7 @@ config :all,
   :debug_required => ['sproutcore']
   
 # CORE FRAMEWORKS
-config :foundation, :required => []
+config :foundation, :required => [:sproutcore]
 config :calendar, :required => [:foundation]
 config :dashboard, :required => [:foundation]
 config :drawing, :required => [:foundation]

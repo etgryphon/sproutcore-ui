@@ -133,13 +133,28 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
   },
   
   beginEditing: function() {
+    var content;
+
     if (this.getPath('content.isEditable')) {
       this.setIfChanged('isEditing', YES);
+
+      content = this.get('content');
+      if (content && content.beginEditing) {
+        content.beginEditing();
+      }
     }
   },
   
+  // TODO: [JL] Make this into 'commitEditing' to match SC.Editable pattern
   endEditing: function() {
+    var content;
+    
     this.setIfChanged('isEditing', NO);
+
+    content = this.get('content');
+    if (content && content.commitEditing) {
+      content.commitEditing();
+    }
   },
   
   deleteWidget: function() {

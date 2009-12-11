@@ -65,11 +65,6 @@ SCUI.Widget = {
   isEditable: YES,
 
   /**
-    If YES, shows widget edit view, otherwise shows normal widget view.
-  */
-  isEditing: NO,
-
-  /**
     If YES, overlays a "Done" button on the widget's edit view.
   */
   showDoneButton: YES,
@@ -88,6 +83,18 @@ SCUI.Widget = {
   */
   widgetProposedMove: function(newPosition) {
     return newPosition; // allow the move by default; return null or another desired position to forbid
+  },
+
+  /**
+    Called by the dashboard when someone switches the widget view into 'edit' mode
+  */
+  beginEditing: function() {
+  },
+
+  /**
+    Called by the dashboard when someone click's the 'done' button on your widget
+  */
+  commitEditing: function() {
   }
   
 };

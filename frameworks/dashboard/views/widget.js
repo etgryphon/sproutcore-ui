@@ -245,8 +245,8 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
   _createDeleteHandleView: function() {
     return this.createChildView(
       SC.View.design( SCUI.SimpleButton, {
-        classNames: ['scui-widget-delete-handle-view'],
-        layout: { left: 0, top: 0, width: 24, height: 24 },
+        classNames: ['orion-dashboard-manage-button-view','showing-palette'],
+        layout: { left: -10, top: -10, width: 27, height: 27 },
         target: this,
         action: 'deleteWidget'
       })

@@ -25,7 +25,13 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
     The width of the drop-down button which is right-justified
     next to the text field.
   */
-  dropDownButtonWidth: 24,
+  dropDownButtonWidth: 11,
+  
+  /**
+    The height of the drop-down button which is right-justified
+    next to the text field.
+  */
+  dropDownButtonHeight: 7,
 
   /**
     Override this if you want to set your own CSS classes on the
@@ -76,7 +82,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
   
   createChildViews: function() {
     var childViews = [];
-    var dropDownButtonWidth = this.get('dropDownButtonWidth') || 24;
+    var dropDownButtonWidth = this.get('dropDownButtonWidth') || 11;
+    var dropDownButtonHeight = this.get('dropDownButtonHeight') || 7;
 
     // Create the text field view
     this._textFieldView = this.createChildView(
@@ -137,7 +144,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
     this._dropDownButtonView = this.createChildView(
       SC.View.design( SCUI.SimpleButton, {
         classNames: this.get('dropDownButtonClassNames') || [],
-        layout: { right: 0, top: 0,  width: dropDownButtonWidth, bottom: 0 },
+        layout: { centerY: 0, height: dropDownButtonHeight, right: 16, width: dropDownButtonWidth },
         target: this,
         action: 'toggleList'
       })

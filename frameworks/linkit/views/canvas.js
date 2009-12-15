@@ -61,11 +61,6 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   displayProperties: ['frame', '_links.[]'],
   
   // PUBLIC METHODS
-  
-  init: function() {
-    sc_super();
-    this.set('exampleView', LinkIt.NodeContainerView);
-  },
 
   /**
     Call this to trigger a links refresh

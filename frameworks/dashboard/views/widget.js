@@ -269,7 +269,7 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
     return this.createChildView(
       SC.View.design( SCUI.SimpleButton, {
         classNames: ['scui-widget-edit-handle-view'],
-        layout: { right: 0, top: 0, width: 24, height: 24 },
+        layout: { right: 4, top: 4, width: 6, height: 12 },
         target: this,
         action: 'beginEditing'
       })

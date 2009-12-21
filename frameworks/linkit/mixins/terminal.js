@@ -311,11 +311,9 @@ LinkIt.Terminal = {
     if (node && otherTerminal) {
       var otherNode = otherTerminal.get('node');
       if (otherNode) {
-        var linkObj = this._createLinkObject(this, node, otherTerminal, otherNode);
-        node.createLink( SC.Object.create(linkObj) );
-
-        var otherLinkObj = this._createLinkObject(otherTerminal, otherNode, this, node);
-        otherNode.createLink( SC.Object.create(otherLinkObj) );
+        var links = this._createLinkObject(this, node, otherTerminal, otherNode);
+        node.createLink( links[0] ) ;
+        otherNode.createLink( links[1] );
       }
     }
     return op;
@@ -326,42 +324,93 @@ LinkIt.Terminal = {
   _nodeAllowsLink: function(otherTerminal) {
     var myLinkObj, myNodeAccepted, otherLinkObj, otherNodeAccepted;
     if (otherTerminal && otherTerminal.get('isTerminal')) {
-      
       var myNode = this.get('node');
       var otherNode = otherTerminal.get('node');
       
       // First, Check our node
-      myLinkObj = this._createLinkObject(this, myNode, otherTerminal, otherNode);
-      myNodeAccepted =  myNode ? myNode.canLink( SC.Object.create( LinkIt.Link, myLinkObj )) : NO;
-        
+      var links = this._createLinkObject(this, myNode, otherTerminal, otherNode);
+      myNodeAccepted =  myNode ? myNode.canLink( links[0] ) : NO;
+      otherNodeAccepted = (otherNode && myNodeAccepted) ? otherNode.canLink( links[1] ) : NO;
+      
       // Next, Check their node
-      otherLinkObj = this._createLinkObject(otherTerminal, otherNode, this, myNode);
-      otherNodeAccepted = otherNode ? otherNode.canLink( SC.Object.create( LinkIt.Link, otherLinkObj )) : NO;
+      //otherLinkObj = this._createLinkObject(otherTerminal, otherNode, this, myNode);
+      //otherNodeAccepted = otherNode ? otherNode.canLink( SC.Object.create( LinkIt.Link, otherLinkObj )) : NO;
+      
     }
     return (myNodeAccepted && otherNodeAccepted);
   },
   
+  /**
+    When we check the Nodes we must make a judgement for each of the directions
+    Unaccepted:
+      Output => Output
+      Intputs => Inputs
+    Accepted:
+      Output (start) => Input (end)
+      Bidirectional (start) => Input (end)
+      Output (start) => Bidirectional (end)
+      Bidirectional (start) => Bidirectional (end) && Bidirectional (end) => Bidirectional (start)
+    
+  */
   _createLinkObject: function(startTerminal, startNode, endTerminal, endNode){
-    var linkObj = {};
+    var tempHash = {};
+    var startObj, endObj;
+    // First, we need to get the direction of both terminals
     if (startNode && endNode){
-      // Direction of the terminal
-      linkObj['direction'] = startTerminal.get('direction');
-
-      // start node
-      linkObj['startNode'] = startNode;
-    
-      // Start Terminal: which is this...
-      linkObj['startTerminal'] = startTerminal.get('terminal');
-      linkObj['startTerminalView'] = startTerminal; // remember the view for performance purposes later
-    
-      // End Node: Rip off the other terminal
-      linkObj['endNode'] = endNode;
-    
-      // Get End Terminal: 
-      linkObj['endTerminal'] = endTerminal.get('terminal');
-      linkObj['endTerminalView'] = endTerminal;
+      var sDir = startTerminal.get('direction');
+      var eDir = endTerminal.get('direction');
+      
+      // Check to see if they are of unaccepted types
+      if (sDir && sDir === eDir) return [null, null];
+      
+      if (sDir === LinkIt.OUTPUT_TERMINAL && (eDir === LinkIt.INPUT_TERMINAL || eDir === null) ){
+        
+        tempHash.direction = sDir;
+        tempHash.startNode = startNode;
+        tempHash.startTerminal = startTerminal.get('terminal');
+        tempHash.startTerminalView = startTerminal;
+        tempHash.endNode = endNode;
+        tempHash.endTerminal = endTerminal.get('terminal');
+        tempHash.endTerminalView = endTerminal;
+        //console.log('\nUni: (%@).%@ => (%@).%@'.fmt(SC.guidFor(startNode), tempHash.startTerminal, SC.guidFor(endNode), tempHash.endTerminal));
+        startObj = SC.Object.create( LinkIt.Link, tempHash );
+        return [startObj, startObj];
+      }
+      else if (sDir === LinkIt.INPUT_TERMINAL && (eDir === LinkIt.OUTPUT_TERMINAL || eDir === null) ){
+        tempHash.direction = eDir;
+        tempHash.startNode = endNode;
+        tempHash.startTerminal = endTerminal.get('terminal');
+        tempHash.startTerminalView = endTerminal;
+        tempHash.endNode = startNode;
+        tempHash.endTerminal = startTerminal.get('terminal');
+        tempHash.endTerminalView = startTerminal;
+        //console.log('\nUni: (%@).%@ => (%@).%@'.fmt(SC.guidFor(endNode), tempHash.startTerminal, SC.guidFor(startNode), tempHash.endTerminal));
+        startObj = SC.Object.create( LinkIt.Link, tempHash );
+        return [startObj, startObj];
+      }
+      else { // Bi Directional
+        tempHash.direction = sDir;
+        tempHash.startNode = startNode;
+        tempHash.startTerminal = startTerminal.get('terminal');
+        tempHash.startTerminalView = startTerminal;
+        tempHash.endNode = endNode;
+        tempHash.endTerminal = endTerminal.get('terminal');
+        tempHash.endTerminalView = endTerminal;
+        startObj = SC.Object.create( LinkIt.Link, tempHash );
+        //console.log('\nBi: (%@).%@ => (%@).%@'.fmt(SC.guidFor(startNode), tempHash.startTerminal, SC.guidFor(endNode), tempHash.endTerminal));
+        
+        tempHash.direction = eDir;
+        tempHash.startNode = endNode;
+        tempHash.startTerminal = endTerminal.get('terminal');
+        tempHash.startTerminalView = endTerminal;
+        tempHash.endNode = startNode;
+        tempHash.endTerminal = startTerminal.get('terminal');
+        tempHash.endTerminalView = startTerminal;
+        endObj = SC.Object.create( LinkIt.Link, tempHash );
+        //console.log('Bi: (%@).%@ => (%@).%@'.fmt(SC.guidFor(endNode), tempHash.startTerminal, SC.guidFor(startNode), tempHash.endTerminal));
+        return [startObj, endObj];
+      }
     }
-    return linkObj;
   },
   
   /**

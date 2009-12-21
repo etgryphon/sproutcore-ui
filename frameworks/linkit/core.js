@@ -18,6 +18,12 @@ LinkIt = SC.Object.create({
   OUTPUT_TERMINAL: 'LinkIt.TerminalOutput',
   INPUT_TERMINAL: 'LinkIt.TerminalInput',
   
+  // Respond to Linking
+  NEVER: 'never',
+  DIRECTIONAL: 'dir',
+  INVERSE_DIRECTIONAL: 'idir',
+  ALWAYS: 'always',
+  
   // Terminals Drop State
   INVITE: 'invite',
   ACCEPT: 'accept',

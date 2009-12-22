@@ -68,7 +68,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   
   /**
   */
-  displayProperties: ['frame', '_links.[]'],
+  displayProperties: ['frame', 'links.[]'],
   
   // PUBLIC METHODS
 
@@ -447,19 +447,18 @@ LinkIt.CanvasView = SC.CollectionView.extend({
          }
        }
      }
-     this.set('_links', links);
+     this.set('links', links);
   },
 
   /**
   */
   _drawLinks: function(context) {
-    var links = this.get('_links');
+    var links = this.get('links');
     var numLinks = links.get('length');
     var link, points, i, linkID;
-    
     for (i = 0; i < numLinks; i++) {
       link = links.objectAt(i);
-      if (link) {
+      if (!SC.none(link)) {
         points = this._endpointsFor(link);
         if (points) {
           link.drawLink(context);
@@ -504,7 +503,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   */
   _selectLink: function(pt) {
     //console.log('%@._selectLink()'.fmt(this));
-    var links = this.get('_links') || [];
+    var links = this.get('links') || [];
     var len = links.get('length');
     var link, dist, i;
 
@@ -615,7 +614,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   
   /**
   */
-  _links: [],
+  links: [],
 
   _nodeIndex: {},
   _nodeViewIndex: {},

@@ -361,10 +361,9 @@ LinkIt.Terminal = {
       var eDir = endTerminal.get('direction');
       
       // Check to see if they are of unaccepted types
-      if (sDir && sDir === eDir) return [null, null];
+      if (!SC.none(sDir) && sDir === eDir) return [null, null];
       
-      if (sDir === LinkIt.OUTPUT_TERMINAL && (eDir === LinkIt.INPUT_TERMINAL || eDir === null) ){
-        
+      if ( (sDir === LinkIt.OUTPUT_TERMINAL && (eDir === LinkIt.INPUT_TERMINAL || SC.none(eDir)) ) || (eDir === LinkIt.INPUT_TERMINAL && SC.none(sDir)) ) {
         tempHash.direction = sDir;
         tempHash.startNode = startNode;
         tempHash.startTerminal = startTerminal.get('terminal');
@@ -372,11 +371,11 @@ LinkIt.Terminal = {
         tempHash.endNode = endNode;
         tempHash.endTerminal = endTerminal.get('terminal');
         tempHash.endTerminalView = endTerminal;
-        //console.log('\nUni: (%@).%@ => (%@).%@'.fmt(SC.guidFor(startNode), tempHash.startTerminal, SC.guidFor(endNode), tempHash.endTerminal));
+        //console.log('\nUni(%@,%@): (%@).%@ => (%@).%@'.fmt(sDir, eDir, SC.guidFor(startNode), tempHash.startTerminal, SC.guidFor(endNode), tempHash.endTerminal));
         startObj = SC.Object.create( LinkIt.Link, tempHash );
         return [startObj, startObj];
-      }
-      else if (sDir === LinkIt.INPUT_TERMINAL && (eDir === LinkIt.OUTPUT_TERMINAL || eDir === null) ){
+      } 
+      else if ( (sDir === LinkIt.INPUT_TERMINAL && (eDir === LinkIt.OUTPUT_TERMINAL || SC.none(eDir)) ) || (eDir === LinkIt.OUTPUT_TERMINAL && SC.none(sDir)) ) {
         tempHash.direction = eDir;
         tempHash.startNode = endNode;
         tempHash.startTerminal = endTerminal.get('terminal');
@@ -384,7 +383,7 @@ LinkIt.Terminal = {
         tempHash.endNode = startNode;
         tempHash.endTerminal = startTerminal.get('terminal');
         tempHash.endTerminalView = startTerminal;
-        //console.log('\nUni: (%@).%@ => (%@).%@'.fmt(SC.guidFor(endNode), tempHash.startTerminal, SC.guidFor(startNode), tempHash.endTerminal));
+        //console.log('\nUni(%@,%@): (%@).%@ => (%@).%@'.fmt(sDir, eDir, SC.guidFor(endNode), tempHash.startTerminal, SC.guidFor(startNode), tempHash.endTerminal));
         startObj = SC.Object.create( LinkIt.Link, tempHash );
         return [startObj, startObj];
       }
@@ -397,7 +396,7 @@ LinkIt.Terminal = {
         tempHash.endTerminal = endTerminal.get('terminal');
         tempHash.endTerminalView = endTerminal;
         startObj = SC.Object.create( LinkIt.Link, tempHash );
-        //console.log('\nBi: (%@).%@ => (%@).%@'.fmt(SC.guidFor(startNode), tempHash.startTerminal, SC.guidFor(endNode), tempHash.endTerminal));
+        //console.log('\nBi(%@): (%@).%@ => (%@).%@'.fmt(sDir, SC.guidFor(startNode), tempHash.startTerminal, SC.guidFor(endNode), tempHash.endTerminal));
         
         tempHash.direction = eDir;
         tempHash.startNode = endNode;
@@ -407,7 +406,7 @@ LinkIt.Terminal = {
         tempHash.endTerminal = startTerminal.get('terminal');
         tempHash.endTerminalView = startTerminal;
         endObj = SC.Object.create( LinkIt.Link, tempHash );
-        //console.log('Bi: (%@).%@ => (%@).%@'.fmt(SC.guidFor(endNode), tempHash.startTerminal, SC.guidFor(startNode), tempHash.endTerminal));
+        //console.log('Bi(%@): (%@).%@ => (%@).%@'.fmt(eDir, SC.guidFor(endNode), tempHash.startTerminal, SC.guidFor(startNode), tempHash.endTerminal));
         return [startObj, endObj];
       }
     }

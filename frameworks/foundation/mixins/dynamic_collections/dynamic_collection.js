@@ -120,7 +120,12 @@ SCUI.DynamicCollection = {
       have implemented the controllerForContent method in your controller.
       Otherwise this property will not show up on your view.
     */
-    // CHANGED [JH2] I changed this method invocation to a direct call instead of a call through the invokeDelegateMethod because it was always returning null
+    
+    /* 
+      [JH2] I changed this method invocation to a direct call instead of a 
+      call through the invokeDelegateMethod because it was always returning 
+      null
+    */
     rootController = del.controllerForContent(item);
     if (rootController) {
       attrs.rootController = rootController;

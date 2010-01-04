@@ -110,7 +110,11 @@ SCUI.DisclosedView = SC.View.extend({
         if (this.owner && this.owner.toggle) this.owner.toggle(this.get('value'));
       }.observes('value')
       
-      // CHANGED [JH2] Leaving this here in the event that we want to auto close a disabled step.
+      /*
+        [JH2]
+        Leaving this here in the event that we want to 
+        auto close a disabled step.
+      */
       
       // _statusObserver: function() {
       //   if (this.get('statusIconName') === 'never') {

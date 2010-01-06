@@ -299,7 +299,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	      return YES;
 	    }
 	    else {
-	      document.oncontextmenu = ""; // restore default browser context menu handling
+	      //document.oncontextmenu = null; // restore default browser context menu handling
 	    }
 	    return NO;
 	  }

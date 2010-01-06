@@ -60,7 +60,7 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
       // FIXME [JH2] This is sooo nasty. We should register this event with SC's rootResponder?
       // After talking with charles we need to handle oncontextmenu events when we want to block
       // the browsers context meuns. (SC does not handle oncontextmenu event.)
-      document.oncontextmenu = function() { return false; };
+      document.oncontextmenu = function(e) { return false; };
   
       // calculate offset needed from top-left of anchorViewOrElement to position the menu
       // pane next to the mouse click location
@@ -90,16 +90,17 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
       return YES;
     }
     else {
-      document.oncontextmenu = ""; // restore default browser context menu handling
+      //document.oncontextmenu = null; // restore default browser context menu handling
     }
     return NO;
   },
   
+
   /**
     Override remove() to restore the default browser context menus when this pane goes away.
   */
   remove: function() {
-    document.oncontextmenu = "";
+   //this.invokeLater(function(){document.oncontextmenu = null; console.log('removing contextmenu event');}); //invoke later to ensure the event is over...
     return sc_super();
   }
 

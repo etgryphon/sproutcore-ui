@@ -435,7 +435,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
 
     if (evt && (evt.which === 3) || (evt.ctrlKey && evt.which === 1)) {
       linkSelection = this.get('linkSelection');
-      if (linkSelection) {
+      if (linkSelection && !this.getPath('selection.length')) {
         menuOptions = [
           { title: "Delete Selected Link".loc(), target: this, action: 'deleteLinkSelection', isEnabled: YES }
         ];

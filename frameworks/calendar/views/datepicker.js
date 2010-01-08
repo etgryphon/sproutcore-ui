@@ -39,6 +39,9 @@ SCUI.DatePickerView = SC.View.extend(
   init: function(){
     sc_super();
     
+    // init the dateString to whatever date we're starting with (if present)
+    this.set('dateString', this._genDateString(this.get('date')));
+    
     // Setup default layout values
     var layout = this.get('layout');
     layout = SC.merge(this._layout, layout);
@@ -52,7 +55,8 @@ SCUI.DatePickerView = SC.View.extend(
         calendar: SCUI.CalendarView.design({
           layout: { left: 10, top: 0},
           dateSize: {width: 25, height: 25},
-          weekdayStrings: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+          weekdayStrings: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+          selectedDate: this.get('date') // init this so waking up the binding won't null out anything we had before
         }),
         todayButton: SC.View.extend(SCUI.SimpleButton, {
           classNames: ['scui-datepicker-today'],
@@ -157,11 +161,17 @@ SCUI.DatePickerView = SC.View.extend(
     this._calendar.set('selectedDate', null);
   },
   
-  _dateDidChange: function(){
-    var date = this.get('date');
+  /**
+    Standard way to generate the date string
+  */
+  _genDateString: function(date) {
     var fmt = this.get('dateFormat') || '%a %m/%d/%Y';
     var dateString = date ? date.toFormattedString(fmt) : "";
-    this.set('dateString', dateString);
+    return dateString;
+  },
+  
+  _dateDidChange: function(){
+    this.set('dateString', this._genDateString(this.get('date')));
     this.hideCalendar();
   }.observes('date')
 

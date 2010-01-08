@@ -113,6 +113,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   cleanInsertedText: YES,
   
   /**
+    stip exta \n and \r
+  */
+  stripCrap: NO,
+  
+  /**
     List of menu options to display on right click
   */
 	rightClickMenuOptions: [],
@@ -943,6 +948,15 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (this.get('cleanInsertedText')) {
       value = this.cleanWordHTML(value);
     }
+    
+    // Any line feed character (\n), and carriage return (\r) characters have to be encoded as &#10;
+    // and &#13; so that the awesome editors rendering wouldn't break.
+    if(this.get('stripCrap')){
+      value = value.replace(/\r/g, '&#13;');
+      value = value.replace(/\n/g, '&#10;');
+    }
+
+
 
     this.setIfChanged('value', value);
     this.set('isEditing', NO);

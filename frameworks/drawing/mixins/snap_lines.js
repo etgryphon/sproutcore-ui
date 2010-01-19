@@ -11,7 +11,7 @@ sc_require('views/drawing');
 */
 
 //the number of pixles that will cause a snap line (factor of 2?)
-SCUI.SNAP_ZONE = 5;
+SCUI.SNAP_ZONE = 2;
 
 SCUI.SNAP_LINE = {
   shape: SCUI.LINE,
@@ -32,6 +32,10 @@ SCUI.SnapLines = {
   
   
   /*
+    This method will setup the datastructure required to draw snap lines
+    it should be called in dragStarted if using with an SC.Drag or on mouseDown
+    if using it with a move
+  
     @param {Array} ignoreViews array of views to not include
     sets up the data structure used for the line drawing
   */
@@ -110,9 +114,13 @@ SCUI.SnapLines = {
   },
   
   /**
+    This method will check the passed views position with the other child views
+    and draw any lines.  It should be called in dragUpdated if using SC.Drag
+    or in mouseMoved if using a move.  it will also return a hash of the snapped coords
+    in local and global coodinates
     
   */
-  drawLines: function(view){
+  drawLines: function(view, eventX, eventY, mouseDownX, mouseDownY){
     if(!this._drawingView){
       this._drawingView = this.createChildView(SCUI.DrawingView.design({
         shapes: []
@@ -120,10 +128,12 @@ SCUI.SnapLines = {
       this.appendChild(this._drawingView);
     }
     var factor = (SCUI.SNAP_ZONE*2), shapes = [], xline, yline, frame, parent, rMinX, rMidX, rMaxX,
-        rMinY, rMidY, rMaxY, rMinXMod, rMidXMod, rMaxXMod, rMinYMod, rMidYMod, rMaxYMod, xHit, yHit;
+        rMinY, rMidY, rMaxY, rMinXMod, rMidXMod, rMaxXMod, rMinYMod, rMidYMod, rMaxYMod, xHit, yHit,
+        moveDirection = this._dragDirection(eventX, eventY, mouseDownX, mouseDownY), xValues, yValues, 
+        that = this, xHitVals, yHitVals, ret;
     //get the frame and all the relavent points of interest
     parent = view.get('parentView');
-    frame = parent ? parent.convertFrameToView(view.get('frame'), null) : this.get('frame');
+    frame = parent ? parent.convertFrameToView(view.get('frame'), null) : view.get('frame');
     rMinX = SC.minX(frame);
     rMidX = SC.midX(frame);
     rMaxX = SC.maxX(frame);
@@ -137,40 +147,32 @@ SCUI.SnapLines = {
     rMidYMod = Math.floor(rMidY/factor);
     rMaxYMod = Math.floor(rMaxY/factor);
     
+    //array of tuples containing the mod and the value you need to add to the resulting position
+    xValues = moveDirection.UP ? [{mod: rMinXMod, val: 0}, {mod: rMidXMod, val: frame.width/2}, {mod: rMaxXMod, val: frame.width}] : [{mod: rMaxXMod, val: frame.width}, {mod: rMidXMod, val: frame.width/2}, {mod: rMinXMod, val: 0}];
     //compute the three possible line positions
-    //TODO: [MB] should really sort these by the direction of the drag...
-    if(this._xPositions[rMinXMod]){
-      //draw X line
-      xHit = this._xPositions[rMinXMod][0].value - this._globalFrame.x;
-    }
-    else if(this._xPositions[rMidXMod]){
-      //draw X line
-      xHit = this._xPositions[rMidXMod][0].value - this._globalFrame.x;
-    }
-    else if(this._xPositions[rMaxXMod]){
-      //draw X line
-      xHit = this._xPositions[rMaxXMod][0].value - this._globalFrame.x;
-    }
+    xValues.forEach(function(xVal){
+      if(that._xPositions[xVal.mod]){
+        xHitVals = xVal;
+        xHit = that._xPositions[xVal.mod][0].value - that._globalFrame.x;
+        return;
+      }
+    });
     if(!SC.none(xHit)){
       xline = SC.copy(SCUI.SNAP_LINE);
       xline.start = {x: xHit, y: 0};
       xline.end = {x: xHit, y: this._globalFrame.height};
       shapes.push(xline);
     }
-    //Y line positions
-    if(this._yPositions[rMinYMod]){
-      //draw Y line
-      yHit = this._yPositions[rMinYMod][0].value - this._globalFrame.y;
-    }
-    else if(this._yPositions[rMidYMod]){
-      //draw X line
-      yHit = this._yPositions[rMidYMod][0].value - this._globalFrame.y;
-
-    }
-    else if(this._yPositions[rMaxYMod]){
-      //draw X line
-      yHit = this._yPositions[rMaxYMod][0].value - this._globalFrame.y;
-    }
+    
+    yValues = moveDirection.LEFT ? [{mod: rMinYMod, val: 0}, {mod: rMidYMod, val: frame.height/2}, {mod: rMaxYMod, val: frame.height}] : [{mod: rMaxYMod, val: frame.height}, {mod: rMidYMod, val: frame.height/2}, {mod: rMinYMod, val: 0}];
+    //compute the three possible line positions
+    yValues.forEach(function(yVal){
+      if(that._yPositions[yVal.mod]){
+        yHitVals = yVal;
+        yHit = that._yPositions[yVal.mod][0].value - that._globalFrame.y;
+        return;
+      }
+    });
     if(!SC.none(yHit)){
       yline = SC.copy(SCUI.SNAP_LINE);
       yline.start = {y: yHit, x: 0};
@@ -178,12 +180,21 @@ SCUI.SnapLines = {
       shapes.push(yline);
     }
     this._drawingView.set('shapes', shapes);
-    
-    return {x: xHit + this._globalFrame.x, y: yHit + this._globalFrame.y};
+    ret = {pageX: xHit + this._globalFrame.x, pageY: yHit + this._globalFrame.y, frameX: xHit, frameY: yHit};
+    if(xHitVals){
+      ret.pageX -= xHitVals.val;
+      ret.frameX -= xHitVals.val;
+    }
+    if(yHitVals){
+      ret.pageY -= yHitVals.val;
+      ret.frameY -= yHitVals.val;
+    }
+    return ret;
   },
   
   /*
     called to cleanup the lines...
+    This method should be called in mouseUp if doing a move and in dragEnded if using a SC.Drag
   */
   removeLines: function() {
     this._xPositions = null;
@@ -193,6 +204,18 @@ SCUI.SnapLines = {
       this.removeChild(this._drawingView);
       this._drawingView = null;
     }
+  },
+  
+  /*
+    takes the event x, y and mouseDown x, y and computes a direction
+  */
+  _dragDirection: function(eventX, eventY, mouseDownX, mouseDownY){
+    var deltaX = eventX - mouseDownX, deltaY = eventY - mouseDownY, ret = {};
+    ret.UP = deltaX > 0 ? NO : YES;
+    ret.DOWN = deltaX > 0 ? YES : NO;
+    ret.LEFT = deltaY > 0 ? NO : YES;
+    ret.RIGHT = deltaY > 0 ? YES : NO;
+    return ret;
   }
 };
 

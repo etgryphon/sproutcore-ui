@@ -77,7 +77,7 @@ SCUI.DrawingView = SC.View.extend({
   shapesDidChange: function(){
     this.set('layerNeedsUpdate', YES);
     this.updateLayerIfNeeded();
-  }.observes('shapes.[]'),
+  }.observes('*shapes.[]'),
   
   init: function(){
     sc_super();

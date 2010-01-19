@@ -13,7 +13,7 @@ sc_require('views/drawing');
 //the number of pixles that will cause a snap line (factor of 2?)
 SCUI.SNAP_ZONE = 5;
 
-SCUI.LINE = {
+SCUI.SNAP_LINE = {
   shape: SCUI.LINE,
   start: {x: 0, y: 0},
   end: {x: 0, y: 0},
@@ -94,6 +94,7 @@ SCUI.SnapLines = {
     //add the parent
     parent = this.get('parentView');
     frame = parent ? parent.convertFrameToView(this.get('frame'), null) : this.get('frame');
+    this._globalFrame = frame;
     minX = frame.x;
     midX = SC.midX(frame);
     maxX = frame.x + frame.width;
@@ -116,9 +117,10 @@ SCUI.SnapLines = {
       this._drawingView = this.createChildView(SCUI.DrawingView.design({
         shapes: []
       }));
+      this.appendChild(this._drawingView);
     }
     var factor = (SCUI.SNAP_ZONE*2), shapes = [], xline, yline, frame, parent, rMinX, rMidX, rMaxX,
-        rMinY, rMidY, rMaxY, rMinXMod, rMidXMod, rMaxXMod, rMinYMod, rMidYMod, rMaxYMod;
+        rMinY, rMidY, rMaxY, rMinXMod, rMidXMod, rMaxXMod, rMinYMod, rMidYMod, rMaxYMod, xHit, yHit;
     //get the frame and all the relavent points of interest
     parent = view.get('parentView');
     frame = parent ? parent.convertFrameToView(view.get('frame'), null) : this.get('frame');
@@ -139,51 +141,45 @@ SCUI.SnapLines = {
     //TODO: [MB] should really sort these by the direction of the drag...
     if(this._xPositions[rMinXMod]){
       //draw X line
-      xline = SC.copy(SCUI.LINE);
-      xline.start = {x: this._xPositions[rMinXMod][0].value, y: 0};
-      xline.end = {x: this._xPositions[rMinXMod][0].value, y: frame.height};
-      shapes.push(xline);
+      xHit = this._xPositions[rMinXMod][0].value - this._globalFrame.x;
     }
     else if(this._xPositions[rMidXMod]){
       //draw X line
-      xline = SC.copy(SCUI.LINE);
-      xline.start = {x: this._xPositions[rMidXMod][0].value, y: 0};
-      xline.end = {x: this._xPositions[rMidXMod][0].value, y: frame.height};
-      shapes.push(xline);
+      xHit = this._xPositions[rMidXMod][0].value - this._globalFrame.x;
     }
     else if(this._xPositions[rMaxXMod]){
       //draw X line
-      xline = SC.copy(SCUI.LINE);
-      xline.start = {x: this._xPositions[rMaxXMod][0].value, y: 0};
-      xline.end = {x: this._xPositions[rMaxXMod][0].value, y: frame.height};
+      xHit = this._xPositions[rMaxXMod][0].value - this._globalFrame.x;
+    }
+    if(!SC.none(xHit)){
+      xline = SC.copy(SCUI.SNAP_LINE);
+      xline.start = {x: xHit, y: 0};
+      xline.end = {x: xHit, y: this._globalFrame.height};
       shapes.push(xline);
     }
     //Y line positions
     if(this._yPositions[rMinYMod]){
       //draw Y line
-      yline = SC.copy(SCUI.LINE);
-      yline.start = {y: this._yPositions[rMinYMod][0].value, x: 0};
-      yline.end = {y: this._yPositions[rMinYMod][0].value, x: frame.width};      
-      shapes.push(xline);
+      yHit = this._yPositions[rMinYMod][0].value - this._globalFrame.y;
     }
     else if(this._yPositions[rMidYMod]){
       //draw X line
-      yline = SC.copy(SCUI.LINE);
-      yline.start = {y: this._yPositions[rMidYMod][0].value, x: 0};
-      yline.end = {y: this._yPositions[rMidYMod][0].value, x: frame.width};
-      shapes.push(xline);
+      yHit = this._yPositions[rMidYMod][0].value - this._globalFrame.y;
+
     }
     else if(this._yPositions[rMaxYMod]){
       //draw X line
-      yline = SC.copy(SCUI.LINE);
-      yline.start = {y: this._yPositions[rMaxYMod][0].value, x: 0};
-      yline.end = {y: this._yPositions[rMaxYMod][0].value, x: frame.width};
-      shapes.push(xline);
+      yHit = this._yPositions[rMaxYMod][0].value - this._globalFrame.y;
     }
-    console.log(shapes);
+    if(!SC.none(yHit)){
+      yline = SC.copy(SCUI.SNAP_LINE);
+      yline.start = {y: yHit, x: 0};
+      yline.end = {y: yHit, x: this._globalFrame.width};
+      shapes.push(yline);
+    }
     this._drawingView.set('shapes', shapes);
     
-    return view;
+    return {x: xHit + this._globalFrame.x, y: yHit + this._globalFrame.y};
   },
   
   /*
@@ -192,7 +188,11 @@ SCUI.SnapLines = {
   removeLines: function() {
     this._xPositions = null;
     this._yPositions = null;
-    if(this._drawingLine) this.removeChild(this._drawingLine)
+    this._globalFrame = null;
+    if(this._drawingView) {
+      this.removeChild(this._drawingView);
+      this._drawingView = null;
+    }
   }
 };
 

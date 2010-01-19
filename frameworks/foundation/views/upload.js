@@ -15,6 +15,13 @@ SCUI.Upload = SC.View.extend(
 /** @scope Scui.Upload.prototype */ {
   
   /**
+    Read-only value of the current selected file. In IE, this will include
+    the full path whereas with all other browsers, it will only be the name of 
+    the file. If no file is selected, this will be set to null.
+  */
+  value: null,
+  
+  /**
     URI of service/page the file is being uploaded to
   */
   uploadTarget: null,
@@ -56,14 +63,20 @@ SCUI.Upload = SC.View.extend(
   didCreateLayer: function() {
     sc_super();
     var frame = this.$('iframe');
+    var input = this.$('input');
+    
     SC.Event.add(frame, 'load', this, this._uploadDone);
+    SC.Event.add(input, 'change', this, this._checkInputValue);
     
     this.set('status', SCUI.READY);
   },
   
   willDestroyLayer: function() {
     var frame = this.$('iframe');
+    var input = this.$('input');
+    
     SC.Event.remove(frame, 'load', this, this._uploadDone);
+    SC.Event.remove(input, 'change', this, this._checkInputValue);
     sc_super();
   },
   
@@ -85,26 +98,31 @@ SCUI.Upload = SC.View.extend(
   clearFileUpload: function() {
     var f = this._getForm();
     if (f) {
+      
+      // remove event before calling f.innerHTML = f.innerHTML
+      var input = this.$('input');
+      SC.Event.remove(input, 'change', this, this._checkInputValue);
+        
       f.innerHTML = f.innerHTML;
       this.set('status', SCUI.READY);
+      this.set('value', null);
+      
+      // readd event
+      input = this.$('input');
+      SC.Event.add(input, 'change', this, this._checkInputValue);
     }
   },
   
   /**
     Returns true if a file has been chosen to be uploaded, otherwise returns
-    false. It would be ideal if this was a property instead of a function,
-    however, due to limitation of input=file it would be hard to do.
+    false.
     
     @returns {Boolean} YES if a file is selected, NO if not
   */
   validateFileSelection: function() {
-    var input = this._getInput();
-    if (input) {
-      if (input.value !== '') {
-        return YES;
-      } else {
-        return NO;
-      }
+    var value = this.get('value');
+    if (value) {
+      return YES;
     }
     return NO;
   },
@@ -115,6 +133,15 @@ SCUI.Upload = SC.View.extend(
   */
   _uploadDone: function() {
     this.set('status', SCUI.DONE);
+  },
+  
+  /**
+    This function is called when the value of the input changes (after the user hits the browse
+    button and selects a file).
+  */
+  _checkInputValue: function() {
+    var input = this._getInput();
+    this.set('value', input.value);
   },
   
   _getForm: function(){

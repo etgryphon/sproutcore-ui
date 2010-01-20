@@ -67,7 +67,9 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
       // After talking with charles we need to handle oncontextmenu events when we want to block
       // the browsers context meuns. (SC does not handle oncontextmenu event.)
       document.oncontextmenu = function(e) { return false; };
-  
+      
+      var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;  
+      
       // calculate offset needed from top-left of anchorViewOrElement to position the menu
       // pane next to the mouse click location
       if (!this.get('usingStaticLayout')) {
@@ -80,16 +82,13 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
           offsetY = evt.pageY - globalFrame.y;
         }
       }else{
-        var parentView = anchorView.get('parentView');
-        var pFrame = parentView.get('frame');
-        // NOTE [jh2] this is wrong b/c I have to use the frame of the parent view...
-        var gFrame = pv ? parentView.convertFrameToView(pFrame, null) : pFrame;
-        offsetX = evt.pageX - gFrame.x;
-        offsetY = evt.pageY - gFrame.y;
+        var ret = SC.viewportOffset(anchor); // get x & y
+        var cq = SC.$(anchor);
+        ret.width = cq.outerWidth();
+        ret.height = cq.outerHeight();
+        offsetX = evt.pageX - ret.x;
+        offsetY = evt.pageY - ret.y;
       }
-  
-      var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;
-  
       // Popup the menu pane
       this.beginPropertyChanges();
       var it = this.get('displayItems');

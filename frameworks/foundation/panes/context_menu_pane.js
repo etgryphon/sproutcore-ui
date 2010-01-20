@@ -68,27 +68,13 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
       // the browsers context meuns. (SC does not handle oncontextmenu event.)
       document.oncontextmenu = function(e) { return false; };
       
-      var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;  
-      
       // calculate offset needed from top-left of anchorViewOrElement to position the menu
       // pane next to the mouse click location
-      if (!this.get('usingStaticLayout')) {
-        var offsetX = 0, offsetY = 0;
-        var pv = anchorView.get('parentView');
-        var frame = anchorView.get('frame');
-        var globalFrame = pv ? pv.convertFrameToView(frame, null) : frame;
-        if(globalFrame){
-          offsetX = evt.pageX - globalFrame.x;
-          offsetY = evt.pageY - globalFrame.y;
-        }
-      }else{
-        var ret = SC.viewportOffset(anchor); // get x & y
-        var cq = SC.$(anchor);
-        ret.width = cq.outerWidth();
-        ret.height = cq.outerHeight();
-        offsetX = evt.pageX - ret.x;
-        offsetY = evt.pageY - ret.y;
-      }
+      var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;  
+      var gFrame = SC.viewportOffset(anchor);
+      var offsetX = evt.pageX - gFrame.x;
+      var offsetY = evt.pageY - gFrame.y;
+      
       // Popup the menu pane
       this.beginPropertyChanges();
       var it = this.get('displayItems');

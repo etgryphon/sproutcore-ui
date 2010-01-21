@@ -97,7 +97,7 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
 
   /**
     Note this method creates all the child views we will need, but does not add them
-    to the childViews array immediately.  We use didCreateLayer() to trigger adding the
+    all to the childViews array immediately.  We use didCreateLayer() to trigger adding the
     correct set of child views at run-time.
   */
   createChildViews: function() {
@@ -229,8 +229,13 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
     //console.log('%@._isEditingDidChange(isEditing: %@)'.fmt(this, this.get('isEditing')));
     if (this.get('isEditing')) {
       // swap to the widget's editing view
-      if (!this._activeView || (this._activeView === this._widgetView)) {
-        this.replaceChild(this._editView, this._widgetView);
+      if (this._editView && (this._editView !== this._activeView)) {
+        if (this._activeView) {
+          this.replaceChild(this._editView, this._activeView);
+        }
+        else {
+          this.appendChild(this._editView);
+        }
         this._activeView = this._editView;
       }
 
@@ -246,8 +251,13 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
     }
     else {
       // swap to the widget's face view
-      if (!this._activeView || (this._activeView === this._editView)) {
-        this.replaceChild(this._widgetView, this._editView);
+      if (this._widgetView && (this._widgetView !== this._activeView)) {
+        if (this._activeView) {
+          this.replaceChild(this._widgetView, this._activeView);
+        }
+        else {
+          this.appendChild(this._widgetView);
+        }
         this._activeView = this._widgetView;
       }
 

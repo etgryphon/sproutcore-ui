@@ -129,27 +129,33 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
 
     // collect some other state
     var attrs = this._TMP_ATTRS;
-    attrs.widgetViewClass = widgetViewClass; // tell the widget container what views to use as content
+    attrs.widgetViewClass     = widgetViewClass; // tell the widget container what views to use as content
     attrs.widgetEditViewClass = widgetEditViewClass;
-    attrs.contentIndex = idx;
-    attrs.content      = item ;
-    attrs.owner        = attrs.displayDelegate = this;
-    attrs.parentView   = this.get('containerView') || this ;
-    attrs.page         = this.page ;
-    attrs.layerId      = this.layerIdFor(idx, item);
-    attrs.isEnabled    = del.contentIndexIsEnabled(this, content, idx);
-    attrs.isSelected   = del.contentIndexIsSelected(this, content, idx);
-    attrs.outlineLevel = del.contentIndexOutlineLevel(this, content, idx);
-    attrs.disclosureState = del.contentIndexDisclosureState(this, content, idx);
-    attrs.isGroupView  = isGroupView;
-    attrs.isVisibleInWindow = this.isVisibleInWindow;
-    if (isGroupView) attrs.classNames = this._GROUP_COLLECTION_CLASS_NAMES;
-    else attrs.classNames = this._COLLECTION_CLASS_NAMES;
-    
+    attrs.canDeleteWidget     = this.get('canDeleteContent');
+    attrs.contentIndex        = idx;
+    attrs.content             = item ;
+    attrs.owner               = attrs.displayDelegate = this;
+    attrs.parentView          = this.get('containerView') || this ;
+    attrs.page                = this.page ;
+    attrs.layerId             = this.layerIdFor(idx, item);
+    attrs.isEnabled           = del.contentIndexIsEnabled(this, content, idx);
+    attrs.isSelected          = del.contentIndexIsSelected(this, content, idx);
+    attrs.outlineLevel        = del.contentIndexOutlineLevel(this, content, idx);
+    attrs.disclosureState     = del.contentIndexDisclosureState(this, content, idx);
+    attrs.isGroupView         = isGroupView;
+    attrs.isVisibleInWindow   = this.isVisibleInWindow;
+    if (isGroupView) {
+      attrs.classNames = this._GROUP_COLLECTION_CLASS_NAMES;
+    }
+    else {
+      attrs.classNames = this._COLLECTION_CLASS_NAMES;
+    }
+
     layout = this.layoutForContentIndex(idx);
     if (layout) {
       attrs.layout = layout;
-    } else {
+    }
+    else {
       delete attrs.layout ;
     }
     
@@ -325,6 +331,14 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       item.set(posKey, pos);
     }
   },
+
+  _canDeleteContentDidChange: function() {
+    var canDelete = this.get('canDeleteContent');
+    var itemViews = this._sc_itemViews || [];
+    itemViews.forEach(function(v) {
+      v.setIfChanged('canDeleteWidget', canDelete);
+    });
+  }.observes('canDeleteContent'),
 
   // PRIVATE PROPERTIES
   

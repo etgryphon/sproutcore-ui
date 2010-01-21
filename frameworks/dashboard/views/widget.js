@@ -52,20 +52,56 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
   */
   widgetEditViewClass: null,
 
+  /**
+    View class to use for each widget's delete button.  Whatever view class is used here
+    should be capable of acting like a button, and should have 'target' and 'action' properties
+    that get fired when it is clicked.  These will be assigned values automatically for you when
+    the view is instantiated.
+  */
+  deleteHandleViewClass: SC.View.design( SCUI.SimpleButton, {
+    classNames: ['scui-widget-delete-handle-view'],
+    layout: { left: 0, top: 0, width: 28, height: 28 }
+  }),
+
+  /**
+    View class to use for each widget's optional edit button.  Whatever view class is used here
+    should be capable of acting like a button, and should have 'target' and 'action' properties
+    that get fired when it is clicked.  These will be assigned values automatically for you when
+    the view is instantiated.
+  */
+  editHandleViewClass: SC.View.design( SCUI.SimpleButton, {
+    classNames: ['scui-widget-edit-handle-view'],
+    layout: { right: 0, top: 0, width: 28, height: 28 }
+  }),
+
+  /**
+    View class to use for each widget's optional "done editing" button.  Whatever view class is used here
+    should be capable of acting like a button, and should have 'target' and 'action' properties
+    that get fired when it is clicked.  These will be assigned values automatically for you when
+    the view is instantiated.
+  */
+  doneButtonViewClass: SC.ButtonView.design({
+    classNames: ['scui-widget-done-button-view'],
+    layout: { right: 10, bottom: 10, width: 80, height: 24 },
+    title: "Done".loc()
+  }),
+
   displayProperties: ['canDeleteWidget', 'isEditing'],
   
   // PUBLIC METHODS
 
   init: function() {
     sc_super();
-    this.bind('canDeleteWidget', SC.Binding.from('*owner.canDeleteContent', this).oneWay());
     this.bind('isEditing', SC.Binding.from('*content.isEditing', this));
   },
 
+  /**
+    Note this method creates all the child views we will need, but does not add them
+    to the childViews array immediately.  We use didCreateLayer() to trigger adding the
+    correct set of child views at run-time.
+  */
   createChildViews: function() {
-    var childViews = [], viewClass;
-    var isEditing = this.get('isEditing');
-    var canDeleteWidget = this.get('canDeleteWidget');
+    var viewClass;
     var content = this.get('content');
     var frame;
     
@@ -98,40 +134,54 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
     this._editView = this.createChildView(viewClass.design(), { content: content });
     frame = this._editView.get('frame');
     this._editView.set('layout', { left: 0, top: 0, width: frame.width, height: frame.height });
-    
-    if (isEditing) {
-      childViews.push(this._editView);
-      this._activeView = this._editView;
-      
-      // add the done button if needed
-      if (content && content.get('showDoneButton')) {
-        this._doneButtonView = this._createDoneButtonView();
-        childViews.push(this._doneButtonView);
-      }
-    }
-    else {
-      childViews.push(this._widgetView);
-      this._activeView = this._widgetView;
 
-      if (this.getPath('content.isEditable')) {
-        this._editHandleView = this._createEditHandleView();
-        childViews.push(this._editHandleView);
-      }
-    }
-    
-    if (canDeleteWidget) {
-      this._deleteHandleView = this._createDeleteHandleView();
-      childViews.push(this._deleteHandleView);
+    // create the delete handle view
+    viewClass = this._getViewClass('deleteHandleViewClass');
+    if (viewClass) {
+      this._deleteHandleView = this.createChildView(viewClass.design(), { target: this, action: 'deleteWidget' });
     }
 
-    this.set('childViews', childViews);
+    // create the edit handle view
+    viewClass = this._getViewClass('editHandleViewClass');
+    if (viewClass) {
+      this._editHandleView = this.createChildView(viewClass.design(), { target: this, action: 'beginEditing' });
+    }
+
+    // create the done button
+    viewClass = this._getViewClass('doneButtonViewClass');
+    if (viewClass) {
+      this._doneButtonView = this.createChildView(viewClass.design(), { target: this, action: 'commitEditing' });
+    }
   },
 
   didCreateLayer: function() {
     sc_super();
-    this._adjustLayoutToFitContent();
+    this._isEditingDidChange();
+    this._canDeleteWidgetDidChange();
   },
-  
+
+  /**
+    Gets called when any of the child view layouts change.  Use this notification to resize this view
+    if either of the widget views changes.
+  */
+  layoutChildViews: function() {
+    //console.log('%@.layoutChildViews(%@)'.fmt(this, this._needLayoutViews));
+    var set = this._needLayoutViews;
+    var len = set ? set.length : 0;
+    var i, view, frame;
+
+    for (i = 0; i < len; i++) {
+      view = set[i];
+      if (view === this._activeView) {
+        frame = view.get('frame');
+        this.adjust({ width: frame.width, height: frame.height });
+        break;
+      }
+    }
+
+    return sc_super();
+  },
+
   beginEditing: function() {
     var content;
 
@@ -144,9 +194,8 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
       }
     }
   },
-  
-  // TODO: [JL] Make this into 'commitEditing' to match SC.Editable pattern
-  endEditing: function() {
+
+  commitEditing: function() {
     var content;
     
     this.setIfChanged('isEditing', NO);
@@ -175,106 +224,65 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
       this.adjust({ width: frame.width, height: frame.height });
     }
   },
-  
+
   _isEditingDidChange: function() {
     //console.log('%@._isEditingDidChange(isEditing: %@)'.fmt(this, this.get('isEditing')));
     if (this.get('isEditing')) {
-      if (this._activeView === this._widgetView) {
+      // swap to the widget's editing view
+      if (!this._activeView || (this._activeView === this._widgetView)) {
         this.replaceChild(this._editView, this._widgetView);
         this._activeView = this._editView;
       }
-      
-      if (this._editHandleView) {
-        this.removeChild(this._editHandleView);
-        this._editHandleView.destroy();
-        this._editHandleView = null;
-      }
-      
-      if (!this._doneButtonView && this.getPath('content.showDoneButton')) {
-        this._doneButtonView = this._createDoneButtonView();
+
+      // remove the edit handle
+      this.removeChild(this._editHandleView);
+      this._isShowingEditHandle = NO;
+
+      // add a done button if desired
+      if (!this._isShowingDoneButton && this.getPath('content.showDoneButton') && this._doneButtonView) {
         this.insertBefore(this._doneButtonView, this._deleteHandleView);
+        this._isShowingDoneButton = YES;
       }
     }
     else {
-      if (this._activeView === this._editView) {
+      // swap to the widget's face view
+      if (!this._activeView || (this._activeView === this._editView)) {
         this.replaceChild(this._widgetView, this._editView);
         this._activeView = this._widgetView;
       }
 
-      if (this._doneButtonView) {
-        this.removeChild(this._doneButtonView);
-        this._doneButtonView.destroy();
-        this._doneButtonView = null;
-      }
+      // remove the done button
+      this.removeChild(this._doneButtonView);
+      this._isShowingDoneButton = NO;
 
       if (this.getPath('content.isEditable')) { // if editable, show the edit handle
-        if (!this._editHandleView) {
-          this._editHandleView = this._createEditHandleView();
+        if (!this._isShowingEditHandle && this._editHandleView) {
           this.insertBefore(this._editHandleView, this._deleteHandleView);
+          this._isShowingEditHandle = YES;
         }
       }
       else { // if not editable, make sure it has no edit handle
-        if (this._editHandleView) {
-          this.removeChild(this._editHandleView);
-          this._editHandleView.destroy();
-          this._editHandleView = null;
-        }
+        this.removeChild(this._editHandleView);
+        this._isShowingEditHandle = NO;
       }
     }
     
     this._adjustLayoutToFitContent();
   }.observes('isEditing'),
-  
+
   _canDeleteWidgetDidChange: function() {
     //console.log('%@._canDeleteWidgetDidChange(canDeleteWidget: %@)'.fmt(this, this.get('canDeleteWidget')));
     if (this.get('canDeleteWidget')) {
-      if (!this._deleteHandleView) {
-        this._deleteHandleView = this._createDeleteHandleView();
+      if (!this._isShowingDeleteHandle && this._deleteHandleView) {
         this.appendChild(this._deleteHandleView);
+        this._isShowingDeleteHandle = YES;
       }
     }
     else {
-      if (this._deleteHandleView) {
-        this.removeChild(this._deleteHandleView);
-        this._deleteHandleView.destroy();
-        this._deleteHandleView = null;
-      }
+      this.removeChild(this._deleteHandleView);
+      this._isShowingDeleteHandle = NO;
     }
   }.observes('canDeleteWidget'),
-  
-  _createDeleteHandleView: function() {
-    return this.createChildView(
-      SC.View.design( SCUI.SimpleButton, {
-        classNames: ['orion-dashboard-manage-button-view','showing-palette'],
-        layout: { left: -14, top: -14, width: 28, height: 28 },
-        target: this,
-        action: 'deleteWidget'
-      })
-    );
-  },
-  
-  _createDoneButtonView: function() {
-    return this.createChildView(
-      SC.ButtonView.design({
-        classNames: ['scui-widget-done-button-view'],
-        layout: { right: 10, bottom: 10, width: 80, height: 24 },
-        title: "Done".loc(),
-        target: this,
-        action: 'endEditing'
-      })
-    );
-  },
-  
-  _createEditHandleView: function() {
-    return this.createChildView(
-      SC.View.design( SCUI.SimpleButton, {
-        classNames: ['scui-widget-edit-handle-view'],
-        layout: { right: 4, top: 4, width: 6, height: 12 },
-        target: this,
-        action: 'beginEditing'
-      })
-    );
-  },
   
   _getViewClass: function(viewKey) {
     var c = this.get(viewKey); // hopefully the view class
@@ -301,6 +309,10 @@ SCUI.WidgetView = SC.View.extend( SC.Control, {
 
   _deleteHandleView: null,
   _editHandleView: null,
-  _doneButtonView: null
+  _doneButtonView: null,
+  
+  _isShowingDeleteHandle: NO,
+  _isShowingEditHandle: NO,
+  _isShowingDoneButton: NO
 
 });

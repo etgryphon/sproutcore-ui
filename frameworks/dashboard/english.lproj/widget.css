@@ -5,3 +5,7 @@
 .scui-widget-edit-handle-view {
   background: yellow;
 }
+
+.scui-widget-view {
+  background: gray;
+}

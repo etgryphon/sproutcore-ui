@@ -31,6 +31,8 @@ SCUI.ClockWidget = SC.Object.extend( SCUI.Widget, {
   */
   position: { x: 40, y: 40 },
 
+  size: { width: 320, height: 150 },
+
   showGreeting: NO,
   
   greeting: "Hello World".loc(),

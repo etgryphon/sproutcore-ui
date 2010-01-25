@@ -46,6 +46,12 @@ SCUI.Widget = {
   positionKey: 'position',
 
   /**
+    The property that stores this widget's size.  Size is expressed
+    as a hash like this: { width: 300, height: 100 }.
+  */
+  sizeKey: 'size',
+
+  /**
     @optional
 
     The property expected to hold the name of the widget.
@@ -60,39 +66,13 @@ SCUI.Widget = {
   /**
     If YES, shows edit button on the widget and allows switching to widget edit view.
   */
-  isEditable: YES,
+  canEdit: YES,
+
+  isEditing: NO,
 
   /**
     If YES, overlays a "Done" button on the widget's edit view.
   */
-  showDoneButton: YES,
-  
-  // PUBLIC METHODS
-  
-  /**
-    Called by SCUI.DashboardView whenever the dashboard wants to move the widget to a new
-    location, prior to calling 'set(positionKey)'.  I.e. when someone finishes dragging a widget.
-    Override this to handle this notification and control moving permissions.
-    
-    'newPosition' contains the proposed new location of the top-left corner of the widget view
-    in the form { x: 3, y: 4 }.
-    
-    Return whatever position you'd like to be the final position, or null to forbid the move.
-  */
-  widgetProposedMove: function(newPosition) {
-    return newPosition; // allow the move by default; return null or another desired position to forbid
-  },
-
-  /**
-    Called by the dashboard when someone switches the widget view into 'edit' mode
-  */
-  beginEditing: function() {
-  },
-
-  /**
-    Called by the dashboard when someone click's the 'done' button on your widget
-  */
-  commitEditing: function() {
-  }
+  showDoneButton: YES
   
 };

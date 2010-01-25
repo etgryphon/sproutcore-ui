@@ -2,7 +2,7 @@
 // SCUI.DashboardView
 // ==========================================================================
 
-sc_require('views/widget');
+sc_require('views/widget_container');
 sc_require('mixins/dashboard_delegate');
 
 /** @class
@@ -34,7 +34,7 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
     the widget's custom views.  It handles the delete handle and config button overlays
     as well.
   */
-  exampleView: SCUI.WidgetView,
+  exampleView: SCUI.WidgetContainerView,
 
   dashboardDelegate: function() {
     var del = this.get('delegate'), content = this.get('content');
@@ -164,48 +164,18 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
     return ret ;
   },
 
-  /**
-    Calls the base CollectionView.createItemView() method first, then
-    overrides the newly created itemView's layout.
-  */
-  createItemView: function(exampleClass, idx, attrs) {
-    var itemView, content, frame, position, size;
-    var finalLayout = { left: 0, top: 0, width: 400, height: 200 }; // default, will overwrite if possible
-  
-    itemView = sc_super(); // call base method to create the view so we have valid frame info; we'll then override the layout
-    if (itemView) {
-      content = itemView.get('content');
-
-      // width & height: expect the WidgetView to have sized itself appropriately, so try to use that
-      frame = itemView.get('frame');
-      if (frame) {
-        finalLayout.width = frame.width;
-        finalLayout.height = frame.height;
-      }
-      else {
-        console.warn('%@: WidgetView %@ does not have a valid layout.'.fmt(this, idx));
-      }
-
-      // position
-      position = this._getItemPosition(content); // null if not found
-      if (position) { // if we found a stored position, use it
-        finalLayout.left = position.x;
-        finalLayout.top = position.y;
-      }
-      else if (content && content.widgetProposedMove) { // if it had no position, use a default, and save it on the dashboard element
-        position = content.widgetProposedMove({ x: finalLayout.left, y: finalLayout.top });
-        if (position) { // the position might have been adjusted
-          this._setItemPosition(content, position);
-          finalLayout.left = position.x;
-          finalLayout.top = position.y;
-        }
-      }
-
-      // finally, override the layout with the standard style
-      itemView.set('layout', finalLayout);
+  layoutForContentIndex: function(contentIndex) {
+    var content = this.get('content');
+    var item = content ? content.objectAt(contentIndex) : null;
+    var layout = null;
+    var pos, size;
+    
+    if (item) {
+      pos = this._getItemPosition(item) || { x: 20, y: 20 };
+      size = this._getItemSize(item) || { width: 300, height: 100 };
+      layout = { left: pos.x, top: pos.y, width: size.width, height: size.height };
     }
-  
-    return itemView;
+    return layout;
   },
   
   mouseDown: function(evt) {
@@ -220,13 +190,29 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       itemView = this.itemViewForEvent(evt);
       if (itemView && !itemView.getPath('content.isLocked')) { // only start dragging if widget isn't locked
         this._dragData = SC.clone(itemView.get('layout'));
-        this._dragData.pageX = evt.pageX;
-        this._dragData.pageY = evt.pageY;
+        this._dragData.startPageX = evt.pageX;
+        this._dragData.startPageY = evt.pageY;
         this._dragData.view = itemView;
         this._dragData.didMove = NO; // haven't moved yet
       }
     }
     
+    return YES;
+  },
+  
+  mouseDragged: function(evt) {
+    var dX, dY;
+
+    sc_super();
+
+    // We're in the middle of a drag, so adjust the view using the current drag delta
+    if (this._dragData) {
+      this._dragData.didMove = YES; // so that mouseUp knows whether to report the new position.
+      
+      dX = evt.pageX - this._dragData.startPageX;
+      dY = evt.pageY - this._dragData.startPageY;
+      this._dragData.view.adjust({ left: this._dragData.left + dX, top: this._dragData.top + dY });
+    }
     return YES;
   },
   
@@ -242,15 +228,9 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       frame = this._dragData.view.get('frame');
 
       // try to update the widget data model with the new position
-      if (content && frame && content.widgetProposedMove) {
-        finalPos = content.widgetProposedMove({ x: frame.x, y: frame.y });
-        if (finalPos) {
-          this._setItemPosition(content, finalPos);
-          this._dragData.view.adjust({ left: finalPos.x, top: finalPos.y });
-        }
-        else {
-          this._dragData.view.adjust({ left: this._dragData.left, top: this._dragData.top });
-        }
+      if (content && frame) {
+        finalPos = { x: frame.x, y: frame.y };
+        this._setItemPosition(content, finalPos);
       }
     }
 
@@ -258,47 +238,7 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
     return YES;
   },
   
-  mouseDragged: function(evt) {
-    var d, dX, dY;
-
-    sc_super();
-
-    // We're in the middle of a drag, so adjust the view using the current drag delta
-    if (this._dragData) {
-      this._dragData.didMove = YES; // so that mouseUp knows whether to report the new position.
-      
-      d = this._dragData;
-      dX = evt.pageX - d.pageX;
-      dY = evt.pageY - d.pageY;
-
-      this._adjustViewLayoutOnDrag(d.view, d.zoneX, d.zoneY, dX, d, 'left', 'right', 'centerX', 'width');
-      this._adjustViewLayoutOnDrag(d.view, d.zoneY, d.zoneX, dY, d, 'top', 'bottom', 'centerY', 'height');
-    }
-    return YES;
-  },
-  
   // PRIVATE METHODS
-  
-  /**
-    A utility method that adjust's the view's layout given a movement delta.
-    It is smart about finding the view's own layout style and adjusting that.
-  */
-  _adjustViewLayoutOnDrag: function(view, curZone, altZone, delta, i, headKey, tailKey, centerKey, sizeKey) {
-    // collect some useful values...
-    var inAltZone = false; //(altZone === HEAD_ZONE) || (altZone === TAIL_ZONE);
-    var head = i[headKey], tail = i[tailKey], center = i[centerKey], size = i[sizeKey];
-    //this block determines what layout coordinates you have (top, left, centerX,centerY, right, bottom)
-    //and adjust the view depented on the delta
-    if (!inAltZone && !SC.none(size)) {
-      if (!SC.none(head)) {
-        view.adjust(headKey, head + delta);
-      } else if (!SC.none(tail)) {
-        view.adjust(tailKey, tail - delta) ;
-      } else if (!SC.none(center)) {
-        view.adjust(centerKey, center + delta);
-      }
-    }
-  },
   
   /**
     Encapsulates the standard way the dashboard attempts to extract the last
@@ -324,11 +264,36 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
     position on a dashboard element.
   */
   _setItemPosition: function(item, pos) {
-    var posKey, finalPos;
+    var posKey;
 
     if (item) {
       posKey = item.get('positionKey') || 'position';
       item.set(posKey, pos);
+    }
+  },
+
+  _getItemSize: function(item) {
+    var sizeKey, size;
+
+    if (item) {
+      sizeKey = item.get('sizeKey');
+      size = sizeKey ? item.get(sizeKey) : null;
+      if (size) {
+        return { width: (parseFloat(size.width) || 0), height: (parseFloat(size.height) || 0) };
+      }
+    }
+    
+    return null;
+  },
+  
+  _setItemSize: function(item, size) {
+    var sizeKey;
+    
+    if (item) {
+      sizeKey = item.get('sizeKey');
+      if (sizeKey) {
+        item.set(sizeKey, size);
+      }
     }
   },
 

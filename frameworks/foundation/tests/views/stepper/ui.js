@@ -4,7 +4,10 @@ var nowrap = SC.View.extend({
   createChildViews: function() {
     var childViews = [];
 
-    var stepper = this.createChildView(SCUI.StepperView.design());
+    var stepper = this.createChildView(SCUI.StepperView.design({
+      valueWraps: YES,
+      max: 10
+    }));
     childViews.push(stepper);
 
     var view = this.createChildView(SC.LabelView.design({
@@ -22,7 +25,9 @@ var wraps = SC.View.extend({
     var childViews = [];
 
     var stepper = this.createChildView(SCUI.StepperView.design({
-      valueWraps: YES
+      valueWraps: YES,
+      max: 10,
+      min: 0
     }));
     childViews.push(stepper);
 

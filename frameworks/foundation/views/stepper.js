@@ -24,11 +24,11 @@ SCUI.StepperView = SC.View.extend(
   /* amount to increment or decrement upon clicking stepper */
   increment: 1,
   
-  /* max value allowed */
-  max: 10,
+  /* max value allowed, infinity if not set */
+  max: null,
   
-  /* min value allowed */
-  min: 0,
+  /* min value allowed, neg infinity if not set */
+  min: null,
   
   /* if value should wraparound to the min if max is reached (and vise versa) */
   valueWraps: NO,
@@ -49,12 +49,14 @@ SCUI.StepperView = SC.View.extend(
         value = value + increment;
         var wraps = that.get('valueWraps');
         
-        if (value <= max) that.set('value', value);
+        if (max == null || value <= max) that.set('value', value); // should == to check for null and undefined
         else if (wraps) {
           var min = that.get('min');
-          value = value - max - increment;
-          value = value + min;
-          that.set('value', value);
+          if (min != null) { // should be != to check for null and undefined
+            value = value - max - increment;
+            value = value + min;
+            that.set('value', value);
+          }
         }
       }
     }));
@@ -70,12 +72,14 @@ SCUI.StepperView = SC.View.extend(
         value = value - increment;
         var wraps = that.get('valueWraps');
         
-        if (value >= min) that.set('value', value);
+        if (min == null || value >= min) that.set('value', value); // should be == to check for null and undefined
         else if (wraps) {
           var max = that.get('max');
-          value = min - value - increment;
-          value = max - value;
-          that.set('value', value);
+          if (max != null) { // should be != to check for null and undefined
+            value = min - value - increment;
+            value = max - value;
+            that.set('value', value);
+          }
         }
       }
     }));

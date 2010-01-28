@@ -10,7 +10,7 @@ var nowrap = SC.View.extend({
     }));
     childViews.push(stepper);
 
-    var view = this.createChildView(SC.LabelView.design({
+    var view = this.createChildView(SC.TextFieldView.design({
       layout: { top: 0, left: 30, width: 25, height: 40 },
       valueBinding: SC.binding('.value', stepper)
     }));
@@ -31,7 +31,7 @@ var wraps = SC.View.extend({
     }));
     childViews.push(stepper);
 
-    var view = this.createChildView(SC.LabelView.design({
+    var view = this.createChildView(SC.TextFieldView.design({
       layout: { top: 0, left: 30, width: 25, height: 40 },
       valueBinding: SC.binding('.value', stepper)
     }));

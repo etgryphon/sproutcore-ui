@@ -45,6 +45,7 @@ SCUI.StepperView = SC.View.extend(
       mouseUp: function() {
         sc_super();
         var value = that.get('value');
+        value = value - 0; // make sure its a number
         var max = that.get('max');
         value = value + increment;
         var wraps = that.get('valueWraps');
@@ -68,6 +69,7 @@ SCUI.StepperView = SC.View.extend(
       mouseUp: function() {
         sc_super();
         var value = that.get('value');
+        value = value - 0; // make sure its a number
         var min = that.get('min');
         value = value - increment;
         var wraps = that.get('valueWraps');

@@ -113,9 +113,20 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   cleanInsertedText: YES,
   
   /**
-    stip exta \n and \r
+    strip exta \n and \r
   */
   stripCrap: NO,
+  
+  /**
+    Decodes the following values on commit 
+      -%3C (<)
+      -%3E (>)
+      -%20 ( )
+      -%amp; (&)
+      
+    TODO - [MT] - Possibly combine this with the stripCrap option
+  */
+  decodeContent: YES,
   
   /**
     List of menu options to display on right click
@@ -581,7 +592,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     var name = editor.queryCommandValue('fontname');
     if (name) return name;
-    return '';
+    return '***';
   }.property('selection').cacheable(),
   
   selectionFontSize: function(key, value) {
@@ -649,7 +660,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
     }
     
-    return '';
+    return '***';
   }.property('selection').cacheable(),
   
   selectionFontColor: function(key, value) {
@@ -955,8 +966,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       value = value.replace(/\r/g, '&#13;');
       value = value.replace(/\n/g, '&#10;');
     }
-
-
+    
+    if (this.get('decodeContent')) {
+      value = value.replace(/\%3C/gi, '<');
+      value = value.replace(/\%3E/gi, '>');
+      value = value.replace(/\%20/gi, ' ');
+      value = value.replace(/\%amp/gi, '&');
+    }
 
     this.setIfChanged('value', value);
     this.set('isEditing', NO);

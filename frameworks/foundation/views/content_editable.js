@@ -11,18 +11,28 @@ require('panes/context_menu_pane');
   SC webView. It works be setting the body of the iframe to be ContentEditable as well
   as attaching a mouseup, keyup and paste events on the body of the iframe to detect
   the current state of text at the current mouse position
-  
-  TODO: [MT] - Add comments and examples 
 
   @extends SC.WebView
   @author Mohammed Taher
-  @version 0.91
-  
+  @version 0.912
+
+  ==========
+  = v0.912 =
+  ==========
+  - Better variable names
+  - Querying indent/outdent values now works in FF
+  - Slightly more optimized. (In the selectionXXXX properties, this._document/this._editor was being
+    accessed multiple times, now it happens once at the beginning).
+  - New helper functions. Trying to push browser code branching to such functions.
+    a. _getFrame
+    b. _getDocument
+    c. _getSelection
+    d. _getSelectedElemented
+  - Reversed isOpaque value
+    
 */
 SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 /** @scope SCUI.ContentEditableView.prototype */ {
-  
-  // Properties ==================================================================
   
   /**
     Value of the HTML inside the body of the iframe.
@@ -38,9 +48,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   allowScrolling: YES,
   
   /**
-    Set to YES when the view needs to be transparent.
+    Set to NO when the view needs to be transparent.
   */
-  isOpaque: NO,
+  isOpaque: YES,
 
   /**
     Current selected content in the iframe.
@@ -135,11 +145,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	
 	displayProperties: ['value'],
 	
-	// Setup ==================================================================
-	
 	render: function(context, firstTime) {
     var value = this.get('value');
-    var isOpaque = this.get('isOpaque');
+    var isOpaque = !this.get('isOpaque');
     var allowScrolling = this.get('allowScrolling') ? 'yes' : 'no';
     var frameBorder = isOpaque ? '0' : '1';
     var styleString = 'position: absolute; width: 100%; height: 100%; border: 0px; margin: 0px; padding: 0p;';
@@ -154,9 +162,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         '"></iframe>'
       );
       
-    } else if (this._editor) {
-      if (value !== this._editor.body.innerHTML) {
-        this._editor.body.innerHTML = value;
+    } else if (this._document) {
+      if (value !== this._document.body.innerHTML) {
+        this._document.body.innerHTML = value;
       }
     }
   },
@@ -168,61 +176,62 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   },
   
   displayDidChange: function() {
-    var editor = this._editor;
-    if (editor) {
-      editor.body.contentEditable = this.get('isEnabled');
+    var doc = this._document;
+    if (doc) {
+      doc.body.contentEditable = this.get('isEnabled');
     }
     sc_super();
   },
   
   willDestroyLayer: function() {         
-    var frameBody = this._editor.body;
-    SC.Event.remove(frameBody, 'mouseup', this, this.mouseUp);
-    SC.Event.remove(frameBody, 'keyup', this, this.keyUp);
-    SC.Event.remove(frameBody, 'paste', this, this.paste);    
+    var doc = this._document;
+    var docBody = doc.body;
     
-    SC.Event.remove(this._editor, 'click', this, this.focus);
-     
-    SC.Event.remove(this.$('iframe'), 'load', this, this.makeContentEditable); 
+    SC.Event.remove(docBody, 'mouseup', this, this.mouseUp);
+    SC.Event.remove(docBody, 'keyup', this, this.keyUp);
+    SC.Event.remove(docBody, 'paste', this, this.paste);
+    
+    SC.Event.remove(doc, 'click', this, this.focus);
+    SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
     
     sc_super();
   },
   
   editorSetup: function() {     
     // store the document property in a local variable for easy access
-    if (SC.browser.msie) {
-      var frameName = this.get('frameName');
-      this._iframe = document.frames(frameName);
-      this._editor = this._iframe.document;
-    } else {
-      this._iframe = this.$('iframe').firstObject();
-      this._editor = this._iframe.contentDocument;
+    this._iframe = this._getFrame();
+    this._document = this._getDocument();
+    if (SC.none(this._document)) {
+      console.error('Curse your sudden but inevitable betrayal! Can\'t find a reference to the document object!');
+      return;
     }
+    
+    var doc = this._document;
     
     // set contentEditable to true... this is the heart and soul of the editor
     var value = this.get('value');
-    var frameBody = this._editor.body;
-    frameBody.contentEditable = true;
+    var docBody = doc.body;
+    docBody.contentEditable = true;
     
-    if (this.get('isOpaque')) {
-      frameBody.style.background = 'transparent';       
+    if (!this.get('isOpaque')) {
+      docBody.style.background = 'transparent';       
       // the sc-web-view adds a gray background to the WebView... removing in the
-      // case isOpaque is YES
+      // case isOpaque is NO
       this.$().setClass('sc-web-view', NO);
     }
 
     var inlineStyle = this.get('inlineStyle');
-    var editorBodyStyle = this._editor.body.style;
+    var docBodyStyle = this._document.body.style;
     for (var key in inlineStyle) {
       if (inlineStyle.hasOwnProperty(key)) {  
-        editorBodyStyle[key.toString().camelize()] = inlineStyle[key];
+        docBodyStyle[key.toString().camelize()] = inlineStyle[key];
       }
     }
     
     // we have to do this differently in FF and IE... execCommand('inserthtml', false, val) fails
     // in IE and frameBody.innerHTML is resulting in a FF bug
     if (SC.browser.msie || SC.browser.safari) {
-      frameBody.innerHTML = value;
+      docBody.innerHTML = value;
     } else {
       this.insertHTML(value);
     }
@@ -241,17 +250,17 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
 
     // attach the required events
-    SC.Event.add(frameBody, 'mouseup', this, this.mouseUp);
-    SC.Event.add(frameBody, 'keyup', this, this.keyUp);
-    SC.Event.add(frameBody, 'paste', this, this.paste);    
+    SC.Event.add(docBody, 'mouseup', this, this.mouseUp);
+    SC.Event.add(docBody, 'keyup', this, this.keyUp);
+    SC.Event.add(docBody, 'paste', this, this.paste);    
     
     // there are certian cases where the body of the iframe won't have focus
     // but the user will be able to type... this happens when the user clicks on
     // the white space where there's no content. This event handler 
     // ensures that the body will receive focus when the user clicks on that area.
-    SC.Event.add(this._editor, 'click', this, this.focus);
+    SC.Event.add(this._document, 'click', this, this.focus);
 
-		SC.Event.add(this._editor, 'mousedown', this, this.mouseDown);
+		SC.Event.add(this._document, 'mousedown', this, this.mouseDown);
     
     // call the SC.WebView iframeDidLoad function to finish setting up
     this.iframeDidLoad();
@@ -361,31 +370,29 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return YES;
   },
   
-  // Properties ==================================================================
-  
   /** @property String */
   frameName: function() {
     return this.get('layerId') + '_frame' ;
   }.property('layerId').cacheable(),
   
   editorHTML: function(key, value) {
-    var editor = this._editor;
-    if (!editor) return NO;
+    var doc = this._document;
+    if (!doc) return NO;
     
     if (value !== undefined) {
-      editor.body.innerHTML = value;
+      doc.body.innerHTML = value;
       return YES;
     } else {
       if (this.get('cleanInsertedText')) {
-        return this.cleanWordHTML(this._editor.body.innerHTML);
+        return this.cleanWordHTML(doc.body.innerHTML);
       } else {
-        return editor.body.innerHTML;
+        return doc.body.innerHTML;
       }
     }
   }.property(),
   
   selectionIsBold: function(key, val) {
-    var editor = this._editor ;
+    var editor = this._document ;
     if (!editor) return NO;
     
     if (val !== undefined) {
@@ -394,221 +401,232 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
     }
     
-    return this._editor.queryCommandState('bold');
+    return this._document.queryCommandState('bold');
   }.property('selection').cacheable(),
   
   selectionIsItalicized: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('italic', false, val)) {
+      if (doc.execCommand('italic', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('italic');
+    return doc.queryCommandState('italic');
   }.property('selection').cacheable(),
   
   selectionIsUnderlined: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('underline', false, val)) {
+      if (doc.execCommand('underline', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('underline');
+    return doc.queryCommandState('underline');
   }.property('selection').cacheable(),
   
   // FIXME: [MT] queryCommandState('justifyXXXX') always returns fasle in safari...
   // find a workaround
   selectionIsCenterJustified: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('justifycenter', false, val)) {
+      if (doc.execCommand('justifycenter', false, val)) {
         this.querySelection();
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('justifycenter');
+    return doc.queryCommandState('justifycenter');
   }.property('selection').cacheable(),
   
   selectionIsRightJustified: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('justifyright', false, val)) {
+      if (doc.execCommand('justifyright', false, val)) {
         this.querySelection();
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('justifyright');
+    return doc.queryCommandState('justifyright');
   }.property('selection').cacheable(),
   
   selectionIsLeftJustified: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('justifyleft', false, val)) {
+      if (doc.execCommand('justifyleft', false, val)) {
         this.querySelection();
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('justifyleft');
+    return doc.queryCommandState('justifyleft');
   }.property('selection').cacheable(),
   
   selectionIsFullJustified: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('justifyfull', false, val)) {
+      if (doc.execCommand('justifyfull', false, val)) {
         this.querySelection();
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('justifyfull');
+    return doc.queryCommandState('justifyfull');
   }.property('selection').cacheable(),
   
   selectionIsOrderedList: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('justifyfull', false, val)) {
+      if (doc.execCommand('justifyfull', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('justifyfull');
+    return doc.queryCommandState('justifyfull');
   }.property('selection').cacheable(),
   
   selectionIsOrderedList: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('insertorderedlist', false, val)) {
+      if (doc.execCommand('insertorderedlist', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('insertorderedlist');
+    return doc.queryCommandState('insertorderedlist');
   }.property('selection').cacheable(),
   
   selectionIsUnorderedList: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('insertunorderedlist', false, val)) {
+      if (doc.execCommand('insertunorderedlist', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    return this._editor.queryCommandState('insertunorderedlist');
+    return doc.queryCommandState('insertunorderedlist');
   }.property('selection').cacheable(),
   
   selectionIsIndented: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('indent', false, val)) {
+      if (doc.execCommand('indent', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    // queryCommandState('indent') throws error in FF
     if (SC.browser.msie) {
-      return this._editor.queryCommandState('indent');
+      return doc.queryCommandState('indent');
+    } else {
+      var elem = this._getSelectedElemented();
+      if (!SC.none(elem)) {
+        if (elem.style['marginLeft'] !== '') {
+          return YES;
+        }
+      }
+      return NO;
     }
-    return NO;
   }.property('selection').cacheable(),
   
   selectionIsOutdented: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('outdent', false, val)) {
+      if (doc.execCommand('outdent', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    // queryCommandState('outdent') throws error in FF
     if (SC.browser.msie) {
-      return this._editor.queryCommandState('outdent');
+      return doc.queryCommandState('outdent');
+    } else {
+      var elem = this._getSelectedElemented();
+      if (!SC.none(elem)) {
+        if (elem.style['marginLeft'] === '') {
+          return YES;
+        }
+      }
+      return NO;
     }
-    return NO;
   }.property('selection').cacheable(),
   
   selectionIsSubscript: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('subscript', false, val)) {
+      if (doc.execCommand('subscript', false, val)) {
         this.set('isEditing', YES);
       }
     }
 
-    return this._editor.queryCommandState('subscript');
+    return doc.queryCommandState('subscript');
   }.property('selection').cacheable(),
   
   selectionIsSuperscript: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return NO;
+    var doc = this._document ;
+    if (!doc) return NO;
     
     if (val !== undefined) {
-      if (editor.execCommand('superscript', false, val)) {
+      if (doc.execCommand('superscript', false, val)) {
         this.set('isEditing', YES);
       }
     }
 
-    return this._editor.queryCommandState('superscript');
+    return doc.queryCommandState('superscript');
   }.property('selection').cacheable(),
   
   selectionFontName: function(key, val) {
-    var editor = this._editor ;
-    if (!editor) return '';
+    var doc = this._document ;
+    if (!doc) return '';
     
     if (val !== undefined) {
-      if (editor.execCommand('fontname', false, val)) {
+      if (doc.execCommand('fontname', false, val)) {
         this.set('isEditing', YES);
       }
     }
     
-    var name = editor.queryCommandValue('fontname');
-    if (name) return name;
-    return '***';
+    var name = doc.queryCommandValue('fontname') || '';
+    return name;
   }.property('selection').cacheable(),
   
   selectionFontSize: function(key, value) {
     var frame = this._iframe;
-    var editor = this._editor;
-    if (!editor) return '';
+    var doc = this._document;
+    if (!doc) return '';
     
     if (value !== undefined) {
       
       var identifier = this.get('layerId') + '-fs-identifier';
       
       // apply unique string to font size to act as identifier
-      if (editor.execCommand('fontsize', false, identifier)) {
+      if (doc.execCommand('fontsize', false, identifier)) {
         
         // get all newly created font tags
-        var fontTags = editor.getElementsByTagName('font');
+        var fontTags = doc.getElementsByTagName('font');
         for (var i = 0, j = fontTags.length; i < j; i++) {
           var fontTag = fontTags[i];
           
@@ -617,7 +635,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
             fontTag.size = '';
             fontTag.style.fontSize = value + 'px';
             
-            // Doesn't work in IE... 
             var iterator = document.createNodeIterator(fontTag, 
                                                        NodeFilter.SHOW_ELEMENT,
                                                        null,
@@ -664,37 +681,37 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }.property('selection').cacheable(),
   
   selectionFontColor: function(key, value) {
-    var editor = this._editor ;
-    if (!editor) return '';
+    var doc = this._document ;
+    if (!doc) return '';
     
     // for now execute this in non IE browsers...
     if (!SC.browser.msie) {
       if (value !== undefined) {
-        if (editor.execCommand('forecolor', false, value)) {
+        if (doc.execCommand('forecolor', false, value)) {
           this.set('isEditing', YES);
         }
       }
       
-      var color = SC.parseColor(editor.queryCommandValue('forecolor'));
-      if (color) return color;
+      var color = SC.parseColor(doc.queryCommandValue('forecolor')) || '';
+      return color;
     } 
     
     return '';
   }.property('selection').cacheable(),
   
   selectionBackgroundColor: function(key, value) {
-    var editor = this._editor ;
-    if (!editor) return '';
+    var doc = this._document ;
+    if (!doc) return '';
 
     // for now execute this in non IE browsers...
     if (!SC.browser.msie) {
       if (value !== undefined) {
-        if (editor.execCommand('hilitecolor', false, value)) {
+        if (doc.execCommand('hilitecolor', false, value)) {
           this.set('isEditing', YES);
         }
       }
 
-      var color = this._editor.queryCommandValue('hilitecolor');
+      var color = this._document.queryCommandValue('hilitecolor');
       if (color !== 'transparent') {
         if (SC.parseColor(color)) {
           return SC.parseColor(color);
@@ -738,11 +755,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       
     }
   }.property('selectedImage').cacheable(),
-  
-  // Actions ==================================================================
-  
+
   focus: function(){
-    this._editor.body.focus();
+    this._document.body.focus();
   },
   
   querySelection: function() {
@@ -766,12 +781,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   },
   
   createLink: function(value) {
-    var editor = this._editor;
+    var doc = this._document;
     var frame = this._iframe;
-    if (!(editor && frame)) return NO;
+    if (!(doc && frame)) return NO;
     if (SC.none(value) || value === '') return NO;
     
-    if (editor.execCommand('createlink', false, value)) { 
+    if (doc.execCommand('createlink', false, value)) { 
       // FIXME: [MT] This fails to find the hyperlink node when the 
       // whole text is highlighted
       var node = frame.contentWindow.getSelection().focusNode;
@@ -786,10 +801,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   },
   
   removeLink: function() {
-    var editor = this._editor;
-    if (!editor) return NO;
+    var doc = this._document;
+    if (!doc) return NO;
     
-    if (editor.execCommand('unlink', false, null)) {
+    if (doc.execCommand('unlink', false, null)) {
       this.set('selectedHyperlink', null);
       this.set('isEditing', YES);
       return YES;
@@ -802,11 +817,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   // image creation (Assigning the newly created image to the selectedImage
   // property)
   insertImage: function(value) {
-    var editor = this._editor;
-    if (!editor) return NO;
+    var doc = this._document;
+    if (!doc) return NO;
     if (SC.none(value) || value === '') return NO;
     
-    if (editor.execCommand('insertimage', false, value)) {
+    if (doc.execCommand('insertimage', false, value)) {
       this.set('isEditing', YES);
       return YES;
     }
@@ -817,17 +832,17 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   // FIXME: [MT] execCommand('inserthml') occassionaly throws an error in FF,
   // have to find a better way to insert HTML snippets
   insertHTML: function(value) {
-    var editor = this._editor;
-    if (!editor) return NO;
+    var doc = this._document;
+    if (!doc) return NO;
     if (SC.none(value) || value === '') return NO;
         
     if (SC.browser.msie) {
-      editor.selection.createRange().pasteHTML(value);       
+      doc.selection.createRange().pasteHTML(value);       
       this.set('isEditing', YES);  
       return YES;
          
     } else {
-      if (editor.execCommand('inserthtml', false, value)) {
+      if (doc.execCommand('inserthtml', false, value)) {
         this.set('isEditing', YES);
         return YES;
       }
@@ -952,10 +967,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     @returns {Boolean} if the operation was successul or not
   */
   commitEditing: function() {
-    var editor = this._editor;
-    if (!editor) return NO;
+    var doc = this._document;
+    if (!doc) return NO;
     
-    var value = editor.body.innerHTML;
+    var value = doc.body.innerHTML;
     if (this.get('cleanInsertedText')) {
       value = this.cleanWordHTML(value);
     }
@@ -978,8 +993,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     this.set('isEditing', NO);
     return YES;
   },
-  
-  // Obsevers and Private Functions  ==================================================================
   
   /**
     Adding an observer that checks if the current selection is an image
@@ -1056,16 +1069,16 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   
   /** @private */
   _updateLayout: function() {
-    var editor = this._editor;
-    if (!editor) return;
+    var doc = this._document;
+    if (!doc) return;
     
     var width, height;
     if (SC.browser.msie) {
-      width = editor.body.scrollWidth;
-      height = editor.body.scrollHeight;
+      width = doc.body.scrollWidth;
+      height = doc.body.scrollHeight;
     } else {
-      width = editor.body.offsetWidth;
-      height = editor.body.offsetHeight;
+      width = doc.body.offsetWidth;
+      height = doc.body.offsetHeight;
     }
 
     // make sure height/width doesn't shrink beyond the initial value when the
@@ -1088,6 +1101,69 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       this.adjust(layout);
       this.propertyDidChange('layout');
     }
+  },
+  
+  /** @private */
+  _getFrame: function() {
+    var frame;
+    if (SC.browser.msie) {
+      frame = document.frames(this.get('frameName'));
+    } else {
+      frame = this.$('iframe').firstObject();
+    }
+    
+    if (!SC.none(frame)) return frame;
+    return null;
+  },
+  
+  /** @private */
+  _getDocument: function() {
+    var frame = this._getFrame();
+    if (SC.none(frame)) return null;
+    
+    var editor;
+    if (SC.browser.msie) {
+      editor = frame.document;
+    } else {
+      editor = frame.contentDocument;
+    }
+    
+    if (SC.none(editor)) return null;
+    return editor;
+  },
+  
+  /** @private */
+  _getSelection: function() {
+    var selection;
+    if (SC.Browser.msie) {
+      selection = this._getDocument().selection;
+    } else {
+      selection = this._getFrame().contentWindow.getSelection();
+    }
+    return selection;
+  },
+  
+  /** @private */
+  _getSelectedElemented: function() {
+    var selection = this._getSelection();
+    var selectedElement;
+    
+    if (SC.Browser.msie) {
+      selectedElement = selection.createRange().parentElement();
+    } else {
+      var anchorNode = selection.anchorNode;
+      var focusNode = selection.focusNode;
+        
+      if (anchorNode && focusNode) {
+        if (anchorNode.nodeType === 3 && focusNode.nodeType === 3) {
+          if (anchorNode.parentNode === focusNode.parentNode) {
+            selectedElement = anchorNode.parentNode;
+          }
+        }
+      }
+    }
+    
+    return selectedElement;
   }
   
 });

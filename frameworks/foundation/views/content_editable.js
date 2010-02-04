@@ -971,7 +971,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       value = value.replace(/\%3C/gi, '<');
       value = value.replace(/\%3E/gi, '>');
       value = value.replace(/\%20/gi, ' ');
-      value = value.replace(/\%amp/gi, '&');
+      value = value.replace(/&amp;/gi, '&');
     }
 
     this.setIfChanged('value', value);

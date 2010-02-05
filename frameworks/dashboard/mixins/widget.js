@@ -2,8 +2,6 @@
 // SCUI.Widget
 // ==========================================================================
 
-sc_require('core');
-
 /** @class
 
   A convenience mixin for widget content.  This defines the API that

@@ -2,8 +2,6 @@
 // SCUI.WidgetView
 // ==========================================================================
 
-sc_require('core');
-
 /** @class
 
   Provides a widget container view used by the SCUI.DashboardView.  It holds

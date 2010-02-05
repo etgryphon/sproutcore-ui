@@ -2,8 +2,6 @@
 // SCUI.DashboardDelegate
 // ==========================================================================
 
-sc_require('core');
-
 /** @mixin
 
   Mixin for delegates of SCUI.DashboardView so that it can request unique

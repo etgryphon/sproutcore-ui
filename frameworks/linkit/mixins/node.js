@@ -29,6 +29,7 @@ LinkIt.Node = {
     This is the property that is called on the node to get back an array of objects
   */
   linksKey: 'links',
+
   positionKey: 'position',
   
   /**

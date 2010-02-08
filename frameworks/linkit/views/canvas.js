@@ -233,14 +233,6 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     
     return this ;
   },
-
-  // reloadIfNeeded: function() {
-  //   return sc_super();
-  // },
-
-  // willReload: function(invalid) {
-  //   //console.log('%@.willReload()'.fmt(this));
-  // },
   
   didReload: function(invalid) {
     //console.log('%@.didReload()'.fmt(this));
@@ -355,7 +347,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   */
   createItemView: function(exampleClass, idx, attrs) {
     var view, frame;
-    var positionKey, layout, position;
+    var layout, position;
     var node = attrs.content;
 
     if (exampleClass) {
@@ -369,24 +361,16 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     }
 
     frame = view.get('frame');
-
-    // ask the node for its position
-    if (node) {
-      if (positionKey = attrs.content.get('positionKey')) {
-        position = attrs.content.get(positionKey);
-      }
-    }
+    position = this._getItemPosition(node);
 
     // generate a random position if it's not present
     if (!position) {
       position = this._genRandomPosition();
-      if (positionKey) {
-        node.set(positionKey, position);
-      }
+      this._setItemPosition(node, position);
     }
     
     // override the layout so we can control positioning of this node view
-    layout = { top: position.top, left: position.left, width: frame.width, height: frame.height };
+    layout = { top: position.y, left: position.x, width: frame.width, height: frame.height };
     view.set('layout', layout);
     return view;
   },
@@ -461,12 +445,12 @@ LinkIt.CanvasView = SC.CollectionView.extend({
       canvasX = evt.pageX - globalFrame.x;
       canvasY = evt.pageY - globalFrame.y;
       this._selectLink( {x: canvasX, y: canvasY} );
-    
+
       itemView = this.itemViewForEvent(evt);
       if (itemView) {
         this._dragData = SC.clone(itemView.get('layout'));
-        this._dragData.pageX = evt.pageX;
-        this._dragData.pageY = evt.pageY;
+        this._dragData.startPageX = evt.pageX;
+        this._dragData.startPageY = evt.pageY;
         this._dragData.view = itemView;
         this._dragData.didMove = NO; // hasn't moved yet; drag will update this
       }
@@ -474,83 +458,56 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     
     return YES;
   }, 
-  
+
+  mouseDragged: function(evt) {
+    var dX, dY;
+
+    if (this._dragData) {
+      this._dragData.didMove = YES; // so that mouseUp knows whether to report the new position.
+      dX = evt.pageX - this._dragData.startPageX;
+      dY = evt.pageY - this._dragData.startPageY;
+      this._dragData.view.adjust({ left: this._dragData.left + dX, top: this._dragData.top + dY });
+      
+      this.displayDidChange(); // so that links get redrawn
+    }
+    return YES;
+  },
+
   /**
   */
   mouseUp: function(evt) {
     var ret = sc_super();
-    var layout, content, key, newPosition;
+    var layout, content, newPosition;
     
     if (this._dragData && this._dragData.didMove) {
       layout = this._dragData.view.get('layout');
       content = this._dragData.view.get('content');
-      if (content && content.get('isNode') && (key = content.get('positionKey'))) {
-        newPosition = { left: layout.left, top: layout.top };
-        content.set(key, newPosition);
+
+      if (content && content.get('isNode')) {
+        newPosition = { x: layout.left, y: layout.top };
+        this._setItemPosition(content, newPosition);
       }
     }
     
     this._dragData = null; // clean up
     return ret;
   },
-  
-  mouseDragged: function(evt) {
-    if (this._dragData) {
-      this._dragData.didMove = YES; // so that mouseUp knows whether to report the new position.
-      
-      var i = this._dragData;
-      var dX = evt.pageX - i.pageX;
-      var dY = evt.pageY - i.pageY;
-      this._adjustViewLayoutOnDrag(i.view, i.zoneX, i.zoneY, dX, i, 'left', 'right', 'centerX', 'width');
-      this._adjustViewLayoutOnDrag(i.view, i.zoneY, i.zoneX, dY, i, 'top', 'bottom', 'centerY', 'height');
-      
-      this.displayDidChange();
-    }
-    return YES;
-  },
 
   // PRIVATE METHODS
-
-  /**
-  */
-  _adjustViewLayoutOnDrag: function(view, curZone, altZone, delta, i, headKey, tailKey, centerKey, sizeKey) {
-    // collect some useful values...
-    var inAltZone = false; //(altZone === HEAD_ZONE) || (altZone === TAIL_ZONE);
-    var head = i[headKey], tail = i[tailKey], center = i[centerKey], size = i[sizeKey];
-    //this block determines what layout coordinates you have (top, left, centerX,centerY, right, bottom)
-    //and adjust the view depented on the delta
-    if (!inAltZone && !SC.none(size)) {
-      if (!SC.none(head)) {
-        view.adjust(headKey, head + delta);
-      } else if (!SC.none(tail)) {
-        view.adjust(tailKey, tail - delta) ;
-      } else if (!SC.none(center)) {
-        view.adjust(centerKey, center + delta);
-      }
-    }
-  },
   
   _layoutForNodeView: function(nodeView, node) {
-    var layout = null;
-    if (nodeView && node) {
-      var frame = nodeView.get('frame');
-      var positionKey, position;
+    var layout = null, position, frame;
 
-      // ask the node for its position
-      if (node) {
-        if (positionKey = node.get('positionKey')) {
-          position = node.get(positionKey);
-        }
-      }
+    if (nodeView && node) {
+      frame = nodeView.get('frame');
+      position = this._getItemPosition(node);
 
       // generate a random position if it's not present
       if (!position) {
         position = this._genRandomPosition();
-        if (positionKey) {
-          node.set(positionKey, position);
-        }
+        this._setItemPosition(node, position);
       }
-    
+
       layout = { top: position.x, left: position.y, width: frame.width, height: frame.height };
     }
     return layout;
@@ -715,12 +672,40 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   },
   
   /**
+    Encapsulates the standard way the dashboard attempts to extract the last
+    position from the dashboard element.
+    Returns null if unsuccessful.
+  */
+  _getItemPosition: function(item) {
+    var posKey = item ? item.get('positionKey') : null;
+    var pos = posKey ? item.get(posKey) : null;
+
+    if (posKey && pos) {
+      pos = { x: (parseFloat(pos.x) || 0), y: (parseFloat(pos.y) || 0) };
+    }
+    
+    return pos;
+  },
+  
+  /**
+    Encapsulates the standard way the dashboard attempts to store the last
+    position on a dashboard element.
+  */
+  _setItemPosition: function(item, pos) {
+    var posKey = item ? item.get('positionKey') : null;
+
+    if (posKey) {
+      item.set(posKey, pos);
+    }
+  },
+  
+  /**
     Generates a random (x,y) where x=[10, 600), y=[10, 400)
   */
   _genRandomPosition: function() {
     return {
-      left: Math.floor(10 + Math.random() * 590),
-      top: Math.floor(10 + Math.random() * 390)
+      x: Math.floor(10 + Math.random() * 590),
+      y: Math.floor(10 + Math.random() * 390)
     };
   },
   

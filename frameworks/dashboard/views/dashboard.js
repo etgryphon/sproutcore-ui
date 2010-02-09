@@ -110,8 +110,8 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
 
     // First ask the item itself, then the dashboard delegate
     dashboardDelegate = this.get('dashboardDelegate'); // defaults to this
-    widgetViewClass = item.get(item.get('widgetViewClassKey')) || dashboardDelegate.dashboardWidgetViewFor(this, content, idx, item);
-    widgetEditViewClass = item.get(item.get('widgetEditViewClassKey')) || dashboardDelegate.dashboardWidgetEditViewFor(this, content, idx, item);
+    widgetViewClass = dashboardDelegate.dashboardWidgetViewFor(this, content, idx, item) || item.get(item.get('widgetViewClassKey'));
+    widgetEditViewClass = dashboardDelegate.dashboardWidgetEditViewFor(this, content, idx, item) || item.get(item.get('widgetEditViewClassKey'));
     
     // first, determine the class to use
     isGroupView = groupIndexes && groupIndexes.contains(idx);

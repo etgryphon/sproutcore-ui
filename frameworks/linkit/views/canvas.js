@@ -2,8 +2,6 @@
 // LinkIt.CanvasView
 // ==========================================================================
 
-sc_require('core');
-
 /** @class
 
   This is the canvas tag that draws the line on the screen

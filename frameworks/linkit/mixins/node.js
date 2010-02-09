@@ -11,10 +11,10 @@
   @version: 0.1
 */
 
-sc_require('core');
-
 LinkIt.Node = {
 /* Node Mixin */
+
+  // PUBLIC PROPERTIES
 
   /**
   @public:  Properties that need to be set for the internal LinkIt Calls

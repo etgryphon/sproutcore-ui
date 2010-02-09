@@ -1,5 +1,3 @@
-sc_require('core');
-
 LinkIt.NodeView = {
   
   isNodeView: YES,

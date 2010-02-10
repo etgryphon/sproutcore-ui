@@ -32,12 +32,12 @@ SCUI.DashboardDelegate = {
     Return null, a view class, or a string containing the fully qualified name of a view class.
   */
   dashboardWidgetViewFor: function(dashboardView, content, contentIndex, item) {
-    console.log('%@.dashboardWidgetViewFor()'.fmt(this));
+    //console.log('%@.dashboardWidgetViewFor()'.fmt(this));
     return null;
   },
   
   dashboardWidgetEditViewFor: function(dashboardView, content, contentIndex, item) {
-    console.log('%@.dashboardWidgetEditViewFor()'.fmt(this));
+    //console.log('%@.dashboardWidgetEditViewFor()'.fmt(this));
     return null;
   }
 

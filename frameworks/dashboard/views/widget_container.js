@@ -178,7 +178,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     var sizeKey = this.getPath('content.sizeKey');
     var size = sizeKey ? this.getPath('content.%@'.fmt(sizeKey)) : null;
 
-    console.log('%@._sizeDidChange()'.fmt(this));
+    //console.log('%@._sizeDidChange()'.fmt(this));
 
     if (size) {
       this.adjust({ width: (parseFloat(size.width) || 0), height: (parseFloat(size.height) || 0) });
@@ -189,7 +189,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     var childViews = this.get('childViews') || [];
     var isEditing = this.getPath('content.isEditing');
     
-    console.log('%@._isEditingDidChange(isEditing: %@)'.fmt(this, isEditing));
+    //console.log('%@._isEditingDidChange(isEditing: %@)'.fmt(this, isEditing));
     if (isEditing) {
       // swap to the widget's editing view
       if (this._editView && (this._editView !== this._activeView)) {
@@ -244,7 +244,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
 
   _canDeleteWidgetDidChange: function() {
     var childViews = this.get('childViews') || [];
-    console.log('%@._canDeleteWidgetDidChange(canDeleteWidget: %@)'.fmt(this, this.get('canDeleteWidget')));
+    //console.log('%@._canDeleteWidgetDidChange(canDeleteWidget: %@)'.fmt(this, this.get('canDeleteWidget')));
     
     if (this.get('canDeleteWidget')) {
       if (this._deleteHandleView && childViews.indexOf(this._deleteHandleView) < 0) {

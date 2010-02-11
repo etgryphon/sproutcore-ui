@@ -102,7 +102,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     viewClass = this._getViewClass('widgetEditViewClass');
     if (!viewClass) {
       viewClass = SCUI.MissingWidgetView.extend({
-        backgroundColor: 'yellow',
+        backgroundColor: '#729c5a',
         message: "Widget's edit view is missing.".loc()
       });
     }

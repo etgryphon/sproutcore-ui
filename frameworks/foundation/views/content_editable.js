@@ -1,7 +1,7 @@
 // ==========================================================================
 // SCUI.ContentEditableView
 // ==========================================================================
-
+/*globals NodeFilter*/
 require('core');
 require('panes/context_menu_pane');
 
@@ -1019,7 +1019,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       
       if (range.startContainer === range.endContainer) {      
         
-        if (range.startContainer.parentNode.nodeName === 'A') {
+        if (range.startContainer.parentNode.nodeName === 'A' && range.commonAncestorContiner !== node) {
           currentHyperlink = range.startContainer.parentNode;
         } else {
           currentHyperlink = null;
@@ -1049,6 +1049,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     this.set('selectedHyperlink', currentHyperlink);
     
   }.observes('selection'),
+
 
   isEditingDidChange: function() {
    if (this.get('autoCommit')) {

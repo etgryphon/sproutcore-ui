@@ -786,13 +786,46 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!(doc && frame)) return NO;
     if (SC.none(value) || value === '') return NO;
     
-    if (doc.execCommand('createlink', false, value)) { 
-      // FIXME: [MT] This fails to find the hyperlink node when the 
-      // whole text is highlighted
+    /*
+      HACK: [MT] - This is an interesting piece of DOM hack... The problem
+      with execCommand('createlink') is it only tells you if hyperlink
+      creation was successful... it doesn't return the hyperlink that was
+      created. 
+      
+      To counter this problem, I'm creating a random string and
+      assigning it as the href. If the frame.contentWindow.getSelection()
+      method fails, I iterate over the children of the currently selected
+      node and find the anchor tag with the crazy url and assign it as the
+      currently selected hyperlink, after which I do a bit of cleanup
+      and set value to the href property.
+    */
+    
+    var radomUrl = '%@%@%@%@%@'.fmt('http://',
+                                    this.get('frameName'),
+                                    new Date().getTime(), 
+                                    parseInt(Math.random()*100000, 0),
+                                    '.com/');
+    
+    if (doc.execCommand('createlink', false, radomUrl)) {
       var node = frame.contentWindow.getSelection().focusNode;
       var hyperlink = node.parentNode;
-      this.set('selectedHyperlink', hyperlink);
 
+      if (hyperlink.nodeName.toLowerCase() !== 'a') {
+        var child;
+        for (var x = 0, y = node.childNodes.length; x < y; x++) {
+          child = node.childNodes[x];
+          if (child.nodeName.toLowerCase() === 'a') {
+            if (child.href === radomUrl) {
+              hyperlink = child;
+              break;
+            }
+          }
+        }
+      }
+      
+      hyperlink.href = value;
+      
+      this.set('selectedHyperlink', hyperlink);
       this.set('isEditing', YES);
       return YES;
     }

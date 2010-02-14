@@ -41,6 +41,11 @@ LinkIt.Terminal = {
   */
   node: null,
   
+  /**
+    @private linkCache...
+  */
+  _linkCache: null,
+  
   // *** SC.DropTarget ***
   
   /**
@@ -51,6 +56,15 @@ LinkIt.Terminal = {
     is true on view creation.
   */  
   isDropTarget: YES,
+  
+  /**
+    @public @property
+  */
+  terminalKey: function(){
+    var n = this.get('node');
+    var t = this.get('terminal');
+    return '%@:%@'.fmt(SC.guidFor(n), t);
+  }.property('node', 'terminal').cacheable(),
 
   // PUBLIC METHODS
   
@@ -305,21 +319,31 @@ LinkIt.Terminal = {
   },
   
   performDragOperation: function(drag, op) {
-    //LinkIt.log('%@.performDragOperation()'.fmt(this));
-    var node = this.get('node');
-    var otherTerminal = drag.source;
-    if (node && otherTerminal) {
-      var otherNode = otherTerminal.get('node');
-      if (otherNode) {
-        var links = this._createLinkObject(this, node, otherTerminal, otherNode);
-        node.createLink( links[0] ) ;
-        otherNode.createLink( links[1] );
+    var endNode, endTerm, startNode, startTerm;
+    LinkIt.log('%@.performDragOperation()'.fmt(this));
+    endNode = this.get('node');
+    startTerm = drag.source;
+    if (endNode && startTerm) {
+      startNode = startTerm.get('node');
+      if (startNode) {
+        var links = this._getLinkObjects(startTerm, startNode, this, endNode);
+        if (links[0]) startNode.createLink( links[0] ) ;
+        if (links[1]) endNode.createLink( links[1] );
       }
     }
     return op;
   },
   
   // PRIVATE METHODS
+  _getLinkObjects: function(startTerminal, startNode, endTerminal, endNode){
+    var key, links;
+    this._linkCache = this._linkCache || {};
+    
+    key = '%@ %@'.fmt(startTerminal.get('terminalKey'), endTerminal.get('terminalKey'));
+    links = this._linkCache[key] || this._createLinkObject(startTerminal, startNode, endTerminal, endNode);
+    this._linkCache[key] = links;
+    return links;
+  },
 
   _nodeAllowsLink: function(otherTerminal) {
     var myLinkObj, myNodeAccepted, otherLinkObj, otherNodeAccepted;
@@ -327,15 +351,10 @@ LinkIt.Terminal = {
       var myNode = this.get('node');
       var otherNode = otherTerminal.get('node');
       
-      // First, Check our node
-      var links = this._createLinkObject(this, myNode, otherTerminal, otherNode);
-      myNodeAccepted =  myNode ? myNode.canLink( links[0] ) : NO;
-      otherNodeAccepted = (otherNode && myNodeAccepted) ? otherNode.canLink( links[1] ) : NO;
-      
-      // Next, Check their node
-      //otherLinkObj = this._createLinkObject(otherTerminal, otherNode, this, myNode);
-      //otherNodeAccepted = otherNode ? otherNode.canLink( SC.Object.create( LinkIt.Link, otherLinkObj )) : NO;
-      
+      // First, Check nodes for compatability
+      var links = this._getLinkObjects(otherTerminal, otherNode, this, myNode);
+      myNodeAccepted =  (myNode && links[0]) ? myNode.canLink( links[0] ) : NO;
+      otherNodeAccepted = (otherNode && myNodeAccepted && links[1]) ? otherNode.canLink( links[1] ) : NO;            
     }
     return (myNodeAccepted && otherNodeAccepted);
   },

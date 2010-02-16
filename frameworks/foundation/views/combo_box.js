@@ -52,6 +52,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
     The currently selected item.
   */
   selectedItem: null,
+  
+  selectedItemKey:  null,
 
   /**
     The string value showing in the text field
@@ -285,6 +287,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
   insertNewline: function(evt) {
     this._keyPressed = NO;
     if (this._proposedItem) {
+      if(this.get('selectedItemKey')) this.set('selectedItemValue',this._proposedItem.get(this.get('selectedItemKey')));
       this.set('selectedItem', this._proposedItem);
     }
     return this.hideList(); // absorb it if we used [Enter] to select and item and close the list.
@@ -441,6 +444,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
   
   _selectItemAndHideList: function() {
     if (this._proposedItem) {
+      if(this.get('selectedItemKey')) this.set('selectedItemValue',this._proposedItem.get(this.get('selectedItemKey')));
       this.set('selectedItem', this._proposedItem);
     }
     this.hideList();

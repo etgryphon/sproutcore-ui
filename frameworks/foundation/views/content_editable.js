@@ -737,6 +737,21 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
   }.property('selectedHyperlink').cacheable(),
   
+  hyperlinkHoverValue: function(key, value) {
+    var hyperlink = this.get('selectedHyperlink');
+    if (!hyperlink) return '';
+        
+    if (value !== undefined) {
+      this.set('isEditing', YES);
+      hyperlink.title = value;
+      return value;
+      
+    } else {
+      return hyperlink.title;
+      
+    }
+  }.property('selectedHyperlink').cacheable(),
+  
   /**
     imageAlignment doesn't need to be updated everytime the selection changes... only 
     when the current selection is an image

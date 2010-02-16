@@ -70,6 +70,8 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
   */
   _runSearchOnItem: function(treeItem, search, searchRegex, searchKey) {
     var searchMatches = [];
+    if (SC.none(treeItem)) return searchMatches;
+    
     var children = treeItem.get('treeItemChildren');
     if (!children) children = treeItem.get('children');
     var key, searchLen;

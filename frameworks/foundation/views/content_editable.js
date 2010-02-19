@@ -1083,6 +1083,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       if (node.nodeName === 'IMG') {
         currentImage = node;
         
+        if(node.parentNode.nodeName === 'A') currentHyperlink = node.parentNode;
+        
       } else if (node.nodeName === 'A') {
         currentHyperlink = node;
         
@@ -1184,7 +1186,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   /** @private */
   _getSelection: function() {
     var selection;
-    if (SC.Browser.msie) {
+    if (SC.browser.msie) {
       selection = this._getDocument().selection;
     } else {
       selection = this._getFrame().contentWindow.getSelection();
@@ -1197,7 +1199,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var selection = this._getSelection();
     var selectedElement;
     
-    if (SC.Browser.msie) {
+    if (SC.browser.msie) {
       selectedElement = selection.createRange().parentElement();
     } else {
       var anchorNode = selection.anchorNode;

@@ -100,7 +100,6 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
     }
     return NO;
   },
-  
 
   /**
     Override remove() to restore the default browser context menus when this pane goes away.

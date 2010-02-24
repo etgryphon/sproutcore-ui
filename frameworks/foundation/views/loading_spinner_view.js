@@ -9,11 +9,11 @@
   the actual image so that more than 256 colors and transparency may be used.
 
   How to use:
-    {{{ //TBD
+    {{{
     var spinner=SCUI.LoadingSpinnerView.create({
       theme:'lightTrans',
       layout:{top:0,left:0,width:50,height:50}
-    }).append();
+    });
     
     var parent = MyApp.getPath('path_to_parent_view');
     spinner.appendTo(parent);
@@ -32,44 +32,56 @@ SCUI.LoadingSpinnerView = SC.View.extend({
   totalFrames:28,
   
   //Number of millisesconds to display each frame
-  frameChangeInterval:100,
+  frameChangeInterval:200,
   
   //+1 for every append call, -1 for every remove call
-  _appendCount:0,
+  callCount:0,
   
   //call this method to show the spinner. Pass in the view you want to append the spinner to. 
   //The method will return a reference to the spinner.
+  
+  //make parentView optional.
   appendTo: function(parentView){
-    if (this.get('_appendCount')===0)
+    if (this.get('callCount')===0)
     {
       parentView.appendChild(this);
     }
-    
+    this.set('isVisible',true);
     //increase append count on next runloop to make sure view has finished appending.
-    this.invokeLater(function(){this.set('_appendCount',this.get('_appendCount')+1);});
+    this.invokeLater(function(){this.set('callCount',this.get('callCount')+1);});
     return this;
   },
   
   //Call this method to hide the spinner. 
   //Note that the spinner will only hide once all calls to append have been balanced by an equal number of calls to remove.
   remove: function(){
-    this.set('_appendCount',this.get('_appendCount')-1);
-    if (this.get('_appendCount')<=0){
+    this.set('callCount',this.get('callCount')-1);
+    if (this.get('callCount')<=0){
       //stop animation
-      this.set('_state',this.get('STOPPED'));
+      this.set('_state',SCUI.LoadingSpinnerView.STOPPED);
       this.get('parentView').removeChild(this);
       this.destroy();
     }
   },
   
-  //starts the animation if _appendCount >= 0
-  _appendCountDidChange: function(){
-    if (this.get('_state')===this.get('STOPPED') && this.get('_appendCount')>0)
+  //starts the animation if callCount >= 0
+  callCountDidChange: function(){
+    //If spinner is in a page start the animation (if needed)
+    if (this.get('parentView')!==null)
     {
-      this.set('_state',this.get('PLAYING'));
-      this.get('spinnerView').nextFrame();
+      if (this.get('_state')===SCUI.LoadingSpinnerView.STOPPED && this.get('callCount')>0)
+      {
+        this.set('isVisible',true);
+        this.set('_state',SCUI.LoadingSpinnerView.PLAYING);
+        this.get('spinnerView').nextFrame();
+      }
     }
-  }.observes('_appendCount'),
+    //handle the case where the callCount is changed externally
+    if (this.get('callCount')<=0){
+      this.set('isVisible',false);
+      this.set('_state',SCUI.LoadingSpinnerView.STOPPED);
+    }
+  }.observes('callCount'),
   
   //SCUI includes the following themes by default: darkTrans, lightTrans, darkSolidAqua, darkSolidWhite, lightSolidBlack, lightSolidGreen.
   //You can add your own themes by creating a CSS class with the name of the theme and specifying a background-image with the sprite
@@ -84,12 +96,15 @@ SCUI.LoadingSpinnerView = SC.View.extend({
     
     currentFrame:0,
     
-    frameChangeInterval: 100,
+    frameChangeInterval: 200,
+    
+    _state:null,
     
     init:function(){
       sc_super();
       this.get('classNames').push(this.getPath('parentView.theme'));
       this.set('frameChangeInterval',this.getPath('parentView.frameChangeInterval'));
+      this.set('_state',this.getPath('parentView._state'));
     },
     
     nextFrame:function(){
@@ -97,9 +112,9 @@ SCUI.LoadingSpinnerView = SC.View.extend({
       var offsetY=0-this.get('layout').height*currentFrame;
       this.$().css('background-position','0px %@1px'.fmt(offsetY));
       //schedule next frame if animation is still supposed to play
-      if (this.get('_state')===this.get('PLAYING'))
+      if (this.get('currentState')===SCUI.LoadingSpinnerView.PLAYING)
       {
-        this.invokeLater('nextFrame',this.get('frameChangeInterval'));  
+        this.invokeLater(function(){this.nextFrame();},this.get('frameChangeInterval'));  
       }
       currentFrame+=1;
       if (currentFrame===this.getPath('parentView.totalFrames'))
@@ -107,12 +122,18 @@ SCUI.LoadingSpinnerView = SC.View.extend({
         currentFrame=0;
       }
       this.set('currentFrame',currentFrame);
-    }
+    },
+    
+    currentState: function(){
+      return this.getPath('parentView._state');
+    }.property()
   }),
   
-  PLAYING: 'PLAYING',
-  STOPPED: 'STOPPED',
-
   _state: 'STOPPED'
 
+});
+
+SC.mixin(SCUI.LoadingSpinnerView,{
+  PLAYING: 'PLAYING',
+  STOPPED: 'STOPPED'
 });

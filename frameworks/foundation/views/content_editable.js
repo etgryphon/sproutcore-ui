@@ -207,6 +207,17 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
     
     var doc = this._document;
+  
+    //field merge stuff
+    //TODO: [MB] make this more generic
+    var head = doc.getElementsByTagName('head')[0];
+    if(head){
+      var el = doc.createElement("style");
+      el['type'] = "text/css";
+      el.innerHTML = ".eloqua-field-merge {background: #80fbdf;border: 1px solid #80fbdf;-moz-border-radius: 3px;-webkit-border-radius: 3px;}";
+      head.appendChild(el);
+      el = head = null; //clean up memory
+    }
     
     // set contentEditable to true... this is the heart and soul of the editor
     var value = this.get('value');

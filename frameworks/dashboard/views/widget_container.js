@@ -86,18 +86,13 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     correct set of child views at run-time.
   */
   createChildViews: function() {
+    var childViews = [];
     var viewClass;
     var content = this.get('content');
-    var frame;
-    var childViews = [];
+    var isEditing = content ? content.get('isEditing') : NO;
+    var showDoneButton = content ? content.get('showDoneButton') : NO;
+    var canEdit = content ? content.get('canEdit') : NO;
 
-    // create the widget view
-    viewClass = this._getViewClass('widgetViewClass');
-    if (!viewClass) {
-      viewClass = SCUI.MissingWidgetView;
-    }
-    this._widgetView = this.createChildView(viewClass.design(), { content: content });
-    
     // create the edit view
     viewClass = this._getViewClass('widgetEditViewClass');
     if (!viewClass) {
@@ -106,34 +101,39 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
         message: "Widget's edit view is missing.".loc()
       });
     }
-    this._editView = this.createChildView(viewClass.design(), { content: content });
+    this._editView = this.createChildView(viewClass, { content: content, isVisible: (canEdit && isEditing) });
+    childViews.push(this._editView);
+
+    // create the done button
+    viewClass = this._getViewClass('doneButtonViewClass');
+    if (viewClass) {
+      this._doneButtonView = this.createChildView(viewClass, { target: this, action: 'commitEditing', isVisible: (canEdit && isEditing && showDoneButton) });
+      childViews.push(this._doneButtonView);
+    }
+
+    // create the widget view
+    viewClass = this._getViewClass('widgetViewClass');
+    if (!viewClass) {
+      viewClass = SCUI.MissingWidgetView;
+    }
+    this._widgetView = this.createChildView(viewClass, { content: content, isVisible: (!isEditing || !canEdit) });
+    childViews.push(this._widgetView);
+
+    // create the edit handle view
+    viewClass = this._getViewClass('editHandleViewClass');
+    if (viewClass) {
+      this._editHandleView = this.createChildView(viewClass, { target: this, action: 'beginEditing', isVisible: (canEdit && !isEditing) });
+      childViews.push(this._editHandleView);
+    }
     
     // create the delete handle view
     viewClass = this._getViewClass('deleteHandleViewClass');
     if (viewClass) {
-      this._deleteHandleView = this.createChildView(viewClass.design(), { target: this, action: 'deleteWidget' });
-    }
-    
-    // create the edit handle view
-    viewClass = this._getViewClass('editHandleViewClass');
-    if (viewClass) {
-      this._editHandleView = this.createChildView(viewClass.design(), { target: this, action: 'beginEditing' });
-    }
-    
-    // create the done button
-    viewClass = this._getViewClass('doneButtonViewClass');
-    if (viewClass) {
-      this._doneButtonView = this.createChildView(viewClass.design(), { target: this, action: 'commitEditing' });
+      this._deleteHandleView = this.createChildView(viewClass, { target: this, action: 'deleteWidget', isVisible: this.get('canDeleteWidget') });
+      childViews.push(this._deleteHandleView);
     }
     
     this.set('childViews', childViews);
-  },
-
-  didCreateLayer: function() {
-    sc_super();
-    // console.log('%@.didCreateLayer()'.fmt(this));
-    this._isEditingDidChange();
-    this._canDeleteWidgetDidChange();
   },
 
   willDestroyLayer: function() {
@@ -186,75 +186,31 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
   },
 
   _isEditingDidChange: function() {
-    var childViews = this.get('childViews') || [];
-    var isEditing = this.getPath('content.isEditing');
-    
-    //console.log('%@._isEditingDidChange(isEditing: %@)'.fmt(this, isEditing));
-    if (isEditing) {
-      // swap to the widget's editing view
-      if (this._editView && (this._editView !== this._activeView)) {
-        if (childViews.indexOf(this._activeView) >= 0) {
-          this.replaceChild(this._editView, this._activeView);
-        }
-        else {
-          this.appendChild(this._editView);
-        }
-        this._activeView = this._editView;
-      }
-    
-      // remove the edit handle
-      if (childViews.indexOf(this._editHandleView) >= 0) {
-        this.removeChild(this._editHandleView);
-      }
-    
-      // add a done button if desired
-      if (this._doneButtonView && this.getPath('content.showDoneButton') && (childViews.indexOf(this._doneButtonView) < 0)) {
-        this.insertBefore(this._doneButtonView, this._deleteHandleView);
-      }
+    var content = this.get('content');
+    var isEditing = content ? content.get('isEditing') : NO;
+    var canEdit = content ? content.get('canEdit') : NO;
+    var showDoneButton = content ? content.get('showDoneButton') : NO;
+
+    if (this._editView) {
+      this._editView.set('isVisible', (canEdit && isEditing));
     }
-    else {
-      // swap to the widget's face view
-      if (this._widgetView && (this._widgetView !== this._activeView)) {
-        if (childViews.indexOf(this._activeView) >= 0) {
-          this.replaceChild(this._widgetView, this._activeView);
-        }
-        else {
-          this.appendChild(this._widgetView);
-        }
-        this._activeView = this._widgetView;
-      }
+
+    if (this._doneButtonView) {
+      this._doneButtonView.set('isVisible', (canEdit && isEditing && showDoneButton));
+    }
+
+    if (this._widgetView) {
+      this._widgetView.set('isVisible', (!isEditing || !canEdit));
+    }
     
-      // remove the done button
-      if (childViews.indexOf(this._doneButtonView) >= 0) {
-        this.removeChild(this._doneButtonView);
-      }
-    
-      if (this.getPath('content.canEdit')) { // if editable, show the edit handle
-        if (this._editHandleView && (childViews.indexOf(this._editHandleView) < 0)) {
-          this.insertBefore(this._editHandleView, this._deleteHandleView);
-        }
-      }
-      else { // if not editable, make sure it has no edit handle
-        if (childViews.indexOf(this._editHandleView) >= 0) {
-          this.removeChild(this._editHandleView);
-        }
-      }
+    if (this._editHandleView) {
+      this._editHandleView.set('isVisible', (canEdit && !isEditing));
     }
   },
 
   _canDeleteWidgetDidChange: function() {
-    var childViews = this.get('childViews') || [];
-    //console.log('%@._canDeleteWidgetDidChange(canDeleteWidget: %@)'.fmt(this, this.get('canDeleteWidget')));
-    
-    if (this.get('canDeleteWidget')) {
-      if (this._deleteHandleView && childViews.indexOf(this._deleteHandleView) < 0) {
-        this.appendChild(this._deleteHandleView);
-      }
-    }
-    else {
-      if (childViews.indexOf(this._deleteHandleView) >= 0) {
-        this.removeChild(this._deleteHandleView);
-      }
+    if (this._deleteHandleView) {
+      this._deleteHandleView.set('isVisible', this.get('canDeleteWidget'));
     }
   }.observes('canDeleteWidget'),
 

@@ -21,13 +21,12 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
   
   acceptsFirstResponder: YES,
   
-  allowsEmptySelection: YES,
-  allowsMultipleSelection: NO,
-  
   /**
     Deletion of content via delete keys is not allowed as we have a special state to handle that.
   */
   canDeleteContent: NO,
+  
+  allowDeselectAll: YES,
   
   /**
     Don't change this.  This view is the base view for each widget and will contain
@@ -179,9 +178,9 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
   },
   
   mouseDown: function(evt) {
-    var itemView;
+    var itemView, ret;
 
-    sc_super();
+    ret = sc_super();
 
     // Since a mouse down could be the start of a drag, save all
     // the data we'll need for it
@@ -194,16 +193,17 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
         this._dragData.startPageY = evt.pageY;
         this._dragData.view = itemView;
         this._dragData.didMove = NO; // haven't moved yet
+        ret = YES;
       }
     }
     
-    return YES;
+    return ret;
   },
   
   mouseDragged: function(evt) {
-    var dX, dY;
+    var dX, dY, ret;
 
-    sc_super();
+    ret = sc_super();
 
     // We're in the middle of a drag, so adjust the view using the current drag delta
     if (this._dragData) {
@@ -212,14 +212,17 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       dX = evt.pageX - this._dragData.startPageX;
       dY = evt.pageY - this._dragData.startPageY;
       this._dragData.view.adjust({ left: this._dragData.left + dX, top: this._dragData.top + dY });
+
+      ret = YES;
     }
-    return YES;
+
+    return ret;
   },
   
   mouseUp: function(evt) {
-    var content, frame, finalPos;
+    var content, frame, finalPos, ret;
 
-    sc_super();
+    ret = sc_super();
 
     // If this mouse up comes at the end of a drag of a widget
     // view, try to update the widget's model with new position
@@ -232,10 +235,12 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
         finalPos = { x: frame.x, y: frame.y };
         this._setItemPosition(content, finalPos);
       }
+
+      ret = YES;
     }
 
     this._dragData = null; // clean up
-    return YES;
+    return ret;
   },
   
   // PRIVATE METHODS

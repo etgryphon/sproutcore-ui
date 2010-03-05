@@ -251,14 +251,18 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
       objects = objects.sort(function(a, b) {
         if (nameKey) {
-          a = a.get ? a.get(nameKey) : a[nameKey] ;
-          b = b.get ? b.get(nameKey) : b[nameKey] ;
+          a = a.get ? a.get(nameKey) : a[nameKey];
+          b = b.get ? b.get(nameKey) : b[nameKey];
         }
-        return (a < b) ? -1 : ((a > b) ? 1 : 0) ;
+        
+        a = (SC.typeOf(a) === SC.T_STRING) ? a.toLowerCase() : a;
+        b = (SC.typeOf(b) === SC.T_STRING) ? b.toLowerCase() : b;
+
+        return (a < b) ? -1 : ((a > b) ? 1 : 0);
       });
     }
     
-    return objects ;
+    return objects;
   },
 
   /**

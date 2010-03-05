@@ -2,7 +2,7 @@ var pane = SC.ControlTestPane.design({
 
   layout: { right: 5, width: 250, top: 65, bottom: 5 }
 
-}).add("ComboBoxView", SCUI.ComboBoxView, {
+}).add("ComboBoxView", SCUI.ComboBoxView_Old, {
   
   layout: { top: 5, left: 5, right: 5, height: 22 }
 

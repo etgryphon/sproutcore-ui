@@ -1,126 +1,193 @@
-// ==========================================================================
-// SCUI.ComboBoxView
-// ==========================================================================
-
 sc_require('mixins/simple_button');
 
 /** @class
 
   This view creates a combo-box text field view with a dropdown list view
   for type ahead suggestions; useful as a search field.
+  
+  'objects' should be set to an array of candidate items.
+  'value' will be the item selected, just like any SC.Control.
 
-  @extends SC.View, SC.Editable
+  @extends SC.View, SC.Control, SC.Editable
   @author Jonathan Lewis
 */
 
-SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
+SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
   // PUBLIC PROPERTIES
 
-  classNames: ['scui-combobox-view'],
-
-  isEditable: YES,
+  classNames: 'scui-combobox-view',
   
-  /**
-    The width of the drop-down button which is right-justified
-    next to the text field.
-  */
-  dropDownButtonWidth: 11,
-  
-  /**
-    The height of the drop-down button which is right-justified
-    next to the text field.
-  */
-  dropDownButtonHeight: 7,
+  isEditable: function() {
+    return this.get('isEnabled');
+  }.property('isEnabled').cacheable(),
 
   /**
-    Override this if you want to set your own CSS classes on the
-    drop-down button.  Should be an array of class names.
+    An array of items that will form the menu you want to show.
   */
-  dropDownButtonClassNames: ['scui-combobox-dropdown-button-view'],
+  objects: null,
   
   /**
-    An array of available items; may be strings.  These values show
-    up in the drop-down pane when you start typing in the text field.
+    The value represented by this control.  If you have defined a 'valueKey',
+    this will be 'selectedObject[valueKey]', otherwise it will be
+    'selectedObject' itself.
+    
+    If 'value' gets set to a value not found in 'objects' or, if 'valueKey' is
+    defined, in 'object[valueKey]s', then 'value' and 'selectedObject' will be
+    null out.
+
+    Setting this to null also forces 'selectedObject' to null.
+    
+    @property {Object}
   */
-  content: null,
-  contentValueKey: null,
-  contentHasIcon: NO,
-  contentIconKey: null,
+  value: null,
 
   /**
-    The currently selected item.
+    Provided because we have to keep track of this internally -- the
+    actual item from 'objects' that was selected, regardless of how we are
+    displaying it or what property on it is considered its 'value'.
+    
+    Usually you won't use this -- 'value' is the normal property for this
+    purpose.  However, this is also fully bindable, etc.
   */
-  selectedItem: null,
-  
-  selectedItemKey:  null,
+  selectedObject: null,
 
   /**
-    The string value showing in the text field
+     Set this to a non-null value to use a key from the passed set of objects
+     as the value for the options popup.  If you don't set this, then the
+     objects themselves will be used as the value.
   */
-  textFieldValue: null,
+  valueKey: null,
   
   /**
-    Set to YES if you'd like to do your own searching and content autosuggesting.
-    In that case, use 'filter' as your query string, and update the 'content' array
-    property when you have new results to show in the drop-down box.
+    If you set this to a non-null value, then the name shown for each 
+    menu item will be pulled from the object using the named property.
+    if this is null, the collection objects themselves will be used.
+  */
+  nameKey: null,
+
+  /**
+    If this is non-null, the drop down list will add an icon for each
+    object in the list.
+  */
+  iconKey: null,
+
+  /**
+   If you set this to a non-null value, then the value of this key will
+   be used to sort the objects.  If this is not set, then nameKey will
+   be used.
+  */
+  sortKey: null,
+  
+  /**
+    if true, it means that no sorting will occur, objects will appear 
+    in the same order as in the array
+  */  
+  disableSort: NO,
+  
+  /**
+    Bound to the hint property on the combo box's text field view.
+  */
+  hint: null,
+
+  /**
+    Search string being used to filter the 'objects' array above.
+    Unless you explicitly set it, it is always whatever was _typed_
+    in the text field view (text that is a result of key presses).
+    Note that this is not always the same as the text in the field, since
+    that can also change as a result of 'value' (the selected object)
+    changing, or the user using arrow keys to highlight objects in the
+    drop down list.  You want to see the names of these objects in the text
+    field, but you don't want to trigger a filter change in those cases,
+    so it doesn't.
+  */
+  filter: null,
+
+  /**
+    If you do not want to use the combo box's internal filtering
+    algorithm, set this to YES.  In this case, if you want to filter
+    'objects' in your own way, you would need to watch the 'filter'
+    property and update 'objects' as desired.
   */
   useExternalFilter: NO,
 
   /**
-    The filter string, based on what is typed in the text field.  Might be different from 'textFieldValue'
-    as it is only updated by typing in the text field, not by autocomplete text inserts.
+    'objects' above, filtered by 'filter', then optionally sorted.
+    If 'useExternalFilter' is YES, this property does nothing but
+    pass 'objects' through unchanged.
   */
-  filter: null,
+  filteredObjects: function() {
+    var ret, filter, objects, nameKey, name, that;
 
-  displayProperties: ['isEnabled', 'isEnabledInPane'],
+    if (this.get('useExternalFilter')) {
+      ret = this.get('objects');
+    }
+    else {
+      objects = this.get('objects') || [];
+      nameKey = this.get('nameKey');
+
+      filter = this._sanitizeFilter(this.get('filter')) || '';
+      filter = filter.toLowerCase();
+
+      ret = [];
+      that = this;
+
+      objects.forEach(function(obj) {
+        name = that._getObjectName(obj, nameKey);
+
+        if ((SC.typeOf(name) === SC.T_STRING) && (name.toLowerCase().search(filter) >= 0)) {
+          ret.push(obj);
+        }
+      });
+    }
+
+    return this.sortObjects(ret);
+  }.property('objects', 'filter').cacheable(),
+
+  textFieldView: SC.TextFieldView.extend({
+    classNames: 'scui-combobox-text-field-view',
+    layout: { left: 0, top: 0, bottom: 0, right: 22 }
+  }),
+  
+  dropDownButtonView: SC.View.extend( SCUI.SimpleButton, {
+    classNames: 'scui-combobox-dropdown-button-view',
+    layout: { right: 0, top: 0, bottom: 0, width: 22 }
+  }),
+
+  displayProperties: ['isEditing'],
 
   // PUBLIC METHODS
   
-  didCreateLayer: function() {
+  init: function() {
     sc_super();
     this._createListPane();
+    this._valueDidChange();
   },
   
   createChildViews: function() {
-    var childViews = [];
-    var dropDownButtonWidth = this.get('dropDownButtonWidth') || 11;
-    var dropDownButtonHeight = this.get('dropDownButtonHeight') || 7;
+    var childViews = [], view;
+    var isEnabled = this.get('isEnabled');
+    
+    view = this.get('textFieldView');
+    if (SC.kindOf(view, SC.View) && view.isClass) {
+      view = this.createChildView(view, {
+        isEnabled: isEnabled,
+        hintBinding: SC.Binding.from('hint', this),
+        editableDelegate: this, // pass SC.Editable calls up to the owner view
+        keyDelegate: this, // the text field will be the key responder, but offer them to the owner view first
 
-    // Create the text field view
-    this._textFieldView = this.createChildView(
-      SC.TextFieldView.design({
-        classNames: ['scui-combobox-text-field-view'],
-        layout: { left: 0, top: 0, bottom: 0, right: dropDownButtonWidth },
-        valueBinding: SC.Binding.from('.textFieldValue', this),
-        keyDelegate: this, // the text field will offer key events to this combobox view first
-        editableDelegate: this, // the text field will tell us when to start / stop editing (i.e. when it gets or loses focus)
-        isEnabledBinding: SC.Binding.from('.isEnabledInPane', this).oneWay(),
-
+        // Override key handlers to first offer them to the delegate.
+        // Only call base class implementation if the delegate refuses the event.
         keyDown: function(evt) {
           var del = this.get('keyDelegate');
-          // let the key delegate take the event if it wants it (it returns YES if it takes it)
-          if (del && del.keyDown && del.keyDown(evt)) {
-            evt.stop();
-            return YES;
-          }
-          return sc_super();
-        },
-
-        keyUp: function(evt) {
-          var del = this.get('keyDelegate');
-          if (del && del.keyUp && del.keyUp(evt)) {
-            evt.stop();
-            return YES;
-          }
-          return sc_super();
+          return (del && del.keyDown && del.keyDown(evt)) || sc_super();
         },
         
-        fieldDidFocus: function(evt) {
-          this._isFocused = NO;
-          return sc_super();
+        keyUp: function(evt) {
+          var del = this.get('keyDelegate');
+          return (del && del.keyUp && del.keyUp(evt)) || sc_super();
         },
-
+        
         beginEditing: function() {
           var del = this.get('editableDelegate');
           var ret = sc_super();
@@ -138,29 +205,69 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
           }
           return ret;
         }
-      })
-    );
-    childViews.push(this._textFieldView);
+      });
+      childViews.push(view);
+      this.set('textFieldView', view);
+    }
+    else {
+      this.set('textFieldView', null);
+    }
 
-    // Add a button to show/hide the drop-down list
-    this._dropDownButtonView = this.createChildView(
-      SC.View.design( SCUI.SimpleButton, {
-        classNames: this.get('dropDownButtonClassNames') || [],
-        layout: { centerY: 0, height: dropDownButtonHeight, right: 16, width: dropDownButtonWidth },
+    view = this.get('dropDownButtonView');
+    if (SC.kindOf(view, SC.View) && view.isClass) {
+      view = this.createChildView(view, {
+        isEnabled: isEnabled,
         target: this,
         action: 'toggleList'
-      })
-    );
-    childViews.push(this._dropDownButtonView);
-    
+      });
+      childViews.push(view);
+      this.set('dropDownButtonView', view);
+    }
+    else {
+      this.set('dropDownButtonView', null);
+    }
+
     this.set('childViews', childViews);
   },
 
+  // for styling purposes, add a 'focus' CSS class when
+  // the combo box is in editing mode
+  renderMixin: function(context, firstTime) {
+    context.setClass('focus', this.get('isEditing'));
+  },
+
   /**
-    Implements SC.Editable.
-    Gives the text field focus.  Called automatically when you click in the text field itself or on the drop-down button.
+    override this method to implement your own sorting of the menu. By
+    default, menu items are sorted using the value shown or the sortKey
+
+    @param objects the unsorted array of objects to display.
+    @returns sorted array of objects
+  */
+  sortObjects: function(objects) {
+    var nameKey;
+
+    if (!this.get('disableSort') && objects && objects.sort){
+      nameKey = this.get('sortKey') || this.get('nameKey') ;
+
+      objects = objects.sort(function(a, b) {
+        if (nameKey) {
+          a = a.get ? a.get(nameKey) : a[nameKey] ;
+          b = b.get ? b.get(nameKey) : b[nameKey] ;
+        }
+        return (a < b) ? -1 : ((a > b) ? 1 : 0) ;
+      });
+    }
+    
+    return objects ;
+  },
+
+  /**
+    This may be called directly, or triggered by the
+    text field beginning editing.
   */
   beginEditing: function() {
+    var textField = this.get('textFieldView');
+
     if (!this.get('isEditable')) {
       return NO;
     }
@@ -168,53 +275,41 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
     if (this.get('isEditing')) {
       return YES;
     }
-      
+    
     this.set('isEditing', YES);
-      
-    this._keyPressed = NO;
-    this._proposedItem = null;
-      
     this.set('filter', null);
     
-    if (!this._textFieldView.get('isEditing')) {
-      this._textFieldView.beginEditing(); // this will cause the text field to take first responder, which we want it to have
+    if (textField && !textField.get('isEditing')) {
+      textField.beginEditing();
     }
-    
+
     return YES;
   },
-  
+
   /**
-    Implements SC.Editable.
-    Determines which item should be selected from the text in the text field.  It attempts to search
-    'content' for possible matches and if nothing is found, snaps back to the currently selected item if present.
-    Called automatically when the text field loses focus, or you can call it any time yourself, at which
-    point it will blur the text field for you.
+    This may be called directly, or triggered by the
+    text field committing editing.
   */
   commitEditing: function() {
-    if (this.get('isEditing')) {
-      this._keyPressed = NO;
-    
-      if (!this.get('textFieldValue')) {
-        this.setIfChanged('selectedItem', null);
-      }
-      
-      this._setItemAsTextFieldValue(this.get('selectedItem'));
-      this.set('isEditing', NO);
-    
-      this.hideList(); // make sure this gets closed
-    }
-    
-    this._proposedItem = null;
+    var textField = this.get('textFieldView');
 
-    if (this._textFieldView.get('isEditing')) {
-      this._textFieldView.commitEditing(); // allow the text field itself to resign first responder
+    if (this.get('isEditing')) {
+      // force it walk through its sequence one more time
+      // to make sure text field display is in sync with selected stuff
+      this._selectedObjectDidChange();
+
+      this.set('isEditing', NO);
+      this.hideList();
+    }
+
+    if (textField && textField.get('isEditing')) {
+      textField.commitEditing();
     }
     
     return YES;
   },
-  
+
   toggleList: function() {
-    //console.log('%@.toggleList()'.fmt(this));
     if (this._listPane && this._listPane.get('isPaneAttached')) {
       this.hideList();
     }
@@ -223,57 +318,73 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
     }
   },
 
-  /**
-    Returns YES if it did indeed show the list, otherwise NO.
-  */
+  // Show the drop down list if not already visible.
   showList: function() {
-    //console.log('%@.showList()'.fmt(this));
-    if (this._listPane && !this._listPane.get('isPaneAttached')) {
-      this._textFieldView.beginEditing();
-      this._listPane.popup(this, SC.PICKER_MENU);
-      this._listPane.get('contentView').scrollTo(0, 0);
-      return YES;
-    }
-    return NO;
-  },
+    var frame, width;
 
-  /**
-    Returns YES if it did indeed hide the list, otherwise NO.
-  */
+    if (this._listPane && !this._listPane.get('isPaneAttached')) {
+      this.beginEditing();
+
+      frame = this.get('frame');
+      width = frame ? frame.width : 200;
+    
+      this._listPane.adjust({ width: width, height: 150 });
+      this._listPane.popup(this, SC.PICKER_MENU);
+    }
+  },
+  
+  // Hide the drop down list if visible.
   hideList: function() {
-    //console.log('%@.hideList()'.fmt(this));
     if (this._listPane && this._listPane.get('isPaneAttached')) {
       this._listPane.remove();
-      return YES;
     }
+  },
+  
+  // The following key events come to us from the text field
+  // view.  It is the key responder, but we are its delegate.
+  keyDown: function(evt) {
+    this._keyDown = YES;
+    this._shouldUpdateFilter = NO; // only goes to true if typing text, which we'll discover below
+    return this.interpretKeyEvents(evt) ? YES : NO;
+  },
+
+  keyUp: function(evt) {
+    var ret = NO;
+
+    // If the text field is empty, the browser doesn't always
+    // send a keyDown() event, only a keyUp() event for arrow keys in Firefox, for example.
+    // To avoid double key handling, check to be sure we didn't get a keyDown()
+    // before attempting to use the event.
+    if (!this._keyDown) {
+      this._shouldUpdateFilter = NO;
+      ret = this.interpretKeyEvents(evt) ? YES : NO;
+    }
+
+    this._keyDown = NO;
+    return ret;
+  },
+  
+  insertText: function(evt) {
+    this._shouldUpdateFilter = YES; // someone typed something
+    this.showList();
     return NO;
   },
   
-  keyDown: function(evt) {
-    //console.log('%@.keyDown()'.fmt(this));
-    return this.interpretKeyEvents(evt);
+  deleteBackward: function(evt) {
+    this._shouldUpdateFilter = YES; // someone typed something
+    this.showList();
+    return NO;
+  },
+  
+  deleteForward: function(evt) {
+    this._shouldUpdateFilter = YES;
+    this.showList();
+    return NO;
   },
 
-  /**
-    Called by SC.View.interpretKeyEvents().
-    We pass up/down arrow keys on to the list view.
-  */
-  moveUp: function(evt) {
-    this._keyPressed = NO;
-    if (this._listPane) {
-      if (this._listPane.get('isPaneAttached')) {
-        this._listView.moveUp(evt);
-      }
-      else {
-        this.showList();
-      }
-    }
-    return YES;
-  },
-
+  // Send this event to the drop down list
   moveDown: function(evt) {
-    this._keyPressed = NO;
-    if (this._listPane) {
+    if (this._listPane && this._listView) {
       if (this._listPane.get('isPaneAttached')) {
         this._listView.moveDown(evt);
       }
@@ -284,244 +395,221 @@ SCUI.ComboBoxView = SC.View.extend( SC.Editable, {
     return YES;
   },
 
+  // Send this event to the drop down list
+  moveUp: function(evt) {
+    if (this._listPane && this._listView) {
+      if (this._listPane.get('isPaneAttached')) {
+        this._listView.moveUp(evt);
+      }
+      else {
+        this.showList();
+      }
+    }
+    return YES;
+  },
+
+  // Send this event to the drop down list to trigger
+  // the default action on the selection.
   insertNewline: function(evt) {
-    this._keyPressed = NO;
-    if (this._proposedItem) {
-      if(this.get('selectedItemKey')) this.set('selectedItemValue',this._proposedItem.get(this.get('selectedItemKey')));
-      this.set('selectedItem', this._proposedItem);
+    if (this._listPane && this._listPane.get('isPaneAttached')) {
+      return this._listView.insertNewline(evt); // invokes default action on ListView, same as double-click
     }
-    return this.hideList(); // absorb it if we used [Enter] to select and item and close the list.
+    return NO;
   },
 
-  insertText: function(evt) {
-    this._keyPressed = YES; // a change occurred via a key press
-    return NO; // don't handle it so the event will just pass through
-  },
-
-  /**
-    Pressing the escape key simply closes the list pane; doesn't affect
-    the selected item at all.
-  */
+  // escape key handler
   cancel: function(evt) {
-    this._keyPressed = NO;
-    return this.hideList(); // absorb the escape key if we used it to close the list
-  },
-
-  deleteBackward: function(evt) {
-    this._keyPressed = YES;
-    return NO;
-  },
-  
-  deleteForward: function(evt) {
-    this._keyPressed = YES;
-    return NO;
-  },
-
-  // PRIVATE METHODS
-  
-  /**
-    @private
-    Updates the filter text based on what is typed in the text field
-  */
-  _cbv_textFieldValueDidChange: function() {
-    var value;
-    //console.log('%@._cbv_textFieldValueDidChange(%@)'.fmt(this, this.get('textFieldValue')));
-    if (this._keyPressed && this.get('isEditing')) {
-      value = this.get('textFieldValue');
-      this._proposedItem = null;
-      this.set('filter', value);
-      this.showList();
+    if (this._listPane && this._listPane.get('isPaneAttached')) {
+      this.hideList();
     }
-    this._keyPressed = NO; // reset the flag
-  }.observes('textFieldValue'),
-
-  /**
-    @private
-    Takes the item selected in the drop down box and makes it the text in the text field
-  */
-  _cbv_listSelectionDidChange: function() {
-    //console.log('%@._listSelectionDidChange(%@)'.fmt(this, this.get('_listSelection')));
-    var sel = this.get('_listSelection');
-    this._proposedItem = sel ? sel.firstObject() : null;
-    this._setItemAsTextFieldValue(this._proposedItem);
-  }.observes('_listSelection'),
-
-  _cbv_selectedItemDidChange: function() {
-    var sel = this.get('selectedItem');
-    // console.log('%@._cbv_selectedItemDidChange(%@)'.fmt(this, sel));
-    this._setItemAsTextFieldValue(sel);
-  }.observes('selectedItem'),
-
-  /**
-    Keep the drop down list the same width as the combo box itself
-  */
-  _cbv_frameDidChange: function() {
-    if (this._listPane) {
-      var frame = this.get('frame');
-      var width = frame ? frame.width : 200;
-      this._listPane.adjust({ width: width });
-    }
-  }.observes('frame'),
-
-  /**
-    @private
-    Make the text field value match 'item'
-  */
-  _setItemAsTextFieldValue: function(item) {
-    var newValue = this._getItemValue(item, this.get('contentValueKey')) || '';
-    //console.log('%@._setItemAsTextFieldValue(%@)'.fmt(this, newValue));
-    this.setIfChanged('textFieldValue', newValue);
-  },
-
-  /**
-    @private
-    Create and cache the drop down pane
-  */
-  _createListPane: function() {
-    var frame = this.get('frame');
-    var width = frame ? frame.width : 200;
-    
-    this._listPane = SC.PickerPane.create({
-      classNames: ['scui-combo-box-list-pane'],
-      layout: { width: width, height: 150 },
-      acceptsKeyPane: NO,
-      acceptsFirstResponder: NO,
-      target: this,
-      contentView: SC.ScrollView.design({
-        classNames: ['scui-combo-box-list-view'],
-        layout: { left: 0, right: 0, top: 0, bottom: 0 },
-        hasHorizontalScroller: NO,
-        contentView: SC.ListView.design({
-          layout: { left: 0, right: 0, top: 0, bottom: 0 },
-          target: this,
-          contentBinding: SC.Binding.from('._suggestedContent', this).oneWay(),
-          contentValueKey: this.get('contentValueKey'),
-          hasContentIcon: this.get('hasContentIcon'),
-          contentIconKey: this.get('contentIconKey'),
-          allowsMultipleSelection: NO,
-          
-          /**
-            When someone clicks on the pane, close it.
-          */
-          mouseUp: function() {
-            sc_super();
-            this.target.invokeOnce('_selectItemAndHideList');
-            return YES;
-          }
-        }),
-        
-        mouseDown: function() {
-          sc_super();
-          return YES;
-        },
-        
-        mouseUp: function() {
-          sc_super();
-          return YES;
-        }
-      }),
-      
-      /**
-        Jump into this event handler to commit editing at the same time
-        we're clicking out of the list pane.  Calls sc_super() to make this
-        transparent to the pane.
-      */
-      modalPaneDidClick: function(evt) {
-        sc_super();
-        //console.log('%@.modalPaneDidClick()'.fmt(this));
-        this.target.invokeOnce('_selectItemAndHideList');
-        return YES;
-      }
-      
-    });
-    
-    // Keep a reference to the list view
-    this._listView = this._listPane.getPath('contentView.contentView');
-
-    // Bind the listview selection to a local property.
-    this._listView.bind('selection', this, '_listSelection');
-  },
-  
-  _selectItemAndHideList: function() {
-    if (this._proposedItem) {
-      if(this.get('selectedItemKey')) this.set('selectedItemValue',this._proposedItem.get(this.get('selectedItemKey')));
-      this.set('selectedItem', this._proposedItem);
-    }
-    this.hideList();
-  },
-  
-  /**
-    @private
-    Fetches the display string from an item
-  */
-  _getItemValue: function(item, contentValueKey) {
-    if (item) {
-      if (contentValueKey) {
-        if (item.get) {
-          return item.get(contentValueKey);
-        }
-        else {
-          return item[contentValueKey];
-        }
-      }
-      else if (SC.typeOf(item) === SC.T_STRING) {
-        return item;
-      }
-    }
-    return null;
-  },
-  
-  _sanitizeSearchString: function(str){
-    if (str) {
-      var specials = [
-          '/', '.', '*', '+', '?', '|',
-          '(', ')', '[', ']', '{', '}', '\\'
-      ];
-      var s = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
-      return str.replace(s, '\\$1');
-    }
-    return str;
+    return NO; // don't absorb it; let the text field have fun with this one
   },
   
   // PRIVATE PROPERTIES
 
-  /**
-    Calculates suggested content for the list pane.  Changes based on what is typed in the search box.
-  */
-  _suggestedContent: function() {
-    var content = this.get('content') || []; // 'content' is an array of allowed items
-    var filter = this._sanitizeSearchString(this.get('filter'));
-    var results, length, item, value, key, rowHeight, listHeight;
+  _isEnabledDidChange: function() {
+    var view;
+    var isEnabled = this.get('isEnabled');
+    
+    if (!isEnabled) {
+      this.commitEditing();
+    }
+    
+    view = this.get('textFieldView');
+    if (view && view.set) {
+      view.set('isEnabled', isEnabled);
+    }
+    
+    view = this.get('dropDownButtonView');
+    if (view && view.set) {
+      view.set('isEnabled', isEnabled);
+    }
+  }.observes('isEnabled'),
 
-    if (!this.get('useExternalFilter') && filter) {
-      filter = filter.toLowerCase();
-      results = [];
-      key = this.get('contentValueKey');
-      length = content.get('length');
-      for (var i = 0; i < length; i++) {
-        item = content.objectAt(i);
-        value = this._getItemValue(item, key);
+  _selectedObjectDidChange: function() {
+    var sel = this.get('selectedObject');
+    var textField = this.get('textFieldView');
 
-        if (SC.typeOf(value) === SC.T_STRING && value.toLowerCase().search(filter) >= 0) {
-          results.push(item);
+    console.log('%@._selectedObjectDidChange(%@)'.fmt(this, this.get('selectedObject')));
+
+    this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
+
+    if (textField) {
+      textField.setIfChanged('value', this._getObjectName(sel, this.get('nameKey')));
+    }
+    
+    // null out the filter since we aren't searching any more at this point.
+    this.set('filter', null);
+  }.observes('selectedObject'),
+
+  // when the selected item ('value') changes, keep the text
+  // in the text field view in sync
+  _valueDidChange: function() {
+    var value = this.get('value');
+    var selectedObject = this.get('selectedObject');
+    var valueKey = this.get('valueKey');
+    var objects;
+
+    console.log('%@._valueDidChange(%@)'.fmt(this, this.get('value')));
+
+    if (value) {
+      if (valueKey) {
+        // we need to update 'selectedObject' if 'selectedObject[valueKey]' is not 'value
+        if (value !== this._getObjectValue(selectedObject, valueKey)) {
+          objects = this.get('objects');
+          selectedObject = (objects && objects.isEnumerable) ? objects.findProperty(valueKey, value) : null;
+          this.set('selectedObject', selectedObject);
+        }
+      }
+      else {
+        // we need to update 'selectedObject' if 'selectedObject' is not 'value'
+        if (value !== selectedObject) {
+          objects = this.get('objects');
+          selectedObject = (objects && objects.indexOf && (objects.indexOf(value) >= 0)) ? value : null;
+          this.set('selectedObject', selectedObject);
         }
       }
     }
-    else { // using external auto-suggest generator or there is no filter, so 'content' is our suggested content; just pass it through
-      results = content;
+    else {
+      // If no value, make sure there is no selected object either
+      this.setIfChanged('selectedObject', null);
     }
+  }.observes('value'),
 
-    return results;
-  }.property('content', 'filter').cacheable(),
-  
-  _textFieldView: null,
-  _dropDownButtonView: null,
+  // triggered by arrowing up/down in the drop down list -- show the name
+  // of the highlighted item in the text field.
+  _listSelectionDidChange: function() {
+    var selection = this.getPath('_listSelection.firstObject');
+    var name, textField;
 
-  _listPane: null, // the drop-down pane
-  _listView: null, // the listview in the drop-down pane
-  _listSelection: null, // bound to the listview in the drop-down pane
-  _proposedItem: null, // the item that will become the 'selectedItem' when commitEditing() is called.
+    if (selection && this._listPane && this._listPane.get('isPaneAttached')) {
+      name = this._getObjectName(selection, this.get('nameKey'));
+      textField = this.get('textFieldView');
+
+      if (textField) {
+        textField.setIfChanged('value', name);
+      }
+    }
+  }.observes('_listSelection'),
+
+  // If the text field value changed as a result of typing,
+  // update the filter.
+  _textFieldValueDidChange: function() {
+    if (this._shouldUpdateFilter) {
+      this._shouldUpdateFilter = NO;
+      this.setIfChanged('filter', this.getPath('textFieldView.value'));
+    }
+  }.observes('*textFieldView.value'),
+
+  _createListPane: function() {
+    this._listPane = SC.PickerPane.create({
+      classNames: 'scui-combobox-list-pane',
+      acceptsKeyPane: NO,
+      acceptsFirstResponder: NO,
+
+      contentView: SC.ScrollView.extend({
+        layout: { left: 0, right: 0, top: 0, bottom: 0 },
+        hasHorizontalScroller: NO,
+        
+        contentView: SC.ListView.design({
+          classNames: 'scui-combobox-list-view',
+          layout: { left: 0, right: 0, top: 0, bottom: 0 },
+          allowsMultipleSelection: NO,
+          target: this,
+          action: '_selectListItem', // do this when [Enter] is pressed, for example
+          contentBinding: SC.Binding.from('filteredObjects', this).oneWay(),
+          contentValueKey: this.get('nameKey'),
+          hasContentIcon: this.get('iconKey') ? YES : NO,
+          contentIconKey: this.get('iconKey'),
+          selectionBinding: SC.Binding.from('_listSelection', this),
+          
+          // transparently notice mouseUp and use it as trigger
+          // to close the list pane
+          mouseUp: function() {
+            var ret = sc_super();
+            var target = this.get('target');
+            var action = this.get('action');
+            if (target && action && target.invokeLater) {
+              target.invokeLater(action);
+            }
+            return ret;
+          }
+        })
+      }),
+
+      // HACK: [JL] Override mouseDown to return NO since without this
+      // Firefox won't detect clicks on the scroll buttons.
+      // This disables pane-dragging functionality for the picker pane, but we
+      // don't need that.
+      mouseDown: function(evt) {
+        sc_super();
+        return NO;
+      }
+    });
+    
+    this._listView = this._listPane.getPath('contentView.contentView');
+  },
+
+  // default action for the list view
+  _selectListItem: function() {
+    var selection = this._listView ? this._listView.getPath('selection.firstObject') : null;
+    if (selection) {
+      //this.set('value', selection);
+      this.set('selectedObject', selection);
+    }
+    this.hideList();
+  },
+
+  _sanitizeFilter: function(str){
+    var specials, s;
+
+    if (str) {
+      specials = [
+          '/', '.', '*', '+', '?', '|',
+          '(', ')', '[', ']', '{', '}', '\\'
+      ];
+      
+      s = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
+      return str.replace(s, '\\$1');
+    }
+    return str;
+  },
+
+  _getObjectName: function(obj, nameKey) {
+    return obj ? (nameKey ? (obj.get ? obj.get(nameKey) : obj[nameKey]) : obj) : null;
+  },
+
+  _getObjectValue: function(obj, valueKey) {
+    return obj ? (valueKey ? (obj.get ? obj.get(valueKey) : obj[valueKey]) : obj) : null;
+  },
+
+  // PRIVATE PROPERTIES
   
-  _keyPressed: NO // keeps track of whether or not a text field change was caused by typing or not
+  _listPane: null,
+  _listView: null,
+  _listSelection: null,
   
+  _keyDown: NO,
+  _shouldUpdateFilter: NO
+
 });

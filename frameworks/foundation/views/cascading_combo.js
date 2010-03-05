@@ -87,7 +87,7 @@ SCUI.CascadingComboView = SC.View.extend({
       var str = '*content.%@'.fmt(props.rootItemKey);
 
       this.masterCombo = view = this.createChildView(
-        SCUI.ComboBoxView.design({
+        SCUI.ComboBoxView_Old.design({
           layout: { left: 20 , right: 20, top: 32, height: 22 },
           contentBinding: props.contentPath,
           contentValueKey: props.masterValueKey,
@@ -108,7 +108,7 @@ SCUI.CascadingComboView = SC.View.extend({
       childViews.push(view);
 
       view = this.createChildView(
-        SCUI.ComboBoxView.design({
+        SCUI.ComboBoxView_Old.design({
           layout: { left: 50, right: 20, top: 86, height: 22 },
           contentBinding: SC.Binding.from('*content.%@'.fmt(props.relationKey), this).oneWay(),
           contentValueKey: props.detailValueKey,

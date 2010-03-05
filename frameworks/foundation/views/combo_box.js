@@ -446,6 +446,13 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     }
   }.observes('isEnabled'),
 
+  // Have to add an array observer to invalidate 'filteredObjects'
+  // since in some cases the entire 'objects' array-like object doesn't
+  // get replaced, just modified.
+  _objectsDidChange: function() {
+    this.notifyPropertyChange('filteredObjects'); // force a recompute next time 'filteredObjects' is asked for
+  }.observes('*objects.[]'),
+
   _selectedObjectDidChange: function() {
     var sel = this.get('selectedObject');
     var textField = this.get('textFieldView');

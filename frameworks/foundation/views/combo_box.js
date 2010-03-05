@@ -450,8 +450,6 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var sel = this.get('selectedObject');
     var textField = this.get('textFieldView');
 
-    console.log('%@._selectedObjectDidChange(%@)'.fmt(this, this.get('selectedObject')));
-
     this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
 
     if (textField) {
@@ -469,8 +467,6 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var selectedObject = this.get('selectedObject');
     var valueKey = this.get('valueKey');
     var objects;
-
-    console.log('%@._valueDidChange(%@)'.fmt(this, this.get('value')));
 
     if (value) {
       if (valueKey) {
@@ -574,7 +570,6 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _selectListItem: function() {
     var selection = this._listView ? this._listView.getPath('selection.firstObject') : null;
     if (selection) {
-      //this.set('value', selection);
       this.set('selectedObject', selection);
     }
     this.hideList();

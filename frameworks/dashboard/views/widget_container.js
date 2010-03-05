@@ -149,7 +149,9 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
   },
 
   commitEditing: function() {
+    var c = this.get('content');
     this.setPathIfChanged('content.isEditing', NO);
+    if (c) c.commit();
   },
   
   deleteWidget: function() {

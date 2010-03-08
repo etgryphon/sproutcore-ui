@@ -132,7 +132,9 @@ SCUI.Upload = SC.View.extend(
     change the status from BUSY to DONE.
   */
   _uploadDone: function() {
+    SC.RunLoop.begin();
     this.set('status', SCUI.DONE);
+    SC.RunLoop.end();
   },
   
   /**
@@ -140,8 +142,10 @@ SCUI.Upload = SC.View.extend(
     button and selects a file).
   */
   _checkInputValue: function() {
+    SC.RunLoop.begin();
     var input = this._getInput();
     this.set('value', input.value);
+    SC.RunLoop.end();
   },
   
   _getForm: function(){

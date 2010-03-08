@@ -107,12 +107,14 @@ SCUI.DatePickerView = SC.View.extend(
     childViews.push(view);
     
     // Now, set up the button to launch the Calendar Datepicker
+    var that = this;
     view = this._date_button = this.createChildView( 
       SC.View.design( SCUI.SimpleButton, {
         classNames: ['scui-datechooser-button', 'calendar-icon'],
         layout: {right: 0, top: 3, width: 16, height: 16},
         target: this,
-        action: 'toggle'
+        action: 'toggle',
+        isEnabledBinding: SC.binding('isEnabled', that)
       })
     );
     childViews.push(view);

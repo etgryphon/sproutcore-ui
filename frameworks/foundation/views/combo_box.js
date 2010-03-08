@@ -31,11 +31,20 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     The value represented by this control.  If you have defined a 'valueKey',
     this will be 'selectedObject[valueKey]', otherwise it will be
     'selectedObject' itself.
-    
-    If 'value' gets set to a value not found in 'objects' or, if 'valueKey' is
-    defined, in 'object[valueKey]s', then 'value' and 'selectedObject' will be
-    null out.
 
+    Setting 'value':
+    
+    When 'valueKey' is defined, setting 'value' will make the combo box
+    attempt to find an object in 'objects' where object[valueKey] === value.
+    If it can't find such an object, 'value' and 'selectedObject' will be forced
+    to null. In the case where both 'objects' and 'value' are both bound to something
+    and 'value' happens to update before 'objects' (so that for a small amount of time 'value' is
+    not found in 'object[valueKey]s') 'value' can be set wrongly to null.
+    'valueKey' is really meant for use in read-only situations.
+    
+    When 'valueKey' is not defined, setting 'value' to something not found in
+    'objects' is just fine -- 'selectedObject' will simply be set to 'value'.
+    
     Setting this to null also forces 'selectedObject' to null.
     
     @property {Object}
@@ -144,11 +153,17 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     return this.sortObjects(ret);
   }.property('objects', 'filter').cacheable(),
 
+  /**
+    The text field child view class.  Override this to change layout, CSS, etc.
+  */
   textFieldView: SC.TextFieldView.extend({
     classNames: 'scui-combobox-text-field-view',
     layout: { left: 0, top: 0, bottom: 0, right: 22 }
   }),
-  
+
+  /**
+    The drop down button view class.  Override this to change layout, CSS, etc.
+  */
   dropDownButtonView: SC.View.extend( SCUI.SimpleButton, {
     classNames: 'scui-combobox-dropdown-button-view',
     layout: { right: 0, top: 0, bottom: 0, width: 22 }
@@ -461,8 +476,10 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var sel = this.get('selectedObject');
     var textField = this.get('textFieldView');
 
+    // Update 'value' since the selected object changed
     this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
 
+    // Update the text in the text field as well
     if (textField) {
       textField.setIfChanged('value', this._getObjectName(sel, this.get('nameKey')));
     }
@@ -471,8 +488,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     this.set('filter', null);
   }.observes('selectedObject'),
 
-  // when the selected item ('value') changes, keep the text
-  // in the text field view in sync
+  // When the selected item ('value') changes, try to map back to a 'selectedObject'
+  // as well.
   _valueDidChange: function() {
     var value = this.get('value');
     var selectedObject = this.get('selectedObject');
@@ -484,22 +501,22 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
         // we need to update 'selectedObject' if 'selectedObject[valueKey]' is not 'value
         if (value !== this._getObjectValue(selectedObject, valueKey)) {
           objects = this.get('objects');
+
+          // Since we're using a 'valueKey', find the object where object[valueKey] === value.
+          // If not found, 'selectedObject' and 'value' get forced to null.
           selectedObject = (objects && objects.isEnumerable) ? objects.findProperty(valueKey, value) : null;
           this.set('selectedObject', selectedObject);
         }
       }
       else {
-        // we need to update 'selectedObject' if 'selectedObject' is not 'value'
-        if (value !== selectedObject) {
-          objects = this.get('objects');
-          selectedObject = (objects && objects.indexOf && (objects.indexOf(value) >= 0)) ? value : null;
-          this.set('selectedObject', selectedObject);
-        }
+        // with no 'valueKey' set, we allow setting 'value' and 'selectedObject'
+        // to something not found in 'objects'
+        this.setIfChanged('selectedObject', value);
       }
     }
     else {
-      // If no value, make sure there is no selected object either
-      this.setIfChanged('selectedObject', null);
+      // When 'value' is set to null, make sure 'selectedObject' goes to null as well.
+      this.set('selectedObject', null);
     }
   }.observes('value'),
 

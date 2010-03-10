@@ -504,19 +504,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return NO;
     
     if (val !== undefined) {
-      if (doc.execCommand('justifyfull', false, val)) {
-        this.set('isEditing', YES);
-      }
-    }
-    
-    return doc.queryCommandState('justifyfull');
-  }.property('selection').cacheable(),
-  
-  selectionIsOrderedList: function(key, val) {
-    var doc = this._document ;
-    if (!doc) return NO;
-    
-    if (val !== undefined) {
       if (doc.execCommand('insertorderedlist', false, val)) {
         this.set('isEditing', YES);
       }
@@ -688,7 +675,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
     }
     
-    return '***';
+    return '';
   }.property('selection').cacheable(),
   
   selectionFontColor: function(key, value) {
@@ -783,7 +770,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }.property('selectedImage').cacheable(),
 
   focus: function(){
-    this._document.body.focus();
+    if (!SC.none(this._document)) {
+      this._document.body.focus();
+      this.set('selection', '');
+      this.querySelection();
+    }
   },
   
   querySelection: function() {
@@ -1052,7 +1043,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     this.set('isEditing', NO);
     return YES;
   },
-  
+
   /**
     Adding an observer that checks if the current selection is an image
     or a hyperlink.
@@ -1110,7 +1101,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     this.set('selectedHyperlink', currentHyperlink);
     
   }.observes('selection'),
-
 
   isEditingDidChange: function() {
    if (this.get('autoCommit')) {

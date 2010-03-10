@@ -1043,6 +1043,18 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     this.set('isEditing', NO);
     return YES;
   },
+  
+  /**
+    Selects the current content in editor
+    
+    @returns {Boolean} if the operation was successul or not
+  */
+  selectContent: function() {
+    var doc = this._document;
+    if (!doc) return NO;
+    
+    return doc.execCommand('selectall', false, null);
+  },
 
   /**
     Adding an observer that checks if the current selection is an image

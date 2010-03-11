@@ -14,7 +14,15 @@ require('panes/context_menu_pane');
 
   @extends SC.WebView
   @author Mohammed Taher
-  @version 0.912
+  @version 0.913
+  
+  ==========
+  = v0.913 =
+  ==========
+  - Improved inserHTML() function
+  - Improved focus() function
+  - New selectContent() function
+  - Ability to attach a stylesheet to editor
 
   ==========
   = v0.912 =
@@ -99,15 +107,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     For example,
     
-    {
-      'color': 'blue',
+    { 'color': 'blue',
       'background-color': 'red' }
     
-    or
+    OR
     
-    {
-      'color': 'blue',
-      'backgroundColor': 'red' }
+    { 'color': 'orange',
+      'backgroundColor': 'green' }
   */
   inlineStyle: {},
   
@@ -137,6 +143,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     TODO - [MT] - Possibly combine this with the stripCrap option
   */
   decodeContent: YES,
+  
+  /**
+    CSS to style the edit content
+  */
+  styleSheetCSS: '',
   
   /**
     List of menu options to display on right click
@@ -207,16 +218,16 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
     
     var doc = this._document;
-  
-    //field merge stuff
-    //TODO: [MB] make this more generic
-    var head = doc.getElementsByTagName('head')[0];
-    if(head){
-      var el = doc.createElement("style");
-      el['type'] = "text/css";
-      el.innerHTML = ".eloqua-field-merge {background: #80fbdf;border: 1px solid #80fbdf;-moz-border-radius: 3px;-webkit-border-radius: 3px;}";
-      head.appendChild(el);
-      el = head = null; //clean up memory
+    var styleSheetCSS = this.get('styleSheetCSS');
+    if (!(SC.none(styleSheetCSS) || styleSheetCSS === '')) {
+      var head = doc.getElementsByTagName('head')[0];
+      if (head) {
+        var el = doc.createElement("style");
+        el['type'] = "text/css";
+        el.innerHTML = styleSheetCSS;
+        head.appendChild(el);
+        el = head = null; //clean up memory
+      }
     }
     
     // set contentEditable to true... this is the heart and soul of the editor
@@ -244,7 +255,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (SC.browser.msie || SC.browser.safari) {
       docBody.innerHTML = value;
     } else {
-      this.insertHTML(value);
+      this.insertHTML(value, NO);
     }
 
     // set min height beyond which ContentEditableView can't shrink if hasFixedDimensions is set to false
@@ -879,12 +890,24 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return NO;
   },
   
-  // FIXME: [MT] execCommand('inserthml') occassionaly throws an error in FF,
-  // have to find a better way to insert HTML snippets
-  insertHTML: function(value) {
+  /**
+    Inserts a snippet of HTML into the editor at the cursor location. If the
+    editor is not in focus then it appens the HTML at the end of the document.
+    
+    @param {String} HTML to be inserted
+    @param {Boolean} Optional boolean to determine if a single white space is to be 
+    inserted after the HTML snippet. Defaults to YES. This is enabled to protect
+    against certain FF bugs (e.g. If a user inserts HTML then presses space right
+    away, the HTML will be removed.)
+  */
+  insertHTML: function(value, insertWhiteSpaceAfter) {
     var doc = this._document;
     if (!doc) return NO;
     if (SC.none(value) || value === '') return NO;
+    
+    if (SC.none(insertWhiteSpaceAfter) || insertWhiteSpaceAfter) {
+      value += '\u00a0';
+    }
         
     if (SC.browser.msie) {
       doc.selection.createRange().pasteHTML(value);       

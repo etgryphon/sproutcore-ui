@@ -68,3 +68,4 @@ SCUI.SearchableArrayController = SC.ArrayController.extend(
  }
   
 });
+

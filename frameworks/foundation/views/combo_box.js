@@ -636,3 +636,4 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _shouldUpdateFilter: NO
 
 });
+

@@ -126,3 +126,4 @@ test("Check toggle functionality", function() {
   pane.view('simpleButton').mouseUp();
   equals(pane.view('simpleButton').get('isShowingDropDown'), NO, 'simpleButton.isVisibleInWindow should be YES');
 });
+

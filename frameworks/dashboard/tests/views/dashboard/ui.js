@@ -32,3 +32,4 @@ test("Widget has a widget container", function() {
   ok(position, "Widget has been assigned a default position");
   
 });
+

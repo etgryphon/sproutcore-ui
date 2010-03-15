@@ -96,3 +96,4 @@ LinkIt.DragLink = SC.View.extend( LinkIt.Link,
   }
   
 });
+

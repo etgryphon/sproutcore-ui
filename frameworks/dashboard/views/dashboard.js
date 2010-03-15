@@ -315,3 +315,4 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
   _dragData: null // data about the itemView currently being dragged; null when not dragging
 
 });
+

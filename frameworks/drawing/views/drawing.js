@@ -217,3 +217,4 @@ SCUI.DrawingView = SC.View.extend({
     }
   }
 });
+

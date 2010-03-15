@@ -161,3 +161,4 @@ SCUI.Upload = SC.View.extend(
   }
 
 });
+

@@ -106,3 +106,4 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
     return searchMatches;
   }
 });
+

@@ -161,3 +161,4 @@ SCUI.SelectFieldTab = SC.View.extend(
 });
 
 SCUI._SELECT_TAB_TRANSLATOR = {itemTitleKey: 'nameKey', itemValueKey: 'valueKey', items: 'objects'};
+

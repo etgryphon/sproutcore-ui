@@ -10,3 +10,4 @@ SCUI.PAST = 'past';
 SCUI.PRESENT = 'present';
 SCUI.TODAY = 'today';
 SCUI.FUTURE = 'future';
+

@@ -73,3 +73,4 @@ test("Ignore values works", function() {
   equals(view2._yPositions[0].length, 1, "should have 1 items at y:0");
   equals(view2._yPositions[10].length, 1, "should have 1 items at y:100");
 });
+

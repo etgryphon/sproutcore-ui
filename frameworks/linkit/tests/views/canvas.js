@@ -24,3 +24,4 @@ sc_require('views/canvas');
   });
   
 })();
+

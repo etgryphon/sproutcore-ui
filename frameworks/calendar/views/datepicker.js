@@ -178,3 +178,4 @@ SCUI.DatePickerView = SC.View.extend(
   }.observes('date')
 
 }) ;
+

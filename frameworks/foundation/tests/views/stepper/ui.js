@@ -70,3 +70,4 @@ test("disabled", function() {
   ok(!view.$().hasClass('sel'), 'should not have sel class');
 });
 })();
+

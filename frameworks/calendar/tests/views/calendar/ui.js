@@ -32,3 +32,4 @@ test("init basic,small for proper start on date", function() {
   var day = view.get('monthStartOn').get('day');
   equals(day, 1, 'basic,small start on date is the 1st');
 });
+

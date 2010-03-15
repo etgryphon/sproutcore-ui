@@ -244,3 +244,4 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
   _doneButtonView: null
   
 });
+

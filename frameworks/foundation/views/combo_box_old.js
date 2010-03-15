@@ -529,3 +529,4 @@ SCUI.ComboBoxView_Old = SC.View.extend( SC.Editable, {
   _keyPressed: NO // keeps track of whether or not a text field change was caused by typing or not
   
 });
+

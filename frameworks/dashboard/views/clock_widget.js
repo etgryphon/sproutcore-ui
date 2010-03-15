@@ -61,3 +61,4 @@ SCUI.ClockWidgetEditView = SC.View.extend({
   })
   
 });
+

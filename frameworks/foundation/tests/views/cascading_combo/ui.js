@@ -27,3 +27,4 @@ test("Render Test && Elements", function() {
   equals(view.$('div > .sc-label-view').get(0).innerHTML, "Setup did not meet requirements.","When setup is incorrect the view will only contain a label telling us that this is the case.");
   
 });
+

@@ -90,3 +90,4 @@ SCUI.StepperView = SC.View.extend(
     this.set('childViews', childViews);
   }
 });
+

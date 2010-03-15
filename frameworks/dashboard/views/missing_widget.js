@@ -32,3 +32,4 @@ SCUI.MissingWidgetView = SC.View.extend( SC.Border, {
   }
 
 });
+

@@ -612,3 +612,4 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   _dragData: null
   
 });
+

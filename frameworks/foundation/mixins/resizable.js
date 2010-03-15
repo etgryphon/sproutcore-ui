@@ -57,3 +57,4 @@ SCUI.Resizable = {
     return YES ;
   }
 };
+

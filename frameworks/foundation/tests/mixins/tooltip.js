@@ -54,3 +54,4 @@ test("An Image View should use the title & alt attributes for the tooltip",funct
   equals(view.$('img').get(0).title, 'This is a test tooltip', "Tooltip text matches for title attribute");
   equals(view.$('img').get(0).alt, 'This is a test tooltip', "Tooltip text matches for alt attribute");
 });
+

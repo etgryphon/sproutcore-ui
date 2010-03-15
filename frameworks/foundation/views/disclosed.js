@@ -214,3 +214,4 @@ SCUI.DisclosedView = SC.View.extend({
   }
   
 });
+

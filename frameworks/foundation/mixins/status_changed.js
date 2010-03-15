@@ -50,3 +50,4 @@ SCUI.StatusChanged = {
     }
   }
 };
+

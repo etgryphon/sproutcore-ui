@@ -222,3 +222,4 @@ SCUI.CalendarView = SC.View.extend(
     } 
   }
 });
+

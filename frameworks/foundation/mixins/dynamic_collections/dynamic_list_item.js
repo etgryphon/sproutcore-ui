@@ -39,3 +39,4 @@ SCUI.DynamicListItem = {
     this.invokeDelegateMethod(del, 'contentViewDidChangeForContentIndex', this.owner, this, this.get('content'), this.contentIndex);
   }
 };
+

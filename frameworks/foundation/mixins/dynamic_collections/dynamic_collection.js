@@ -196,3 +196,4 @@ SCUI.DynamicCollection = {
     return height;
   }
 };
+

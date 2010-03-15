@@ -105,3 +105,4 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   }
 
 });
+

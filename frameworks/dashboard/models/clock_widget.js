@@ -56,3 +56,4 @@ SCUI.ClockWidget = SC.Object.extend( SCUI.Widget, {
   }
   
 });
+

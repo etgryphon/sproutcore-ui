@@ -96,3 +96,4 @@ SCUI.CollectionViewDynamicDelegate = {
   }
   
 };
+

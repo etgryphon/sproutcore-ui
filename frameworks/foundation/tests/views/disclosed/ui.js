@@ -43,3 +43,4 @@ test('Toggling', function(){
   view.toggle(YES);
   ok(view.isOpen,"State is Expanded after second toggle.");
 });
+

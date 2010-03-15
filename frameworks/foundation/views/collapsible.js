@@ -124,3 +124,4 @@ SCUI.CollapsibleView = SC.ContainerView.extend(
     }
   }
 });
+

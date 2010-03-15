@@ -22,3 +22,4 @@ test("Click on drop-down button shows autosuggest pane.", function() {
   buttonView.mouseUp();
   
 });
+

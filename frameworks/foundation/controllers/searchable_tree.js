@@ -22,6 +22,8 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
    search: null,
    searchResults: [],
    searchKey: 'name',
+   iconKey: 'icon',
+   nameKey: 'name',
 
    init: function(){
      sc_super();
@@ -53,6 +55,8 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
       search = this._sanitizeSearchString(search).toLowerCase();
       var searchRegex = new RegExp(search,'i');
       var searchKey = this.get('searchKey');
+      this._iconKey = this.get('iconKey');
+      this._nameKey = this.get('nameKey');
       searchResults = this._runSearchOnItem(c, search, searchRegex, searchKey);
       
       // create the root search tree
@@ -69,12 +73,12 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
     Returns a flat list of matches for the foldered tree item.
   */
   _runSearchOnItem: function(treeItem, search, searchRegex, searchKey) {
-    var searchMatches = [];
+    var searchMatches = [], iconKey = this.get('iconKey');
     if (SC.none(treeItem)) return searchMatches;
     
     var children = treeItem.get('treeItemChildren');
     if (!children) children = treeItem.get('children');
-    var key, searchLen;
+    var key, searchLen, nameKey = this._nameKey;
     for (var i = 0, len = children.length; i < len; i++) {
       var child = children[i];
       
@@ -91,8 +95,9 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
         if(key.match(searchRegex)){
           var match = SC.Object.create({});
           match[searchKey]  = child.get(searchKey);
+          match[nameKey]    = child.get(nameKey);
           match.treeItem    = child;
-          match.icon        = child.get('icon');
+          match.icon        = child.get(this._iconKey);
           searchMatches.push(match);
         } 
       }

@@ -122,8 +122,8 @@ SCUI.SimpleButton = {
    */
   _hasLegacyActionHandler: function(){
     var action = this.get('action');
-    if (action && (SC.typeOf(action) == SC.T_FUNCTION)) return true;
-    if (action && (SC.typeOf(action) == SC.T_STRING) && (action.indexOf('.') != -1)) return true;
+    if (action && (SC.typeOf(action) === SC.T_FUNCTION)) return true;
+    if (action && (SC.typeOf(action) === SC.T_STRING) && (action.indexOf('.') !== -1)) return true;
     return false;
   },
 
@@ -134,14 +134,14 @@ SCUI.SimpleButton = {
 
     // TODO: [MB/EG] Review: MH added the else if so that the action executes
     // in the scope of the target, if it is specified.
-    if (target === undefined && SC.typeOf(action) == SC.T_FUNCTION) {
+    if (target === undefined && SC.typeOf(action) === SC.T_FUNCTION) {
       this.action(evt);
     }
     else if (target !== undefined && SC.typeOf(action) === SC.T_FUNCTION) {
       action.apply(target, [evt]);
     }
     
-    if (SC.typeOf(action) == SC.T_STRING) {
+    if (SC.typeOf(action) === SC.T_STRING) {
       eval("this.action = function(e) { return "+ action +"(this, e); };");
       this.action(evt);
     }

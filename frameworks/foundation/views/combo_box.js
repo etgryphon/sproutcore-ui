@@ -158,7 +158,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */
   textFieldView: SC.TextFieldView.extend({
     classNames: 'scui-combobox-text-field-view',
-    layout: { left: 0, top: 0, bottom: 0, right: 22 }
+    layout: { top: 0, left: 0, height: 22, right: 29 }
   }),
 
   /**
@@ -166,7 +166,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */
   dropDownButtonView: SC.View.extend( SCUI.SimpleButton, {
     classNames: 'scui-combobox-dropdown-button-view',
-    layout: { right: 0, top: 0, bottom: 0, width: 22 }
+    layout: { top: 0, right: 0, height: 24, width: 29 }
   }),
 
   displayProperties: ['isEditing'],
@@ -547,7 +547,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
   _createListPane: function() {
     this._listPane = SC.PickerPane.create({
-      classNames: 'scui-combobox-list-pane',
+      classNames: ['scui-combobox-list-pane', 'sc-menu'],
       acceptsKeyPane: NO,
       acceptsFirstResponder: NO,
 

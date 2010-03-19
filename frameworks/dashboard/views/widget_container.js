@@ -101,13 +101,20 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
         message: "Widget's edit view is missing.".loc()
       });
     }
-    this._editView = this.createChildView(viewClass, { content: content, isVisible: (canEdit && isEditing) });
+    this._editView = this.createChildView(viewClass, {
+      content: content,
+      isVisible: (canEdit && isEditing)
+    });
     childViews.push(this._editView);
 
     // create the done button
     viewClass = this._getViewClass('doneButtonViewClass');
     if (viewClass) {
-      this._doneButtonView = this.createChildView(viewClass, { target: this, action: 'commitEditing', isVisible: (canEdit && isEditing && showDoneButton) });
+      this._doneButtonView = this.createChildView(viewClass, {
+        target: this,
+        action: 'commitEditing',
+        isVisible: (canEdit && isEditing && showDoneButton)
+      });
       childViews.push(this._doneButtonView);
     }
 
@@ -116,20 +123,31 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     if (!viewClass) {
       viewClass = SCUI.MissingWidgetView;
     }
-    this._widgetView = this.createChildView(viewClass, { content: content, isVisible: (!isEditing || !canEdit) });
+    this._widgetView = this.createChildView(viewClass, {
+      content: content,
+      isVisible: (!isEditing || !canEdit)
+    });
     childViews.push(this._widgetView);
 
     // create the edit handle view
     viewClass = this._getViewClass('editHandleViewClass');
     if (viewClass) {
-      this._editHandleView = this.createChildView(viewClass, { target: this, action: 'beginEditing', isVisible: (canEdit && !isEditing) });
+      this._editHandleView = this.createChildView(viewClass, {
+        target: this,
+        action: 'beginEditing',
+        isVisible: (canEdit && !isEditing)
+      });
       childViews.push(this._editHandleView);
     }
     
     // create the delete handle view
     viewClass = this._getViewClass('deleteHandleViewClass');
     if (viewClass) {
-      this._deleteHandleView = this.createChildView(viewClass, { target: this, action: 'deleteWidget', isVisible: this.get('canDeleteWidget') });
+      this._deleteHandleView = this.createChildView(viewClass, {
+        target: this,
+        action: 'deleteWidget',
+        isVisible: this.get('canDeleteWidget')
+      });
       childViews.push(this._deleteHandleView);
     }
     

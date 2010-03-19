@@ -2,19 +2,27 @@
 // SCUI.ContentEditableView
 // ==========================================================================
 /*globals NodeFilter*/
-require('core');
-require('panes/context_menu_pane');
+
+sc_require('core');
+sc_require('panes/context_menu_pane');
 
 /** @class
 
-  This view provides rich text editor functionality (RTE). It's a variation of the 
-  SC webView. It works be setting the body of the iframe to be ContentEditable as well
-  as attaching a mouseup, keyup and paste events on the body of the iframe to detect
-  the current state of text at the current mouse position
+  This view provides rich text editor functionality (RTE). It's a variation of
+  the SC webView. It works be setting the body of the iframe to be 
+  ContentEditable as well as attaching a mouseup, keyup and paste events on the 
+  body of the iframe to detect the current state of text at the current mouse 
+  position.
 
   @extends SC.WebView
   @author Mohammed Taher
-  @version 0.913
+  @version 0.9131
+  
+  ==========
+  = v.9131 =
+  ==========
+  - No longer explicity setting the scrolling attribute if allowScrolling is 
+  YES (scroll bars were being rendered at all times)
   
   ==========
   = v0.913 =
@@ -29,9 +37,11 @@ require('panes/context_menu_pane');
   ==========
   - Better variable names
   - Querying indent/outdent values now works in FF
-  - Slightly more optimized. (In the selectionXXXX properties, this._document/this._editor was being
-    accessed multiple times, now it happens once at the beginning).
-  - New helper functions. Trying to push browser code branching to such functions.
+  - Slightly more optimized. (In the selectionXXXX properties, 
+    this._document/this._editor was being accessed multiple times, 
+    now it happens once at the beginning).
+  - New helper functions. Trying to push browser code branching to such 
+    functions.
     a. _getFrame
     b. _getDocument
     c. _getSelection
@@ -39,6 +49,7 @@ require('panes/context_menu_pane');
   - Reversed isOpaque value
     
 */
+
 SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 /** @scope SCUI.ContentEditableView.prototype */ {
   
@@ -164,14 +175,16 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var styleString = 'position: absolute; width: 100%; height: 100%; border: 0px; margin: 0px; padding: 0p;';
     
     if (firstTime) {
-      context.push(
-        '<iframe frameBorder="', frameBorder,
-        '" name="', this.get('frameName'),
-        '" scrolling="', allowScrolling,
-        '" src="" allowTransparency="', isOpaque, 
-        '" style="', styleString,
-        '"></iframe>'
-      );
+      context.push( '<iframe frameBorder="', frameBorder,
+                    '" name="', this.get('frameName') );
+        
+      if (!allowScrolling) {
+        context.push( '" scrolling="', allowScrolling );
+      }
+        
+      context.push( '" src="" allowTransparency="', isOpaque, 
+                    '" style="', styleString,
+                    '"></iframe>' );
       
     } else if (this._document) {
       if (value !== this._document.body.innerHTML) {
@@ -815,10 +828,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (SC.none(value) || value === '') return NO;
     
     /*
-      HACK: [MT] - This is an interesting piece of DOM hack... The problem
-      with execCommand('createlink') is it only tells you if hyperlink
-      creation was successful... it doesn't return the hyperlink that was
-      created. 
+      HACK: [MT] - This is an interesting hack... The problem with 
+      execCommand('createlink') is it only tells you if hyperlink 
+      creation was successful... it doesn't return the hyperlink that 
+      was created. 
       
       To counter this problem, I'm creating a random string and
       assigning it as the href. If the frame.contentWindow.getSelection()
@@ -1254,4 +1267,3 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }
   
 });
-

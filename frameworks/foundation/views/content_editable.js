@@ -16,7 +16,15 @@ sc_require('panes/context_menu_pane');
 
   @extends SC.WebView
   @author Mohammed Taher
-  @version 0.9131
+  @version 0.914
+  
+  ==========
+  = v.914 =
+  ==========
+  - Added indentOnTab option. This works by inserting white space
+  according to the value on the tabSize option
+  - Commented out querying indent/outdent as it's a buggy implemention.
+  Querying them now will always return NO
   
   ==========
   = v.9131 =
@@ -165,6 +173,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   */
 	rightClickMenuOptions: [],
 	
+	/**
+	  Tab options
+	*/
+	indentOnTab: YES,
+	tabSize: 2,
+	
 	displayProperties: ['value'],
 	
 	render: function(context, firstTime) {
@@ -212,6 +226,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.remove(docBody, 'mouseup', this, this.mouseUp);
     SC.Event.remove(docBody, 'keyup', this, this.keyUp);
     SC.Event.remove(docBody, 'paste', this, this.paste);
+    if (this.get('indentOnTab')) {
+      SC.Event.remove(docBody, 'keydown', this, this.keyDown);
+    }
+    
     
     SC.Event.remove(doc, 'click', this, this.focus);
     SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
@@ -285,7 +303,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     // attach the required events
     SC.Event.add(docBody, 'mouseup', this, this.mouseUp);
     SC.Event.add(docBody, 'keyup', this, this.keyUp);
-    SC.Event.add(docBody, 'paste', this, this.paste);    
+    SC.Event.add(docBody, 'paste', this, this.paste);
+    if (this.get('indentOnTab')) {
+      SC.Event.add(docBody, 'keydown', this, this.keyDown);
+    }
     
     // there are certian cases where the body of the iframe won't have focus
     // but the user will be able to type... this happens when the user clicks on
@@ -365,16 +386,43 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 
   keyUp: function(event) {
     SC.RunLoop.begin();
-    var keyCode = event.keyCode;
-    if (keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40) {
-      this.querySelection();
-    }
+
+    switch (SC.FUNCTION_KEYS[event.keyCode]) {
+      case 'left':
+      case 'right':
+      case 'up':
+      case 'down':
+        this.querySelection();
+        break;
+    } 
     
     if (!this.get('hasFixedDimensions')) {
       this.invokeLast(this._updateLayout);
     }
-    
     this.set('isEditing', YES);
+    
+    SC.RunLoop.end();
+  },
+  
+  keyDown: function(event) {
+    SC.RunLoop.begin();
+    
+    var tabSize = this.get('tabSize');
+    if (SC.typeOf(tabSize) !== SC.T_NUMBER) {
+      // tabSize is not a number. Bail out and recover gracefully
+      return;
+    }
+    
+    var spaces = [];
+    for (var i = 0; i < tabSize; i++) {
+      spaces.push('\u00a0');
+    }
+    
+    if (SC.FUNCTION_KEYS[event.keyCode] === 'tab') {
+      event.preventDefault();
+      this.insertHTML(spaces.join(''), NO);
+    }
+    
     SC.RunLoop.end();
   },
 
@@ -547,6 +595,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return doc.queryCommandState('insertunorderedlist');
   }.property('selection').cacheable(),
   
+
+  // indent/outdent have some sort of problem with every
+  // browser. Check,
+  // 
+  // http://www.quirksmode.org/dom/execCommand.html
+  // 
+  // I would avoid using these for now and go with
+  // indentOnTab
   selectionIsIndented: function(key, val) {
     var doc = this._document ;
     if (!doc) return NO;
@@ -560,12 +616,15 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (SC.browser.msie) {
       return doc.queryCommandState('indent');
     } else {
+      /*
+      [MT] - Buggy... commeting out for now
       var elem = this._getSelectedElemented();
       if (!SC.none(elem)) {
         if (elem.style['marginLeft'] !== '') {
           return YES;
         }
       }
+      */
       return NO;
     }
   }.property('selection').cacheable(),
@@ -583,12 +642,15 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (SC.browser.msie) {
       return doc.queryCommandState('outdent');
     } else {
+      /*
+      [MT] - Buggy... commeting out for now
       var elem = this._getSelectedElemented();
       if (!SC.none(elem)) {
         if (elem.style['marginLeft'] === '') {
           return YES;
         }
       }
+      */
       return NO;
     }
   }.property('selection').cacheable(),

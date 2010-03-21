@@ -28,7 +28,7 @@ sc_require('core');
   
   @extends SC.View
   @author Josh Holt [JH2], Jonathan Lewis [JL]
-  @version FR4
+  @version Beta1.1
   @since FR4
 
 */
@@ -87,11 +87,11 @@ SCUI.CascadingComboView = SC.View.extend({
       var str = '*content.%@'.fmt(props.rootItemKey);
 
       this.masterCombo = view = this.createChildView(
-        SCUI.ComboBoxView_Old.design({
+        SCUI.ComboBoxView.design({
           layout: { left: 20 , right: 20, top: 32, height: 22 },
-          contentBinding: props.contentPath,
-          contentValueKey: props.masterValueKey,
-          selectedItemBinding: SC.Binding.from('*content.%@'.fmt(props.rootItemKey), this)
+          objectsBinding: props.contentPath,
+          nameKey: props.masterValueKey,
+          valueBinding: SC.Binding.from('*content.%@'.fmt(props.rootItemKey), this)
         })
       );
       childViews.push(view);
@@ -102,19 +102,19 @@ SCUI.CascadingComboView = SC.View.extend({
           isEditable: NO,
           value: this.get('detailLabel').loc(),
           isEnabled: NO,
-          isEnabledBinding: SC.Binding.from('*masterCombo.selectedItem', this).oneWay()
+          isEnabledBinding: SC.Binding.from('*masterCombo.selectedObject', this).oneWay()
         })
       );
       childViews.push(view);
 
       view = this.createChildView(
-        SCUI.ComboBoxView_Old.design({
+        SCUI.ComboBoxView.design({
           layout: { left: 50, right: 20, top: 86, height: 22 },
-          contentBinding: SC.Binding.from('*content.%@'.fmt(props.relationKey), this).oneWay(),
-          contentValueKey: props.detailValueKey,
+          objectsBinding: SC.Binding.from('*content.%@'.fmt(props.relationKey), this).oneWay(),
+          nameKey: props.detailValueKey,
           isEnabled: NO,
-          isEnabledBinding: SC.Binding.from('*masterCombo.selectedItem', this).oneWay(),
-          selectedItemBinding: SC.Binding.from('*content.%@'.fmt(props.childItemKey), this)
+          isEnabledBinding: SC.Binding.from('*masterCombo.selectedObject', this).oneWay(),
+          valueBinding: SC.Binding.from('*content.%@'.fmt(props.childItemKey), this)
         })
       );
       childViews.push(view);

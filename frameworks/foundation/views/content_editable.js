@@ -178,9 +178,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       context.push( '<iframe frameBorder="', frameBorder,
                     '" name="', this.get('frameName') );
         
-      if (!allowScrolling) {
-        context.push( '" scrolling="', allowScrolling );
-      }
+      context.push( '" scrolling="', allowScrolling );
         
       context.push( '" src="" allowTransparency="', isOpaque, 
                     '" style="', styleString,

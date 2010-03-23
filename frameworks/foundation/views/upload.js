@@ -1,5 +1,5 @@
 // ========================================================================
-// SCUI.Upload
+// SCUI.UploadView
 // ========================================================================
 
 /** @class
@@ -11,7 +11,7 @@
   @author Evin Grano
 */
 
-SCUI.Upload = SC.View.extend(
+SCUI.UploadView = SC.View.extend(
 /** @scope Scui.Upload.prototype */ {
   
   /**

@@ -30,7 +30,7 @@ sc_require('panes/context_menu_pane');
   = v.9131 =
   ==========
   - No longer explicity setting the scrolling attribute if allowScrolling is 
-  YES (scroll bars were being rendered at all times)
+  YES (scroll bars were being rendered at all times) - COMMIT HAS BEEN REVERTED
   
   ==========
   = v0.913 =
@@ -153,17 +153,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   stripCrap: NO,
   
   /**
-    Decodes the following values on commit 
-      -%3C (<)
-      -%3E (>)
-      -%20 ( )
-      -%amp; (&)
-      
-    TODO - [MT] - Possibly combine this with the stripCrap option
-  */
-  decodeContent: YES,
-  
-  /**
     CSS to style the edit content
   */
   styleSheetCSS: '',
@@ -201,10 +190,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     } else if (this._document) {
       if (value !== this._document.body.innerHTML) {
         this._document.body.innerHTML = value;
+        
       }
     }
   },
-
+  
   didCreateLayer: function() {
     sc_super();
     var f = this.$('iframe');
@@ -808,7 +798,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var hyperlink = this.get('selectedHyperlink');
     if (!hyperlink) return '';
         
-    if (value !== undefined) {
+    if (!SC.none(value)) {
       this.set('isEditing', YES);
       hyperlink.href = value;
       return value;
@@ -923,7 +913,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
           }
         }
       }
-      
+
       hyperlink.href = value;
       
       this.set('selectedHyperlink', hyperlink);
@@ -1120,22 +1110,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (this.get('cleanInsertedText')) {
       value = this.cleanWordHTML(value);
     }
-    
-    // Any line feed character (\n), and carriage return (\r) characters have to be encoded as &#10;
-    // and &#13; so that the awesome editors rendering wouldn't break.
+
     if(this.get('stripCrap')){
       value = value.replace(/\r/g, '&#13;');
       value = value.replace(/\n/g, '&#10;');
     }
-    
-    if (this.get('decodeContent')) {
-      value = value.replace(/\%3C/gi, '<');
-      value = value.replace(/\%3E/gi, '>');
-      value = value.replace(/\%20/gi, ' ');
-      value = value.replace(/&amp;/gi, '&');
-    }
 
-    this.setIfChanged('value', value);
+    this.set('value', value);
     this.set('isEditing', NO);
     return YES;
   },

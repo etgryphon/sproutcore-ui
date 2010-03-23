@@ -1265,3 +1265,4 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }
   
 });
+

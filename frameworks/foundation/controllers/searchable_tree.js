@@ -73,21 +73,18 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
     Returns a flat list of matches for the foldered tree item.
   */
   _runSearchOnItem: function(treeItem, search, searchRegex, searchKey) {
-    var searchMatches = [], iconKey = this.get('iconKey');
+    var searchMatches = [], iconKey = this.get('iconKey'),
+        searchedList, key, searchLen, 
+        children, nameKey = this._nameKey;
+    
     if (SC.none(treeItem)) return searchMatches;
     
-    var children = treeItem.get('treeItemChildren');
+    children = treeItem.get('treeItemChildren');
     if (!children) children = treeItem.get('children');
-    var key, searchLen, nameKey = this._nameKey;
-    for (var i = 0, len = children.length; i < len; i++) {
-      var child = children[i];
-      
+    children.forEach( function(child){      
       if (child.treeItemChildren) {
         var searchedList = this._runSearchOnItem(child, search, searchRegex, searchKey);
-        searchLen = searchedList.length;
-        for (var j = 0; j < searchLen; j++) {
-          searchMatches.push(searchedList[j]);
-        }
+        searchedList.forEach( function(m){ searchMatches.push(m); });
       }
       
       if (searchKey && child.get(searchKey)) {
@@ -101,7 +98,7 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
           searchMatches.push(match);
         } 
       }
-    }
+    });
 
     return searchMatches;
   }

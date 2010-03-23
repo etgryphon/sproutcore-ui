@@ -23,13 +23,10 @@ test("Widget has a widget container", function() {
   SC.RunLoop.begin();
   view.set('content', content);
   SC.RunLoop.end();
-  
+
   childView = view.childViews[0];
-  ok(childView.kindOf(SCUI.WidgetView), "Child view is SCUI.WidgetView");
+  ok(childView.kindOf(SCUI.WidgetContainerView), "Child view is SCUI.WidgetContainerView");
   ok(childView.get('content') === content[0], "WidgetView content is the widget object");
-  
-  position = childView.get('content').get('position');
-  ok(position, "Widget has been assigned a default position");
   
 });
 

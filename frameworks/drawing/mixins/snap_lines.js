@@ -121,6 +121,7 @@ SCUI.SnapLines = {
     
   */
   drawLines: function(view, eventX, eventY, mouseDownX, mouseDownY){
+    if(!this._xPositions || !this._yPositions) return;
     if(!this._drawingView){
       this._drawingView = this.createChildView(SCUI.DrawingView.design({
         shapes: []

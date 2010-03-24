@@ -137,3 +137,4 @@ SC.mixin(SCUI.LoadingSpinnerView,{
   PLAYING: 'PLAYING',
   STOPPED: 'STOPPED'
 });
+

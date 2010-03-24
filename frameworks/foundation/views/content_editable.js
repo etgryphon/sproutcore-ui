@@ -725,6 +725,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
             }
       		}
         }
+        this.set('isEditing', YES);
         return value;
       }      
     }

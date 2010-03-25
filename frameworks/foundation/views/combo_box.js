@@ -158,7 +158,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */
   textFieldView: SC.TextFieldView.extend({
     classNames: 'scui-combobox-text-field-view',
-    layout: { top: 0, left: 0, height: 22, right: 29 }
+    layout: { top: 0, left: 0, height: 22, right: 28 }
   }),
 
   /**
@@ -166,7 +166,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */
   dropDownButtonView: SC.View.extend( SCUI.SimpleButton, {
     classNames: 'scui-combobox-dropdown-button-view',
-    layout: { top: 0, right: 0, height: 24, width: 29 }
+    layout: { top: 0, right: 0, height: 24, width: 28 }
   }),
 
   displayProperties: ['isEditing'],

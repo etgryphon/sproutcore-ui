@@ -175,7 +175,7 @@ test("HTML/View Insertion", function() {
   
   ce.set('editorHTML', '');
   
-  ce.insertHTML('<span>Aliquam erat volutpat.</span>');
+  ce.insertHTML('<span>Aliquam erat volutpat.</span>', NO);
   equals(ce.get('editorHTML'), '<span>Aliquam erat volutpat.</span>', 'Value is "Aliquam erat volutpat."');
   
   /** TODO: [MT] Write unit tests for the view insertion */

@@ -113,3 +113,4 @@ SCUI.LocalizableListItemView = SC.ListItemView.extend({
   }
   
 });
+

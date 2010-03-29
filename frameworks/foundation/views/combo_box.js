@@ -1,4 +1,5 @@
 sc_require('mixins/simple_button');
+sc_require('views/localizable_list_item');
 
 /** @class
 
@@ -94,6 +95,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */  
   disableSort: NO,
   
+  localize: NO,
+  
   /**
     Bound to the hint property on the combo box's text field view.
   */
@@ -126,7 +129,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     pass 'objects' through unchanged.
   */
   filteredObjects: function() {
-    var ret, filter, objects, nameKey, name, that;
+    var ret, filter, objects, nameKey, name, that, shouldLocalize;
 
     if (this.get('useExternalFilter')) {
       ret = this.get('objects');
@@ -138,11 +141,13 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
       filter = this._sanitizeFilter(this.get('filter')) || '';
       filter = filter.toLowerCase();
 
+      shouldLocalize = this.get('localize');
+
       ret = [];
       that = this;
 
       objects.forEach(function(obj) {
-        name = that._getObjectName(obj, nameKey);
+        name = that._getObjectName(obj, nameKey, shouldLocalize);
 
         if ((SC.typeOf(name) === SC.T_STRING) && (name.toLowerCase().search(filter) >= 0)) {
           ret.push(obj);
@@ -481,7 +486,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
     // Update the text in the text field as well
     if (textField) {
-      textField.setIfChanged('value', this._getObjectName(sel, this.get('nameKey')));
+      textField.setIfChanged('value', this._getObjectName(sel, this.get('nameKey'), this.get('localize')));
     }
     
     // null out the filter since we aren't searching any more at this point.
@@ -527,7 +532,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var name, textField;
 
     if (selection && this._listPane && this._listPane.get('isPaneAttached')) {
-      name = this._getObjectName(selection, this.get('nameKey'));
+      name = this._getObjectName(selection, this.get('nameKey'), this.get('localize'));
       textField = this.get('textFieldView');
 
       if (textField) {
@@ -566,6 +571,10 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
           hasContentIcon: this.get('iconKey') ? YES : NO,
           contentIconKey: this.get('iconKey'),
           selectionBinding: SC.Binding.from('_listSelection', this),
+          localizeBinding: SC.Binding.from('localize', this).oneWay(),
+
+          // A regular ListItemView, but with localization added
+          exampleView: SCUI.LocalizableListItemView,
           
           // transparently notice mouseUp and use it as trigger
           // to close the list pane
@@ -618,8 +627,15 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     return str;
   },
 
-  _getObjectName: function(obj, nameKey) {
-    return obj ? (nameKey ? (obj.get ? obj.get(nameKey) : obj[nameKey]) : obj) : null;
+  _getObjectName: function(obj, nameKey, shouldLocalize) {
+    var name = obj ? (nameKey ? (obj.get ? obj.get(nameKey) : obj[nameKey]) : obj) : null;
+
+    // optionally localize
+    if (shouldLocalize && name && name.loc) {
+      name = name.loc();
+    }
+    
+    return name;
   },
 
   _getObjectValue: function(obj, valueKey) {

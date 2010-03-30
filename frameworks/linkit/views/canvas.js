@@ -1,6 +1,7 @@
 // ==========================================================================
 // LinkIt.CanvasView
 // ==========================================================================
+/*globals G_vmlCanvasManager*/
 
 /** @class
 
@@ -103,10 +104,6 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     return sc_super();
   },
   
-  /*
-  [MT] - DON'T REMOVE COMMENTED OUT BLOCK... Commenting this out since 
-  we're supporting IE through Google Chrome Frame. Might change this down the road.
-  
   didCreateLayer: function() {
     sc_super();
     if (SC.browser.msie) {
@@ -120,7 +117,6 @@ LinkIt.CanvasView = SC.CollectionView.extend({
       this._canvasie = canvas;
     }
   },
-  */
 
   didReload: function(invalid) {
     //console.log('%@.didReload()'.fmt(this));

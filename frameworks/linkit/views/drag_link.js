@@ -1,6 +1,7 @@
 // ==========================================================================
 // LinkIt.DragLink
 // ==========================================================================
+/*globals G_vmlCanvasManager*/
 
 sc_require('mixins/link');
 
@@ -73,14 +74,8 @@ LinkIt.DragLink = SC.View.extend( LinkIt.Link,
     }
     sc_super();
   },
-  
 
   didCreateLayer: function(){
-    
-    /*
-    [MT] - DON'T REMOVE COMMENTED OUT BLOCK... Commenting this out since 
-    we're supporting IE through Google Chrome Frame. Might change this down the road.
-    
     if (SC.browser.msie) {
       var frame = this.get('frame');
       var canvas = document.createElement('CANVAS');
@@ -90,7 +85,6 @@ LinkIt.DragLink = SC.View.extend( LinkIt.Link,
       canvas = G_vmlCanvasManager.initElement(canvas);
       this._canvasie = canvas;
     }
-    */
     
     this.set('layoutNeedsUpdate', YES);
   }

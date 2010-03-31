@@ -38,4 +38,7 @@ SCUI.DISCLOSED_STAND_ALONE    = 'standAlone';
 SCUI.DISCLOSED_LIST_DEPENDENT = 'listDependent';
 SCUI.DISCLOSED_OPEN = 'open';
 SCUI.DISCLOSED_CLOSED = 'closed';
-
+// ..........................................................
+// State Constants
+// 
+SCUI.DEFAULT_TREE = 'default';

@@ -13,15 +13,10 @@ var basic;
 module("SCUI.Statechart Mixin", {
   setup: function() {
     basic = SC.Object.create(SCUI.Statechart,{
-      init: function(){
-        sc_super();
-        this.foo = (this.foo);
-        this.bar = SCUI.Statechart.registerState(this.bar);
-        
-      },
-      fooState: SCUI.Statechart.registerState({
-        name: 'foo',
-        
+     
+      foo: SCUI.Statechart.registerState({
+        parentState: 'bar',
+
         enterState: function(){
 
         },
@@ -29,7 +24,8 @@ module("SCUI.Statechart Mixin", {
         exitState: function(){
 
         },
-
+        
+        
         blah: function(){
           this.goState('bar');
         },
@@ -37,11 +33,9 @@ module("SCUI.Statechart Mixin", {
         whatever: function(){
           basic.set('whateverWasCalled', YES);
         }
-
       }),
       
-      bar: {
-        name: 'bar',
+      bar: SCUI.Statechart.registerState({
         
         enterState: function(){
 
@@ -55,7 +49,7 @@ module("SCUI.Statechart Mixin", {
           this.goState('bar');
         }
 
-      }     
+      })     
     });
   },
   
@@ -72,13 +66,15 @@ test("basic state transition", function() {
   equals(basic.bar, basic.foo.state(), "should be in state bar");
 });
 
-test("basic sendAction", function(){
+test("basic sendEvent", function(){
   basic.foo.goState('foo');
-  equals(null, basic.get('whateverWasCalled'), "nothing to report");
-  basic.sendAction("whatever");
-  equals(YES, basic.get("whateverWasCalled"), "whatever method was called");
-  
-  
+  equals(basic.get('whateverWasCalled'), null, "nothing to report");
+  basic.sendEvent("whatever");
+  equals(basic.get("whateverWasCalled"), YES, "whatever method was called");
+});
+
+test("test method alias", function(){
+  equals(basic.sendAction, basic.sendEvent, "these methods are the same");
 });
 
 

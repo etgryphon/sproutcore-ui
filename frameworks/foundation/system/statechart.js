@@ -1,46 +1,73 @@
 // ==========================================================================
 // SCUI.Statechart
 // ==========================================================================
-
+require('system/state');
 /**
   @namespace
   
   A most excellent statechart implementation
   
   @author: Mike Ball
+  @author: Michael Cohen
+  @author: Evin Grano
   @version: 0.1
   @since: 0.1
 */
-SCUI.DEFAULT_TREE = 'default';
 
 SCUI.Statechart = {
   
   isStatechart: true,
   
-  init: function(){
-    debugger;
+  initMixin: function(){
+    //setup data
     this._all_states = {};
     this._all_states[SCUI.DEFAULT_TREE] = {};
     this._current_state = {};
     this._current_state[SCUI.DEFAULT_TREE] = null;
-    this._inited = true;
-    sc_super();
-  },
-  
-  registerState: function(stateDefinition, stateManager){
-    if(!stateManager) stateManager = this;
+    //alias sendAction
+    this.sendAction = this.sendEvent;
+    //add all unregistered states
+    var key, tree, state;
+    for(key in this){
+      if(this.hasOwnProperty(key) && SC.kindOf(this[key], SCUI.State) && this[key].get && !this[key].get('beenAddedToStatechart')){
+        state = this[key];
+        this._addState(key, state);
+      }
+    }
     
-    //if(!this._inited) this.initStateManager();
-        
-    if(!stateManager.isStatechart) throw 'Cannot register a state without a State Manager!';
+    //init the statechart
+  },
+  /**
+    Adds a state to a state manager
+    
+    if the stateManager and stateName objects are blank it is assumed
+    that this state will be picked up by the StateManger's init
+    
+    @param {Object} the state definition
+    @param {SC.Object} Optional: Any SC.Object that mixes in SCUI.Statechart 
+    @param {String} Optional: the state name
+    @returns {SCUI.State} the state object
+  */
+  registerState: function(stateDefinition, stateManager, stateName){
     
     var state, tree;
     //create the state object
     state = SCUI.State.create(stateDefinition);
-    state.set('stateManager', stateManager);
     
-    tree = state.get('parallelTree') || SCUI.DEFAULT_TREE;
-    stateManager._addState(state.get('name'), state, tree);
+    //passed in optional arguments
+    if(stateManager && stateName){
+      if(stateManager.isStatechart){
+
+        stateManager._addState(stateName, state);
+        //TODO: init the state!
+      }
+      else{
+        throw 'Cannot add state: %@ because state manager does not mixin SCUI.Statechart'.fmt(state.get('name'));
+      }
+    }
+    else{
+      state.set('beenAddedToStatechart', NO);
+    }
     //push state onto list of states
     
     return state;
@@ -54,6 +81,8 @@ SCUI.Statechart = {
         exitMatchIndex,
         pivotState,
         i;
+    if(!tree) throw 'State requesting go does not have a valid parallel Tree';
+    
     requestdState = this._all_states[tree][requestdState];
     if(!requestdState) throw 'Could not find the requested state!';
 
@@ -88,17 +117,15 @@ SCUI.Statechart = {
   },
   
   /**
-    Send the passed action down the responder chain, starting with the 
-    current first responder.  This will look for the first responder that 
-    actually implements the action method and returns YES or no value when 
-    called.
+    Sends the event to all the parallel state's current state
+    and walks up the graph looking if current does not respond
     
     @param {String} action name of action
     @param {Object} sender object sending the action
     @param {Object} context optional additonal context info
     @returns {SC.Responder} the responder that handled it or null
   */
-  sendAction: function(action, sender, context) {
+  sendEvent: function(action, sender, context) {
     var trace = this.get('trace'),
         handled = NO,
         currentStates = this._current_state,
@@ -137,10 +164,17 @@ SCUI.Statechart = {
   
   
   
-  _addState: function(name, state, tree){
+  _addState: function(name, state){
+    state.set('stateManager', this);
+    state.set('name', name);
+    var tree = state.get('parallelStatechart') || SCUI.DEFAULT_TREE;
+    state.setIfChanged('parallelStatechart', tree);
+    
     if(!this._all_states[tree]) this._all_states[tree] = {};
     if(this._all_states[tree][name]) throw 'Trying to add state %@ to state tree %@ and it already exists'.fmt(name, tree);
     this._all_states[tree][name] = state;
+    
+    state.set('beenAddedToStatechart', YES);
   },
   
   

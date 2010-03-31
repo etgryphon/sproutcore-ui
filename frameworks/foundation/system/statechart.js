@@ -62,7 +62,7 @@ SCUI.Statechart = {
       for(key in trees){  
         if(trees.hasOwnProperty(key)){
           if(!startStates[key]) console.error('The parallel statechart %@ must have a start state!'.fmt(key));
-          trees[key][startStates[key]].startupStates(trees[key]);
+          this._current_state[key] = trees[key][startStates[key]].startupStates(trees[key]);
         }
       }
     }

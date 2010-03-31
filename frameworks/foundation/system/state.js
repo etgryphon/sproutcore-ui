@@ -64,6 +64,13 @@ SCUI.State = SC.Object.extend({
   initialSubState: null,
   
   /**
+    the name of the state.  Set by the statemanager
+
+    @property {String}
+  */
+  name: null,
+  
+  /**
     returns the current state for the parallel statechart this state is in.
     
     use this method in your events to determin if specific behavior is needed
@@ -102,8 +109,16 @@ SCUI.State = SC.Object.extend({
     
     if(initialSubState){
       if(!tree[initialSubState]) throw 'Cannot find initial sub state: %@ defined on state: %@'.fmt(initialSubState, this.get('name'));
-      tree[initialSubState].startupStates(tree);
+      return tree[initialSubState].startupStates(tree);
     }
+    return this;
+  },
+  
+  /**
+    pretty printing
+  */
+  toString: function(){
+    return this.get('name');
   }
   
  

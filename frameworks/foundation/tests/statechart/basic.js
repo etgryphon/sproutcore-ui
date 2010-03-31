@@ -14,6 +14,7 @@ module("SCUI.Statechart Mixin", {
   setup: function() {
     basic = SC.Object.create(SCUI.Statechart,{
       startStates: {'default': 'bar'},
+      startOnInit: NO,
       
       foo: SCUI.Statechart.registerState({
         initState: function(){
@@ -36,8 +37,9 @@ module("SCUI.Statechart Mixin", {
         whatever: function(){
           basic.set('whateverWasCalled', YES);
         }
-      }),
-      
+      })
+    });
+    basic.mixin({
       bar: SCUI.Statechart.registerState({
         
         enterState: function(){
@@ -54,6 +56,7 @@ module("SCUI.Statechart Mixin", {
 
       })     
     });
+    basic.startupStatechart();
   },
   
   teardown: function() {

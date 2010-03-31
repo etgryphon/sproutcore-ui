@@ -26,40 +26,50 @@ SCUI.Statechart = {
     this._current_state[SCUI.DEFAULT_TREE] = null;
     //alias sendAction
     this.sendAction = this.sendEvent;
+    if(this.get('startOnInit')) this.startupStatechart();
+  },
+  
+  startOnInit: YES,
+  
+  
+  startupStatechart: function(){
     //add all unregistered states
-    var key, tree, state, trees, startStates;
-    for(key in this){
-      if(this.hasOwnProperty(key) && SC.kindOf(this[key], SCUI.State) && this[key].get && !this[key].get('beenAddedToStatechart')){
-        state = this[key];
-        this._addState(key, state);
+    if(!this._started){
+      var key, tree, state, trees, startStates;
+      for(key in this){
+        if(this.hasOwnProperty(key) && SC.kindOf(this[key], SCUI.State) && this[key].get && !this[key].get('beenAddedToStatechart')){
+          state = this[key];
+          this._addState(key, state);
+        }
       }
-    }
-    trees = this._all_states;
-    //init the statechart
-    for(key in trees){  
-      if(trees.hasOwnProperty(key)){
-        tree = trees[key];
-        //for all the states in this tree
-        for(state in tree){
-          if(tree.hasOwnProperty(state)){
-            tree[state].initState();
+      trees = this._all_states;
+      //init the statechart
+      for(key in trees){  
+        if(trees.hasOwnProperty(key)){
+          tree = trees[key];
+          //for all the states in this tree
+          for(state in tree){
+            if(tree.hasOwnProperty(state)){
+              tree[state].initState();
+            }
           }
         }
       }
-    }
-    //enter the startstates
-    startStates = this.get('startStates');
-    if(!startStates) throw 'Please add startStates to your statechart!';
-    
-    for(key in trees){  
-      if(trees.hasOwnProperty(key)){
-        if(!startStates[key]) console.error('The parallel statechart %@ must have a start state!'.fmt(key));
-        trees[key][startStates[key]].startupStates(trees[key]);
+      //enter the startstates
+      startStates = this.get('startStates');
+      if(!startStates) throw 'Please add startStates to your statechart!';
+
+      for(key in trees){  
+        if(trees.hasOwnProperty(key)){
+          if(!startStates[key]) console.error('The parallel statechart %@ must have a start state!'.fmt(key));
+          trees[key][startStates[key]].startupStates(trees[key]);
+        }
       }
     }
-    
-    
+    this._started = YES;
   },
+  
+  
   /**
     Adds a state to a state manager
     

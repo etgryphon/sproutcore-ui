@@ -3,9 +3,9 @@
 // ==========================================================================
 
 /**
-  @namespace
+  @class
+  This defines a state for use with the SCUI.Statechart state machine
   
-  TODO:  Documentation!
   
   @author: Mike Ball
   @author: Michael Cohen
@@ -16,32 +16,73 @@
 SCUI.State = SC.Object.extend({
   
   
-  
-  initState: function(){
+  /**
+    Called when the state chart is started up.  Use this method to init
+    your state
     
-  },
+    @returns {void}
+  */
+  initState: function(){},
   
-  enterState: function(){
+  /**
+    Called when this state, or one of its children is becoming the current
+    state.  Do any state setup in this method
     
-  },
+    @param {Object} context optional additonal context info
+    @returns {void}
+  */
+  enterState: function(context){},
   
-  exitState: function(){
+  /**
+    Called when this state, or one of its children is losing its status as the 
+    current state.  Do any state teardown in this method
     
-  },
+    @param {Object} context optional additonal context info
+    @returns {void}
+  */
+  exitState: function(context){},
   
+  /**
+    the parallel statechart this state is a member of.  Defaults to 'default'
+    @property {String}
+  */
   parallelStatechart: SCUI.DEFAULT_STATE,
-  
+  /**
+    The parent state.  Null if none
+    
+    @property {String}
+  */
   parentState: null,
   
+  /**
+    Identifies the optional substate that should be entered on the 
+    statechart start up.
+    if null it is assumed this state is a leaf on the response tree
+
+    @property {String}
+  */
   initialSubState: null,
   
+  /**
+    returns the current state for the parallel statechart this state is in.
+    
+    use this method in your events to determin if specific behavior is needed
+    
+    @returns {SCUI.State}
+  */
   state: function(){
     var sm = this.get('stateManager');
     if(!sm) throw 'Cannot access the current state because state does not have a state manager';
     return sm.currentState(this.get('parallelStatechart'));
   },
   
-  
+  /**
+    transitions the current parallel statechart to the passed state
+    
+    
+    @param {String}
+    @returns {void}
+  */
   goState: function(name){
     var sm = this.get('stateManager');
     if(sm){
@@ -52,6 +93,9 @@ SCUI.State = SC.Object.extend({
     }
   },
   
+  /** @private - 
+    called by the state manager on state startup to initialize the state
+  */
   startupStates: function(tree){
     this.enterState();
     var initialSubState = this.get('initialSubState');

@@ -27,15 +27,38 @@ SCUI.Statechart = {
     //alias sendAction
     this.sendAction = this.sendEvent;
     //add all unregistered states
-    var key, tree, state;
+    var key, tree, state, trees, startStates;
     for(key in this){
       if(this.hasOwnProperty(key) && SC.kindOf(this[key], SCUI.State) && this[key].get && !this[key].get('beenAddedToStatechart')){
         state = this[key];
         this._addState(key, state);
       }
     }
-    
+    trees = this._all_states;
     //init the statechart
+    for(key in trees){  
+      if(trees.hasOwnProperty(key)){
+        tree = trees[key];
+        //for all the states in this tree
+        for(state in tree){
+          if(tree.hasOwnProperty(state)){
+            tree[state].initState();
+          }
+        }
+      }
+    }
+    //enter the startstates
+    startStates = this.get('startStates');
+    if(!startStates) throw 'Please add startStates to your statechart!';
+    
+    for(key in trees){  
+      if(trees.hasOwnProperty(key)){
+        if(!startStates[key]) console.error('The parallel statechart %@ must have a start state!'.fmt(key));
+        trees[key][startStates[key]].startupStates(trees[key]);
+      }
+    }
+    
+    
   },
   /**
     Adds a state to a state manager
@@ -59,7 +82,7 @@ SCUI.Statechart = {
       if(stateManager.isStatechart){
 
         stateManager._addState(stateName, state);
-        //TODO: init the state!
+        state.initState();
       }
       else{
         throw 'Cannot add state: %@ because state manager does not mixin SCUI.Statechart'.fmt(state.get('name'));
@@ -185,7 +208,7 @@ SCUI.Statechart = {
     ret.push(curr);
     curr = curr.get('parentState');
     
-    while(curr.get && tree[curr.get('parentState')]){
+    while(curr && curr.get && tree[curr.get('parentState')]){
       ret.push(tree[curr]);
       curr = tree[curr.get('parentState')];
     }

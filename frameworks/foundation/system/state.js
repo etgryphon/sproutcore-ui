@@ -31,7 +31,9 @@ SCUI.State = SC.Object.extend({
   
   parallelStatechart: SCUI.DEFAULT_STATE,
   
-  parentState: '',
+  parentState: null,
+  
+  initialSubState: null,
   
   state: function(){
     var sm = this.get('stateManager');
@@ -47,6 +49,16 @@ SCUI.State = SC.Object.extend({
     }
     else{
       throw 'Cannot goState cause state does not have a stateManager!';
+    }
+  },
+  
+  startupStates: function(tree){
+    this.enterState();
+    var initialSubState = this.get('initialSubState');
+    
+    if(initialSubState){
+      if(!tree[initialSubState]) throw 'Cannot find initial sub state: %@ defined on state: %@'.fmt(initialSubState, this.get('name'));
+      tree[initialSubState].startupStates(tree);
     }
   }
   

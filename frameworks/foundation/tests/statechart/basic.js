@@ -13,10 +13,13 @@ var basic;
 module("SCUI.Statechart Mixin", {
   setup: function() {
     basic = SC.Object.create(SCUI.Statechart,{
-     
+      startStates: {'default': 'bar'},
+      
       foo: SCUI.Statechart.registerState({
-        parentState: 'bar',
-
+        initState: function(){
+          this.set('fooStateInit', true);
+        },
+        
         enterState: function(){
 
         },
@@ -77,5 +80,8 @@ test("test method alias", function(){
   equals(basic.sendAction, basic.sendEvent, "these methods are the same");
 });
 
+test("test basic init", function(){
+  ok(basic.getPath('foo.fooStateInit'), "foo state should have had init called");
+});
 
 

@@ -1,6 +1,4 @@
-// ==========================================================================
-// SCUI.DashboardDelegate
-// ==========================================================================
+/*globals SCUI */
 
 /** @mixin
 
@@ -39,7 +37,9 @@ SCUI.DashboardDelegate = {
   dashboardWidgetEditViewFor: function(dashboardView, content, contentIndex, item) {
     //console.log('%@.dashboardWidgetEditViewFor()'.fmt(this));
     return null;
-  }
+  },
+  
+  dashboardWidgetDidMove: function(dashboardView, item) {}
 
 };
 

@@ -1,6 +1,4 @@
-// ==========================================================================
-// SCUI.Widget
-// ==========================================================================
+/*globals SCUI */
 
 /** @class
 
@@ -23,7 +21,7 @@ SCUI.Widget = {
     Defines the property containing the view class that should be shown as the face of the widget.
     May be a view class, i.e.
       
-      widgetViewClass: SC.View.design({ ... })
+      widgetViewClass: SC.View.extend({ ... })
 
     or a fully qualified class name string, i.e.
     
@@ -73,7 +71,14 @@ SCUI.Widget = {
   /**
     If YES, overlays a "Done" button on the widget's edit view.
   */
-  showDoneButton: YES
+  showDoneButton: YES,
+  
+  // PUBLIC METHODS
+
+  /**
+    Called by the dashboard view after someone finishes dragging this widget.
+  */
+  widgetDidMove: function() {}
   
 };
 

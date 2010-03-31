@@ -1,6 +1,4 @@
-// ==========================================================================
-// SCUI.DashboardView
-// ==========================================================================
+/*globals SCUI */
 
 sc_require('views/widget_container');
 sc_require('mixins/dashboard_delegate');
@@ -220,7 +218,7 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
   },
   
   mouseUp: function(evt) {
-    var content, frame, finalPos, ret;
+    var content, frame, finalPos, ret, del;
 
     ret = sc_super();
 
@@ -234,6 +232,15 @@ SCUI.DashboardView = SC.CollectionView.extend( SCUI.DashboardDelegate, {
       if (content && frame) {
         finalPos = { x: frame.x, y: frame.y };
         this._setItemPosition(content, finalPos);
+        
+        if (content.widgetDidMove) {
+          content.widgetDidMove();
+          
+          del = this.get('dashboardDelegate');
+          if (del && del.dashboardWidgetDidMove) {
+            del.dashboardWidgetDidMove(this, content);
+          }
+        }
       }
 
       ret = YES;

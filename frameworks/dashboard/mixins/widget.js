@@ -78,7 +78,12 @@ SCUI.Widget = {
   /**
     Called by the dashboard view after someone finishes dragging this widget.
   */
-  widgetDidMove: function() {}
+  widgetDidMove: function() {},
+
+  /**
+    Called on the widget when we're done editing.
+  */
+  widgetDidCommitEditing: function() {}
   
 };
 

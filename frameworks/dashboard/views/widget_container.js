@@ -1,6 +1,4 @@
-// ==========================================================================
-// SCUI.WidgetContainerView
-// ==========================================================================
+/*globals SCUI */
 
 sc_require('views/missing_widget');
 
@@ -154,12 +152,6 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     this.set('childViews', childViews);
   },
 
-  willDestroyLayer: function() {
-    // console.log('%@.willDestroyLayer()'.fmt(this));
-    this.set('content', null); // forces SC.Control to clean up content observers
-    sc_super();
-  },
-
   beginEditing: function() {
     if (this.getPath('content.canEdit')) {
       this.setPathIfChanged('content.isEditing', YES);
@@ -168,8 +160,17 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
 
   commitEditing: function() {
     var c = this.get('content');
+    var del = this.get('dashboardDelegate');
+    
     this.setPathIfChanged('content.isEditing', NO);
-    if (c) c.commit();
+
+    if (del && del.dashboardWidgetDidCommitEditing) {
+      del.dashboardWidgetDidCommitEditing(this.get('owner'), c);
+    }
+
+    if (c && c.widgetDidCommitEditing) {
+      c.widgetDidCommitEditing();
+    }
   },
   
   deleteWidget: function() {
@@ -233,6 +234,18 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
       this._deleteHandleView.set('isVisible', this.get('canDeleteWidget'));
     }
   }.observes('canDeleteWidget'),
+
+  _contentDidChange: function() {
+    var content = this.get('content');
+
+    if (this._widgetView) {
+      this._widgetView.set('content', content);
+    }
+
+    if (this._editView) {
+      this._editView.set('content', content);
+    }
+  }.observes('content'),
 
   _getViewClass: function(viewKey) {
     var c = this.get(viewKey); // hopefully the view class

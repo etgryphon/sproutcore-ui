@@ -1,3 +1,4 @@
+/*globals G_vmlCanvasManager*/
 
 /** @class
 
@@ -215,6 +216,20 @@ SCUI.DrawingView = SC.View.extend({
       drawingFunc = this._drawingManager[curr.shape];
       if (drawingFunc) drawingFunc(cntx, curr);
     }
+  },
+  
+  didCreateLayer: function(){
+    if (SC.browser.msie) {
+      var frame = this.get('frame');
+      var canvas = document.createElement('CANVAS');
+      canvas.className = 'base-layer';
+      canvas.width = frame.width;
+      canvas.height = frame.height;
+      this.$().append(canvas);
+      canvas = G_vmlCanvasManager.initElement(canvas);
+      this._canvasie = canvas;
+    }
   }
+  
 });
 

@@ -260,8 +260,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       if (head) {
         var el = doc.createElement("style");
         el['type'] = "text/css";
-        el.innerHTML = styleSheetCSS;
         head.appendChild(el);
+        if (SC.browser.msie) {
+          el.cssText = styleSheetCSS;
+          
+        } else {
+          el.innerHTML = styleSheetCSS;
+        }
+        
         el = head = null; //clean up memory
       }
     }
@@ -751,7 +757,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
     
     // a bit buggy...
-    var selection = frame.contentWindow.getSelection();
+    var selection = this._getSelection();
     if (selection) {
       if (selection.anchorNode && selection.focusNode) {
         var aNode = selection.anchorNode;

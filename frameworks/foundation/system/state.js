@@ -133,6 +133,22 @@ SCUI.State = SC.Object.extend({
     else{
       throw 'Cannot access parentState cause state does not have a stateManager!';
     }
-  }.property('parentState').cacheable()
+  }.property('parentState').cacheable(),
+  
+  /**
+    returns an array of parent states if any
+    
+    @returns {SC.Array}
+    
+  */
+  trace: function(){
+    var sm = this.get('stateManager');
+    if(sm){
+      return sm._parentStates(this);
+    }
+    else{
+      throw 'Cannot trace cause state does not have a stateManager!';
+    }
+  }
  
 });

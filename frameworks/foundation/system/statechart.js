@@ -119,8 +119,8 @@ SCUI.Statechart = {
     requestdState = this._all_states[tree][requestdState];
     if(!requestdState) throw 'Could not find the requested state!';
 
-    enterStates = this._parentStates(requestdState);
-    exitStates = currentState ? this._parentStates(currentState) : [];
+    enterStates = this._parentStates_with_root(requestdState);
+    exitStates = currentState ? this._parentStates_with_root(currentState) : [];
     
     //find common ancestor
     // YES this is O(N^2) but will do for now....
@@ -222,6 +222,11 @@ SCUI.Statechart = {
       ret.push(curr);
       curr = curr.get('parentStateObject');
     }
+    return ret;
+  },
+  
+  _parentStates_with_root: function(state){
+    var ret = this._parentStates(state);
     //always push the root
     ret.push('root');
     return ret;

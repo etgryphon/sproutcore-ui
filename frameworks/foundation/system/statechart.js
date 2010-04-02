@@ -35,7 +35,7 @@ SCUI.Statechart = {
   startupStatechart: function(){
     //add all unregistered states
     if(!this._started){
-      var key, tree, state, trees, startStates;
+      var key, tree, state, trees, startStates, startState, currTree;
       for(key in this){
         if(this.hasOwnProperty(key) && SC.kindOf(this[key], SCUI.State) && this[key].get && !this[key].get('beenAddedToStatechart')){
           state = this[key];
@@ -58,11 +58,15 @@ SCUI.Statechart = {
       //enter the startstates
       startStates = this.get('startStates');
       if(!startStates) throw 'Please add startStates to your statechart!';
-
+      
       for(key in trees){  
         if(trees.hasOwnProperty(key)){
-          if(!startStates[key]) console.error('The parallel statechart %@ must have a start state!'.fmt(key));
-          this._current_state[key] = trees[key][startStates[key]].startupStates(trees[key]);
+          startState = startStates[key];
+          currTree = trees[key];
+          if(!startState) console.error('The parallel statechart %@ must have a start state!'.fmt(key));
+          if(!currTree) throw 'The parallel statechart %@ does not exist!'.fmt(key);
+          if(!currTree[startState]) throw 'The parallel statechart %@ doesn\'t have a start state [%@]!'.fmt(key, startState);
+          this._current_state[key] = currTree[startState].startupStates(currTree);
         }
       }
     }

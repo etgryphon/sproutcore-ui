@@ -119,7 +119,20 @@ SCUI.State = SC.Object.extend({
   */
   toString: function(){
     return this.get('name');
-  }
+  },
   
+  /**
+    returns the parent states object
+    @returns {SCUI.State}
+  */
+  parentStateObject: function(){
+    var sm = this.get('stateManager');
+    if(sm){
+      return sm.parentStateObject(this.get('parentState'), this.get('parallelStatechart'));
+    }
+    else{
+      throw 'Cannot access parentState cause state does not have a stateManager!';
+    }
+  }.property('parentState').cacheable()
  
 });

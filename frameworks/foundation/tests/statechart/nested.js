@@ -12,15 +12,16 @@ var nested, exitTotal, enterTotal;
 
 module("SCUI.Statechart Mixin Nested Statechart", {
   setup: function() {
+    enterTotal = exitTotal = 0;
     nested = SC.Object.create(SCUI.Statechart,{
       startStates: {'default': 'a', 'other': 'f'},
       startOnInit: YES,
       
-      a: SCUI.Statechart.registerState({initialSubState: 'b'}),
-      b: SCUI.Statechart.registerState({parentState: 'a', initialSubState: 'c'}),
-      c: SCUI.Statechart.registerState({parentState: 'b'}),
-      d: SCUI.Statechart.registerState({parentState: 'b'}),
-      e: SCUI.Statechart.registerState({}),
+      a: SCUI.Statechart.registerState({initialSubState: 'b', enterState: function(){ enterTotal+=1; }, exitState: function(){ exitTotal+=1; }}),
+      b: SCUI.Statechart.registerState({parentState: 'a', initialSubState: 'c', enterState: function(){ enterTotal+=1; }, exitState: function(){ exitTotal+=1; }}),
+      c: SCUI.Statechart.registerState({parentState: 'b', enterState: function(){ enterTotal+=1; }, exitState: function(){ exitTotal+=1; }}),
+      d: SCUI.Statechart.registerState({parentState: 'b', enterState: function(){ enterTotal+=1; }, exitState: function(){ exitTotal+=1; }}),
+      e: SCUI.Statechart.registerState({enterState: function(){ enterTotal+=1; }, exitState: function(){ exitTotal+=1; }}),
       f: SCUI.Statechart.registerState({parallelStatechart:'other'}),
       g: SCUI.Statechart.registerState({parallelStatechart:'other'})
       
@@ -41,9 +42,17 @@ test("nested state initialization", function() {
 test("nested state transition", function() {
   var c = nested.get('c');
   equals(c, c.state(), "c state should be the current state for default statechart");
-  c.goState('e');
+  equals(enterTotal, 3, "should have entered 3 states");
+  equals(exitTotal, 0, "should have exited 0 states");
   
+  enterTotal = exitTotal = 0;
+
+  c.goState('e');
   equals(nested.get('e'), nested.get('e').state(), "e state should be the current state for other statechart");
+  equals(enterTotal, 1, "should have entered 1 state after transition");
+  equals(exitTotal, 3, "should have exited 3 states after transition");
+  
+  
 });
 
 

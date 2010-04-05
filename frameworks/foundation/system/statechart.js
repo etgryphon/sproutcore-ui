@@ -182,6 +182,10 @@ SCUI.Statechart = {
     return this._current_state[tree];
   },
   
+  //Walk like a duck
+  isResponderContext: YES,
+  
+  
   /**
     Sends the event to all the parallel state's current state
     and walks up the graph looking if current does not respond

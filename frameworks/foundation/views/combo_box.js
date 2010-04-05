@@ -1,3 +1,5 @@
+/*globals SCUI*/
+
 sc_require('mixins/simple_button');
 sc_require('views/localizable_list_item');
 
@@ -122,6 +124,34 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     property and update 'objects' as desired.
   */
   useExternalFilter: NO,
+  
+  /**
+    Bound internally to the status of the 'objects' array, if present
+  */
+  status: null,
+
+  /**
+    True if ('status' & SC.Record.BUSY).
+  */
+  isBusy: function() {
+    return (this.get('status') & SC.Record.BUSY) ? YES : NO;
+  }.property('status').cacheable(),
+
+  /**
+    The drop down pane resizes automatically.  Set the minimum allowed height here.
+  */
+  minListHeight: 20,
+
+  /**
+    The drop down pane resizes automatically.  Set the maximum allowed height here.
+  */
+  maxListHeight: 200,
+
+  /**
+    When 'isBusy' is true, the combo box shows a busy indicator at the bottom of the
+    drop down pane.  Set its height here.
+  */
+  statusIndicatorHeight: 18,
 
   /**
     'objects' above, filtered by 'filter', then optionally sorted.
@@ -182,6 +212,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     sc_super();
     this._createListPane();
     this._valueDidChange();
+
+    this.bind('status', SC.Binding.from('*objects.status', this).oneWay());
   },
   
   createChildViews: function() {
@@ -344,15 +376,10 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
   // Show the drop down list if not already visible.
   showList: function() {
-    var frame, width;
-
     if (this._listPane && !this._listPane.get('isPaneAttached')) {
       this.beginEditing();
 
-      frame = this.get('frame');
-      width = frame ? frame.width : 200;
-    
-      this._listPane.adjust({ width: width, height: 150 });
+      this._updateListPaneLayout();
       this._listPane.popup(this, SC.PICKER_MENU);
     }
   },
@@ -477,6 +504,14 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     this.notifyPropertyChange('filteredObjects'); // force a recompute next time 'filteredObjects' is asked for
   }.observes('*objects.[]'),
 
+  _filteredObjectsLengthDidChange: function() {
+    this.invokeOnce('_updateListPaneLayout');
+  }.observes('*filteredObjects.length'),
+
+  _isBusyDidChange: function() {
+    this.invokeOnce('_updateListPaneLayout');
+  }.observes('isBusy'),
+
   _selectedObjectDidChange: function() {
     var sel = this.get('selectedObject');
     var textField = this.get('textFieldView');
@@ -551,42 +586,61 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   }.observes('*textFieldView.value'),
 
   _createListPane: function() {
+    var isBusy = this.get('isBusy');
+    var spinnerHeight = this.get('statusIndicatorHeight');
+
     this._listPane = SC.PickerPane.create({
       classNames: ['scui-combobox-list-pane', 'sc-menu'],
       acceptsKeyPane: NO,
       acceptsFirstResponder: NO,
 
-      contentView: SC.ScrollView.extend({
+      contentView: SC.View.extend({
         layout: { left: 0, right: 0, top: 0, bottom: 0 },
-        hasHorizontalScroller: NO,
+        childViews: 'listView spinnerView'.w(),
         
-        contentView: SC.ListView.design({
-          classNames: 'scui-combobox-list-view',
-          layout: { left: 0, right: 0, top: 0, bottom: 0 },
-          allowsMultipleSelection: NO,
-          target: this,
-          action: '_selectListItem', // do this when [Enter] is pressed, for example
-          contentBinding: SC.Binding.from('filteredObjects', this).oneWay(),
-          contentValueKey: this.get('nameKey'),
-          hasContentIcon: this.get('iconKey') ? YES : NO,
-          contentIconKey: this.get('iconKey'),
-          selectionBinding: SC.Binding.from('_listSelection', this),
-          localizeBinding: SC.Binding.from('localize', this).oneWay(),
+        listView: SC.ScrollView.extend({
+          layout: { left: 0, right: 0, top: 0, bottom: isBusy ? spinnerHeight : 0 },
+          hasHorizontalScroller: NO,
+        
+          contentView: SC.ListView.design({
+            classNames: 'scui-combobox-list-view',
+            layout: { left: 0, right: 0, top: 0, bottom: 0 },
+            allowsMultipleSelection: NO,
+            target: this,
+            action: '_selectListItem', // do this when [Enter] is pressed, for example
+            contentBinding: SC.Binding.from('filteredObjects', this).oneWay(),
+            contentValueKey: this.get('nameKey'),
+            hasContentIcon: this.get('iconKey') ? YES : NO,
+            contentIconKey: this.get('iconKey'),
+            selectionBinding: SC.Binding.from('_listSelection', this),
+            localizeBinding: SC.Binding.from('localize', this).oneWay(),
 
-          // A regular ListItemView, but with localization added
-          exampleView: SCUI.LocalizableListItemView,
+            // A regular ListItemView, but with localization added
+            exampleView: SCUI.LocalizableListItemView,
           
-          // transparently notice mouseUp and use it as trigger
-          // to close the list pane
-          mouseUp: function() {
-            var ret = sc_super();
-            var target = this.get('target');
-            var action = this.get('action');
-            if (target && action && target.invokeLater) {
-              target.invokeLater(action);
+            // transparently notice mouseUp and use it as trigger
+            // to close the list pane
+            mouseUp: function() {
+              var ret = sc_super();
+              var target = this.get('target');
+              var action = this.get('action');
+              if (target && action && target.invokeLater) {
+                target.invokeLater(action);
+              }
+              return ret;
             }
-            return ret;
-          }
+          })
+        }),
+
+        spinnerView: SCUI.LoadingSpinnerView.extend({
+          //layout: { left: 0, right: 0, bottom: 0, height: spinnerHeight },
+          layout: { left: 0, right: 0, bottom: 0, height: spinnerHeight },
+          isVisible: isBusy,
+          theme: 'darkTrans',
+          callCountBinding: SC.Binding.from('isBusy', this).oneWay().transform(function(value) {
+            value = value ? 1 : 0;
+            return value;
+          })
         })
       }),
 
@@ -599,8 +653,39 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
         return NO;
       }
     });
-    
-    this._listView = this._listPane.getPath('contentView.contentView');
+
+    this._listView = this._listPane.getPath('contentView.listView.contentView');
+    this._listScrollView = this._listPane.getPath('contentView.listView');
+  },
+
+  /**
+    Invoked whenever the contents of the drop down pane change.  This method
+    autosizes the pane appropriately.
+  */
+  _updateListPaneLayout: function() {
+    var rowHeight, length, width, height, frame, minHeight, maxHeight, spinnerHeight, isBusy;
+
+    if (this._listView && this._listPane && this._listScrollView) {
+      frame = this.get('frame');
+      width = frame ? frame.width : 200;
+
+      isBusy = this.get('isBusy');
+      spinnerHeight = this.get('statusIndicatorHeight');
+      rowHeight = this._listView.get('rowHeight') || 18;
+
+      // even when list is empty, show at least one row's worth of height,
+      // unless we're showing the busy indicator there
+      length = this.getPath('filteredObjects.length') || (isBusy ? 0 : 1);
+
+      height = (rowHeight * length) + (isBusy ? spinnerHeight : 0);
+      height = Math.min(height, this.get('maxListHeight')); // limit to max height
+      height = Math.max(height, this.get('minListHeight')); // but be sure it is always at least the min height
+
+      this._listScrollView.adjust({ bottom: isBusy ? spinnerHeight : 0 });
+      this._listPane.adjust({ width: width, height: height });
+      this._listPane.updateLayout(); // force pane to re-render layout
+      this._listPane.positionPane(); // since size has changed, force pane to recompute its position on the screen
+    }
   },
 
   // default action for the list view
@@ -645,6 +730,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   // PRIVATE PROPERTIES
   
   _listPane: null,
+  _listScrollView: null,
   _listView: null,
   _listSelection: null,
   

@@ -31,6 +31,7 @@ module("SCUI.Statechart Mixin Nested Statechart", {
   
   teardown: function() {
     nested.destroy();
+    exitTotal = enterTotal = 0;
   }
 });
 

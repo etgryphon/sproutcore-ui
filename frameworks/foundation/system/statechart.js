@@ -18,6 +18,8 @@ SCUI.Statechart = {
   
   isStatechart: true,
   
+  log: NO,
+  
   initMixin: function(){
     //setup data
     this._all_states = {};
@@ -110,40 +112,67 @@ SCUI.Statechart = {
     return state;
   },
   
+  goHistoryState: function(requestedState, tree, isRecursive){
+    var allStateForTree = this._all_states[tree],
+        pState, realHistoryState;
+    if(!tree || !allStateForTree) throw 'State requesting go history does not have a valid parallel tree';
+    pState = allStateForTree[requestedState];
+    if (pState && pState.get('history')) realHistoryState = pState.get('history');
+  
+    if (!realHistoryState) {
+      if (!isRecursive) console.warn('Requesting History State for [%@] and it is not a parent state'.fmt(requestedState));
+      realHistoryState = requestedState;
+      this.goState(realHistoryState, tree);
+    }
+    else if (isRecursive) {
+      this.goHistoryState(realHistoryState, tree, isRecursive);
+    }
+    else {
+      this.goState(realHistoryState, tree);
+    }
+  },
+  
   goState: function(requestdState, tree){
     var currentState = this._current_state[tree],
         enterStates = [],
         exitStates = [],
         enterMatchIndex,
         exitMatchIndex,
-        pivotState,
-        i;
-    if(!tree) throw 'State requesting go does not have a valid parallel Tree';
-    
+        pivotState, pState, cState, 
+        i, hasLogging = this.get('log'), loggingStr;
+    if(!tree) throw '#goState: State requesting go does not have a valid parallel tree';
     requestdState = this._all_states[tree][requestdState];
-    if(!requestdState) throw 'Could not find the requested state!';
+    if(!requestdState) throw '#goState: Could not find the requested state!';
 
     enterStates = this._parentStates_with_root(requestdState);
     exitStates = currentState ? this._parentStates_with_root(currentState) : [];
     
     //find common ancestor
     // YES this is O(N^2) but will do for now....
-    pivotState = exitStates.forEach(function(item,index){
+    pivotState = exitStates.find(function(item,index){
       exitMatchIndex = index;
       enterMatchIndex = enterStates.indexOf(item);
       if(enterMatchIndex >= 0) return YES;
     });
     
     //call enterState and exitState on all states
+    loggingStr = "";
     for(i = 0; i < exitMatchIndex; i += 1){
-      //TODO store history state
+      if (hasLogging) loggingStr += 'Exiting State: [%@] in [%@]\n'.fmt(exitStates[i], tree);
       exitStates[i].exitState();
     }
+    if (hasLogging) console.info(loggingStr);
     
-    for(i = 0; i < enterMatchIndex; i += 1){
+    loggingStr = "";
+    for(i = enterMatchIndex-1; i >= 0; i -= 1){
       //TODO call initState?
-      enterStates[i].enterState();
+      cState = enterStates[i];
+      if (hasLogging) loggingStr += 'Entering State: [%@] in [%@]\n'.fmt(cState, tree);
+      pState = enterStates[i+1];
+      if (pState && SC.typeOf(pState) === SC.T_OBJECT) pState.set('history', cState.name);
+      cState.enterState();
     }
+    if (hasLogging) console.info(loggingStr);
     
     this._current_state[tree] = requestdState;
   },
@@ -163,7 +192,7 @@ SCUI.Statechart = {
     @returns {SC.Responder} the responder that handled it or null
   */
   sendEvent: function(action, sender, context) {
-    var trace = this.get('trace'),
+    var trace = this.get('log'),
         handled = NO,
         currentStates = this._current_state,
         responder;
@@ -242,6 +271,4 @@ SCUI.Statechart = {
     }
     return null;
   }
-  
- 
 };

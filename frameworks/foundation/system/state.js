@@ -55,6 +55,12 @@ SCUI.State = SC.Object.extend({
   parentState: null,
   
   /**
+   * The history state. Null if no substates
+   * @property {String}
+   */
+  history: null,
+  
+  /**
     Identifies the optional substate that should be entered on the 
     statechart start up.
     if null it is assumed this state is a leaf on the response tree
@@ -100,14 +106,36 @@ SCUI.State = SC.Object.extend({
     }
   },
   
+  /**
+    transitions the current parallel statechart to the passed historystate
+    
+    
+    @param {String}
+    @param {Bool}
+    @returns {void}
+  */
+  goHistoryState: function(name, isRecursive){
+    var sm = this.get('stateManager');
+    if(sm){
+      sm.goHistoryState(name, this.get('parallelStatechart'), isRecursive);
+    }
+    else{
+      throw 'Cannot goState cause state does not have a stateManager!';
+    }
+  },
+  
+  
   /** @private - 
     called by the state manager on state startup to initialize the state
   */
   startupStates: function(tree){
+    var sm = this.get('stateManager');
+    if (sm && sm.get('log')) console.info('Entering State: [%@] in [%@]\n'.fmt(this.name, this.get('parallelStatechart')));
     this.enterState();
     var initialSubState = this.get('initialSubState');
     
     if(initialSubState){
+      this.set('history', initialSubState);
       if(!tree[initialSubState]) throw 'Cannot find initial sub state: %@ defined on state: %@'.fmt(initialSubState, this.get('name'));
       return tree[initialSubState].startupStates(tree);
     }

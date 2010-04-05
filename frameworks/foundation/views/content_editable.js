@@ -163,6 +163,17 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	rightClickMenuOptions: [],
 	
 	/**
+	  Used specifically for encoding special characters in an anchor tag's
+	  href attribute. This is mostly an edge case.
+	    (<) - %3C
+	    (>) - %3E
+	    ( ) - %20
+	    (&) - &amp;
+	    (') - %27
+	*/
+	encodeContent: YES,
+	
+	/**
 	  Tab options
 	*/
 	indentOnTab: YES,
@@ -188,7 +199,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
                     '"></iframe>' );
       
     } else if (this._document) {
-      if (value !== this._document.body.innerHTML) {
+      var html = this._document.body.innerHTML;
+      
+      if (this.get('encodeContent')) {
+        html = this._encodeValues(html);
+      }
+      
+      if (value !== html) {
         this._document.body.innerHTML = value;
         
       }
@@ -1116,7 +1133,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       value = value.replace(/\r/g, '&#13;');
       value = value.replace(/\n/g, '&#10;');
     }
-
+    
+    if (this.get('encodeContent')) {
+      value = this._encodeValues(value);
+    }
+    
     this.set('value', value);
     this.set('isEditing', NO);
     return YES;
@@ -1306,6 +1327,26 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
     
     return selectedElement;
+  },
+  
+  _encodeValues: function(html) {
+    var hrefs = html.match(/href=".*?"/gi);
+    if (hrefs) {
+      var href, decodedHref;
+      
+      for (var i = 0, j = hrefs.length; i < j; i++) {
+        href = decodedHref = hrefs[i];
+        
+        html = html.replace(/\%3C/gi, '<');
+        html = html.replace(/\%3E/gi, '>');
+        html = html.replace(/\%20/g, ' ');
+        html = html.replace(/\&amp;/gi, '&');
+        html = html.replace(/\%27/g, "'");
+        
+        html = html.replace(href, decodedHref);
+      }
+    }
+    return html;
   }
   
 });

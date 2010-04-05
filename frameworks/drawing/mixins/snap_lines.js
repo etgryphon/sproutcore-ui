@@ -77,7 +77,7 @@ SCUI.SnapLines = {
       }
     };
 
-    parent = this;    
+    var parent = this;    
     children.forEach(function(child){
       if(ignoreViews.indexOf(child) < 0){
         frame = parent ? parent.convertFrameToView(child.get('frame'), null) : child.get('frame');

@@ -57,7 +57,7 @@ SCUI.UploadView = SC.View.extend(
       context.push('<form method="post" enctype="multipart/form-data" target="' + frameId + '" action="' + uploadTarget + '">');
       context.push('<input type="file" name="' + inputName + '" />');
       context.push('</form>');
-      context.push('<iframe frameBorder="0" src="#" id="' + frameId + '" name="' + frameId + '" style="width:0; height:0;"></iframe>');
+      context.push('<iframe frameborder="0" id="' + frameId + '" name="' + frameId + '" style="width:0; height:0;"></iframe>');
       
     } else {
       var f = this._getForm();

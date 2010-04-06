@@ -583,6 +583,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (doc.execCommand('insertorderedlist', false, val)) {
+        this.querySelection();
         this.set('isEditing', YES);
       }
     }
@@ -596,6 +597,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (doc.execCommand('insertunorderedlist', false, val)) {
+        this.querySelection();
         this.set('isEditing', YES);
       }
     }

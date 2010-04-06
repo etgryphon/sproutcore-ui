@@ -632,14 +632,27 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
           })
         }),
 
-        spinnerView: SCUI.LoadingSpinnerView.extend({
-          //layout: { left: 0, right: 0, bottom: 0, height: spinnerHeight },
-          layout: { left: 0, right: 0, bottom: 0, height: spinnerHeight },
-          isVisible: isBusy,
-          theme: 'darkTrans',
-          callCountBinding: SC.Binding.from('isBusy', this).oneWay().transform(function(value) {
-            value = value ? 1 : 0;
-            return value;
+        spinnerView: SC.View.extend({
+          classNames: 'scui-combobox-spinner-view',
+          layout: { centerX: 0, bottom: 0, width: 100, height: spinnerHeight },
+          isVisibleBinding: SC.Binding.from('isBusy', this).oneWay(),
+          childViews: 'imageView messageView'.w(),
+          
+          imageView: SCUI.LoadingSpinnerView.extend({
+            layout: { left: 0, top: 0, bottom: 0, width: 18 },
+            theme: 'darkTrans',
+            callCountBinding: SC.Binding.from('isBusy', this).oneWay().transform(function(value) {
+              value = value ? 1 : 0;
+              return value;
+            })
+          }),
+          
+          messageView: SC.LabelView.extend({
+            layout: { left: 25, top: 0, bottom: 0, right: 0 },
+            valueBinding: SC.Binding.from('status', this).oneWay().transform(function(value) {
+              value = (value === SC.Record.BUSY_LOADING) ? "Loading...".loc() : "Refreshing...".loc(); // this view is only visible when status is busy
+              return value;
+            })
           })
         })
       }),

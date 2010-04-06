@@ -317,3 +317,4 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
   _itemViews: []
 
 });
+

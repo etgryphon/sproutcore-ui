@@ -59,3 +59,4 @@ SCUI.DashboardDelegate = {
   }
 
 };
+

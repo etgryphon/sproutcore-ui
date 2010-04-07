@@ -19,6 +19,13 @@ sc_require('panes/context_menu_pane');
   @version 0.914
   
   ==========
+  = v.920 =
+  ==========
+  - Added new functionality related to images. Users can bind to the currently
+  selected image's width, height or alt/label property. I also added a function
+  to reset the dimensions of the (selected) image.
+  
+  ==========
   = v.914 =
   ==========
   - Added indentOnTab option. This works by inserting white space
@@ -869,6 +876,120 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       
     }
   }.property('selectedImage').cacheable(),
+  
+  imageWidth: function(key, value) {
+    var image = this.get('selectedImage');
+    if (!image) return '';
+    
+    if (value !== undefined) {
+      this.set('isEditing', YES);
+      image.width = value;
+      image.style.width = value;
+      return value;
+      
+    } else { 
+      return image.clientWidth;
+      
+    }
+  }.property('selectedImage').cacheable(),
+  
+  imageHeight: function(key, value) {
+    var image = this.get('selectedImage');
+    if (!image) return '';
+    
+    if (value !== undefined) {
+      this.set('isEditing', YES);
+      image.height = value;
+      image.style.height = value;
+      return value;
+      
+    } else { 
+      return image.clientHeight;
+      
+    }
+  }.property('selectedImage').cacheable(),
+  
+  imageDescription: function(key, value) {
+    var image = this.get('selectedImage');
+    if (!image) return '';
+    
+    if (value !== undefined) {
+      this.set('isEditing', YES);
+      image.title = value;
+      image.alt = value;
+      return value;
+      
+    } else { 
+      return image.alt;
+      
+    }
+  }.property('selectedImage').cacheable(),
+  
+  imageBorderWidth: function(key, value) {
+    var image = this.get('selectedImage');
+    if (!image) return '';
+    
+    if (value !== undefined) {
+      this.set('isEditing', YES);
+      image.style.borderWidth = value;
+      return value;
+      
+    } else { 
+      return image.style.borderWidth;
+      
+    }
+  }.property('selectedImage').cacheable(),
+  
+  imageBorderColor: function(key, value) {
+    var image = this.get('selectedImage');
+    if (!image) return '';
+    
+    if (value !== undefined) {
+      this.set('isEditing', YES);
+      
+      image.style.borderColor = value;
+      return value;
+      
+    } else { 
+      var color = image.style.borderColor;
+      if (color !== '') {
+        return SC.parseColor(color);
+      } else {
+        return '';
+      }
+      
+    }
+  }.property('selectedImage').cacheable(),
+  
+  imageBorderStyle: function(key, value) {
+    var image = this.get('selectedImage');
+    if (!image) return '';
+    
+    if (value !== undefined) {
+      this.set('isEditing', YES);
+      image.style.borderStyle = value;
+      return value;
+      
+    } else { 
+      return image.style.borderStyle;
+      
+    }
+  }.property('selectedImage').cacheable(),
+  
+  resetImageDimensions: function() {
+    var image = this.get('selectedImage');
+    if (!image) return NO;
+    
+    image.style.width = '';
+    image.style.height = '';
+    image.removeAttribute('width');
+    image.removeAttribute('height');
+    
+    this.set('isEditing', YES);
+    this.notifyPropertyChange('selectedImage');
+    
+    return image;
+  },
 
   focus: function(){
     if (!SC.none(this._document)) {
@@ -1359,4 +1480,3 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }
   
 });
-

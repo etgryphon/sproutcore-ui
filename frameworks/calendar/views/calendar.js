@@ -124,7 +124,7 @@ SCUI.CalendarView = SC.View.extend(
     view = this.createChildView( 
       SC.View.design( SCUI.SimpleButton, {
         classNames: ['scui-cal-button', 'previous-month-icon'],
-        layout: {left: 5, top: 2, width: 16, height: 16},
+        layout: {left: 5, top: 6, width: 8, height: 9},
         target: this,
         action: 'previousMonth'
       }),
@@ -136,7 +136,7 @@ SCUI.CalendarView = SC.View.extend(
     view = this.createChildView( 
       SC.View.design(SCUI.SimpleButton, {
         classNames: ['scui-cal-button', 'next-month-icon'],
-        layout: {right: 5, top: 2, width: 16, height: 16},
+        layout: {right: 5, top: 6, width: 8, height: 9},
         target: this,
         action: 'nextMonth'
       }),

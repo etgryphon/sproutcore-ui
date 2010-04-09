@@ -117,8 +117,8 @@ SCUI.Statechart = {
         pState, realHistoryState;
     if(!tree || !allStateForTree) throw 'State requesting go history does not have a valid parallel tree';
     pState = allStateForTree[requestedState];
-    if (pState && pState.get('history')) realHistoryState = pState.get('history');
-  
+    if (pState) realHistoryState = pState.get('history') || pState.get('initialSubState');
+
     if (!realHistoryState) {
       if (!isRecursive) console.warn('Requesting History State for [%@] and it is not a parent state'.fmt(requestedState));
       realHistoryState = requestedState;

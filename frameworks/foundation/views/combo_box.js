@@ -30,6 +30,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */
   objects: null,
   
+  objectsBindingDefault: SC.Binding.oneWay(),
+  
   /**
     The value represented by this control.  If you have defined a 'valueKey',
     this will be 'selectedObject[valueKey]', otherwise it will be

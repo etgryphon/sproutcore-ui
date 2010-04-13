@@ -24,6 +24,7 @@ mode :debug do
 end
   
 # CORE FRAMEWORKS
+config :sai, :required => [:sproutcore]
 config :foundation, :required => [:sproutcore]
 config :calendar, :required => [:foundation]
 config :dashboard, :required => [:foundation]

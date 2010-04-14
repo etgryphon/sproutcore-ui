@@ -1,6 +1,7 @@
 // ==========================================================================
 // SCUI.State
 // ==========================================================================
+/*globals SCUI */
 
 /**
   @class
@@ -124,20 +125,13 @@ SCUI.State = SC.Object.extend({
     }
   },
   
-  
-  /** @private - 
-    called by the state manager on state startup to initialize the state
-  */
-  startupStates: function(tree){
-    var sm = this.get('stateManager');
-    if (sm && sm.get('log')) console.info('Entering State: [%@] in [%@]\n'.fmt(this.name, this.get('parallelStatechart')));
-    this.enterState();
+  enterInitialSubState: function(tree) {
     var initialSubState = this.get('initialSubState');
-    
-    if(initialSubState){
-      this.set('history', initialSubState);
+    if (initialSubState) {
       if(!tree[initialSubState]) throw 'Cannot find initial sub state: %@ defined on state: %@'.fmt(initialSubState, this.get('name'));
-      return tree[initialSubState].startupStates(tree);
+      this.set('history', initialSubState);
+      var subState = tree[initialSubState];
+      return this.goState(initialSubState, tree);
     }
     return this;
   },

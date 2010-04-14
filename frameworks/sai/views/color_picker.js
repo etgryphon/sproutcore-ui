@@ -19,6 +19,11 @@ SCUI.ColorPicker = SC.View.extend(
     the current color value in hex
   */
   value: "#eee",
+  /*
+    thie size of the color picker... be sure to leave room
+    for the text box
+  */
+  size: 160,
   
   displayProperties: 'value'.w(),
   
@@ -41,16 +46,17 @@ SCUI.ColorPicker = SC.View.extend(
     var pv = this.get('parentView'), frame = this.get('frame');
     var newFrame = pv ? pv.convertFrameToView(frame, null) : frame;
     
-    this._cp = cp = Raphael.colorpicker(newFrame.x, newFrame.y, 160, this.get('value'), layer);
+    this._cp = cp = Raphael.colorpicker(newFrame.x, newFrame.y, this.get('size'), this.get('value'), layer);
     this._output = output;
     
-    
+    //event handler for color picker view
     this._cp.onchange = function(color){
       output.value = color;
       output.style.background = color; 
       output.style.color = Raphael.rgb2hsb(color).b < 0.5 ? "#fff" : "#000";
       that.setIfChanged('value', color);
     };
+    //event handler for textfield
     output.onkeyup = function(){
       var val = this.value;
       cp.color(val);

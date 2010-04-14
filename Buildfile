@@ -24,12 +24,12 @@ mode :debug do
 end
   
 # CORE FRAMEWORKS
-config :sai, :required => [:sproutcore]
 config :foundation, :required => [:sproutcore]
 config :calendar, :required => [:foundation]
 config :dashboard, :required => [:foundation]
 config :drawing, :required => [:foundation]
 config :linkit, :required => [:foundation, :drawing]
+config :sai, :required => [:foundation]
 
 # WRAPPER FRAMEWORKS
 config :scui, :required => [:foundation, :calendar, :dashboard, :drawing, :linkit]

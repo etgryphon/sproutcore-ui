@@ -240,6 +240,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.remove(docBody, 'mouseup', this, this.mouseUp);
     SC.Event.remove(docBody, 'keyup', this, this.keyUp);
     SC.Event.remove(docBody, 'paste', this, this.paste);
+    SC.Event.remove(docBody, 'dblclick', this, this.doubleClick);
     if (this.get('indentOnTab')) {
       SC.Event.remove(docBody, 'keydown', this, this.keyDown);
     }
@@ -324,6 +325,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.add(docBody, 'mouseup', this, this.mouseUp);
     SC.Event.add(docBody, 'keyup', this, this.keyUp);
     SC.Event.add(docBody, 'paste', this, this.paste);
+    SC.Event.add(docBody, 'dblclick', this, this.doubleClick);
     if (this.get('indentOnTab')) {
       SC.Event.add(docBody, 'keydown', this, this.keyDown);
     }
@@ -361,6 +363,19 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	    pane.popup(this, evt);
 		}
 	},
+	
+	/**
+	  Override this method to execute an action on double click. This was done
+	  this way (as opposed to passing target/action) to be able to pass down
+	  the evt parameter to the event handler.
+	  
+	  @params evt
+  */
+  doubleClick: function(evt) {
+    SC.RunLoop.begin();
+    // do your thing...
+    SC.RunLoop.end();
+  },
 	
 	contextMenuView: SCUI.ContextMenuPane.extend({
 		popup: function(anchorView, evt) {

@@ -97,7 +97,7 @@ SCUI.DatePickerView = SC.View.extend(
     // First, Build the Textfield for the date chooser
     view = this._textfield = this.createChildView( 
       SC.TextFieldView.design( {
-        layout: {left: 0, top: 0, right: 25, bottom: 0},
+        layout: {left: 0, top: 0, right: 0, bottom: 0},
         classNames: ['scui-datechooser-text'],
         isEnabled: NO,
         valueBinding: '.parentView.dateString',
@@ -111,7 +111,7 @@ SCUI.DatePickerView = SC.View.extend(
     view = this._date_button = this.createChildView( 
       SC.View.design( SCUI.SimpleButton, {
         classNames: ['scui-datechooser-button', 'calendar-icon'],
-        layout: {right: 0, top: 3, width: 16, height: 16},
+        layout: {right: 5, top: 3, width: 16, height: 16},
         target: this,
         action: 'toggle',
         isEnabledBinding: SC.binding('isEnabled', that)

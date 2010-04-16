@@ -161,6 +161,11 @@ SCUI.Statechart = {
       });
       return;
     }
+
+    // do nothing if we're already in the requested state
+    if (currentState === requestedState) {
+      return;
+    }
     
     // Lock the current state transition so that no other requested state transition 
     // interferes. 

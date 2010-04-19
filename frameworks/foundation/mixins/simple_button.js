@@ -92,6 +92,25 @@ SCUI.SimpleButton = {
     return YES;
   },
   
+  // ..........................................................
+  // touch support
+  // 
+  touchStart: function(evt){
+    return this.mouseDown(evt);
+  },
+  
+  touchEnd: function(evt){
+    return this.mouseUp(evt);
+  },
+  
+  touchEntered: function(evt){
+    return this.mouseEntered(evt);
+  },
+
+  touchExited: function(evt){
+    return this.mouseExited(evt);
+  },
+  
   renderMixin: function(context, firstTime) {
     if (this.get('hasHover')) { 
       var hoverClass = this.get('hoverClass');

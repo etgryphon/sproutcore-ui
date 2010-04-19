@@ -171,7 +171,7 @@ SCUI.State = SC.Object.extend({
     else{
       throw 'Cannot trace cause state does not have a stateManager!';
     }
-  }
+  }.property()
  
 });
 

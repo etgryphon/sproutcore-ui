@@ -246,6 +246,19 @@ SCUI.Statechart = {
     return this._current_state[tree];
   },
   
+  isInState: function(state, tree){
+    tree = tree || SCUI.DEFAULT_TREE;
+    var allStates = this._all_states[tree],
+        currState = this.currentState(tree),
+        ret = NO;
+    var currStack = this._parentStates(currState) || [];
+    if (SC.typeOf(state) === SC.T_STRING) state = allStates[state];
+    currStack.forEach( function(item){
+      if (!ret && item === state) ret = YES;
+    });
+    return ret;
+  },
+  
   //Walk like a duck
   isResponderContext: YES,
   
@@ -295,9 +308,7 @@ SCUI.Statechart = {
     
     return responder ;
   },
-  
-  
-  
+
   _addState: function(name, state){
     state.set('stateManager', this);
     state.set('name', name);

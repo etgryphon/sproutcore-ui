@@ -72,6 +72,12 @@ test("basic state transition", function() {
   equals(basic.bar, basic.foo.state(), "should be in state bar");
 });
 
+test("test inState method", function(){
+  basic.foo.goState('foo');
+  ok(basic.isInState(basic.foo), "checking with the object, should be in state foo");
+  ok(basic.isInState('foo'), "checking with the string, should be in state foo");
+});
+
 test("basic sendEvent", function(){
   basic.foo.goState('foo');
   equals(basic.get('whateverWasCalled'), null, "nothing to report");

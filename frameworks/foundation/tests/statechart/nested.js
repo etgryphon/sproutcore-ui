@@ -52,8 +52,19 @@ test("nested state transition", function() {
   equals(nested.get('e'), nested.get('e').state(), "e state should be the current state for other statechart");
   equals(enterTotal, 1, "should have entered 1 state after transition");
   equals(exitTotal, 3, "should have exited 3 states after transition");
+});
+
+test("test inState method", function(){
+  ok(nested.isInState(nested.a), "checking with the object, should be in state 'a' [default]");
+  ok(nested.isInState(nested.b), "checking with the object, should be in state 'b' [default]");
+  ok(nested.isInState(nested.c), "checking with the object, should be in state 'c' [default]");
   
+  ok(nested.isInState('a'), "checking with the string, should be in state 'a' in [default]");
+  ok(nested.isInState('b'), "checking with the string, should be in state 'b' in [default]");
+  ok(nested.isInState('c'), "checking with the string, should be in state 'c' in [default]");
   
+  ok(nested.isInState(nested.f, 'other'), "checking with the string, should be in state 'f' in [other]");
+  ok(nested.isInState('f', 'other'), "checking with the string, should be in state 'f' in [other]");
 });
 
 

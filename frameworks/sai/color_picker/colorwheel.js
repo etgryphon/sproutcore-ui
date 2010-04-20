@@ -211,3 +211,4 @@ sc_require('color_picker/colorwheel');
         }
     };
 })(window.Raphael);
+

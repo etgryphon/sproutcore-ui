@@ -114,3 +114,4 @@ Raphael.fn.g.dotchart = function (x, y, width, height, valuesx, valuesy, size, o
     };
     return res;
 };
+

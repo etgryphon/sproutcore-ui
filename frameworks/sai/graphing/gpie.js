@@ -206,3 +206,4 @@ Raphael.fn.g.piechart = function (cx, cy, r, values, opts) {
     chart.covers = covers;
     return chart;
 };
+

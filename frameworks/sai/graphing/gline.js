@@ -219,3 +219,4 @@ Raphael.fn.g.linechart = function (x, y, width, height, valuesx, valuesy, opts) 
     };
     return chart;
 };
+

@@ -387,3 +387,4 @@ Raphael.fn.g.hbarchart = function (x, y, width, height, values, opts) {
     chart.covers = covers;
     return chart;
 };
+

@@ -475,3 +475,4 @@ sc_require('raphael');
         }
     };
 })();
+

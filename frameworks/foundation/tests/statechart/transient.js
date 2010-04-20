@@ -146,3 +146,4 @@ test("advanced state transition", function() {
   equals(sequence[8], 'enter:g', "should be 'enter:g'");
   console.log(sequence);
 });
+

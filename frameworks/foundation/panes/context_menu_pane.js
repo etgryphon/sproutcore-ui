@@ -63,9 +63,8 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   
     if (evt && evt.button && (evt.which === 3 || (evt.ctrlKey && evt.which === 1))) {
   
-      // FIXME [JH2] This is sooo nasty. We should register this event with SC's rootResponder?
-      // After talking with charles we need to handle oncontextmenu events when we want to block
-      // the browsers context meuns. (SC does not handle oncontextmenu event.)
+      
+      // prevent the browsers context meuns (if it has one...). (SC does not handle oncontextmenu event.)
       document.oncontextmenu = function(e) { return false; };
       
       // calculate offset needed from top-left of anchorViewOrElement to position the menu
@@ -74,20 +73,16 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
       var gFrame = SC.viewportOffset(anchor);
       var offsetX = evt.pageX - gFrame.x;
       var offsetY = evt.pageY - gFrame.y;
-      
+
       // Popup the menu pane
       this.beginPropertyChanges();
       var it = this.get('displayItems');
       this.set('anchorElement', anchor) ;
       this.set('anchor', anchorView);
       this.set('preferType', SC.PICKER_MENU) ;
-      this.set('preferMatrix', [offsetX + 2, offsetY + 2, 1]) ;
       this.endPropertyChanges();
-      this.append();
-      this.positionPane();
-      this.becomeKeyPane();
-  
-      return YES;
+
+      return arguments.callee.base.apply(this,[anchorView, [offsetX + 2, offsetY + 2, 1]]);
     }
     else {
       //document.oncontextmenu = null; // restore default browser context menu handling

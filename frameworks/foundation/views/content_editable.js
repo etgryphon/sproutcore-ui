@@ -349,9 +349,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 		
 		if (menuOptions.length > 0) {
 			var pane = this.contextMenuView.create({
+			  defaultResponder: 'Orion',
 			  defaultResponder: this.get('rightClickMenuDefaultResponder'),
-	      contentView: SC.View.design({}),
-	      layout: { width: 200, height: (20 * numOptions) },
+	      layout: { width: 200},
 	      itemTitleKey: 'title',
 	      itemTargetKey: 'target',
 	      itemActionKey: 'action',
@@ -379,45 +379,30 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	
 	contextMenuView: SCUI.ContextMenuPane.extend({
 		popup: function(anchorView, evt) {
-	    if (!anchorView || !anchorView.isView) return NO;
+      if ((!anchorView || !anchorView.isView) && !this.get('usingStaticLayout')) return NO;
 
-	    if (evt && evt.button && (evt.which === 3 || (evt.ctrlKey && evt.which === 1))) {
+      if (evt && evt.button && (evt.which === 3 || (evt.ctrlKey && evt.which === 1))) {
 
-	      // FIXME [JH2] This is sooo nasty. We should register this event with SC's rootResponder?
-	      // After talking with charles we need to handle oncontextmenu events when we want to block
-	      // the browsers context meuns. (SC does not handle oncontextmenu event.)
-	      document.oncontextmenu = function() { return false; };
-        
-        // The way the MenuPane was being positioned didn't work when working in the context
-        // of an iframe. Instead of calculating,
-        //
-        //          offsetX = evt.pageX - globalFrame.x;
-        //          offsetY = evt.pageY - globalFrame.y;
-        //
-        // I'm using evt.pageX and evt.pageY only.
-        //
-        
-	      var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;
 
-	      // Popup the menu pane
-	      this.beginPropertyChanges();
-	      var it = this.get('displayItems');
-	      this.set('anchorElement', anchor) ;
-	      this.set('anchor', anchorView);
-	      this.set('preferType', SC.PICKER_MENU) ;
-	      this.set('preferMatrix', [evt.pageX + 5, evt.pageY + 5, 1]) ;
-	      this.endPropertyChanges();
-	      this.append();
-	      this.positionPane();
-	      this.becomeKeyPane();
+        // prevent the browsers context meuns (if it has one...). (SC does not handle oncontextmenu event.)
+        document.oncontextmenu = function(e) { return false; };
+        var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;
+	      
+        // Popup the menu pane
+        this.beginPropertyChanges();
+        var it = this.get('displayItems');
+        this.set('anchorElement', anchor) ;
+        this.set('anchor', anchorView);
+        this.set('preferType', SC.PICKER_MENU) ;
+        this.endPropertyChanges();
 
-	      return YES;
-	    }
-	    else {
-	      //document.oncontextmenu = null; // restore default browser context menu handling
-	    }
-	    return NO;
-	  }
+        return arguments.callee.base.base.apply(this,[anchorView, [evt.pageX + 5, evt.pageY + 5, 1]]);
+      }
+      else {
+        //document.oncontextmenu = null; // restore default browser context menu handling
+      }
+      return NO;
+    }
 	}),
 
   keyUp: function(event) {

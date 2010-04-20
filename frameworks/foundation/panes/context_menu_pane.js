@@ -59,6 +59,8 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
     AnchorView must be a valid SC.View object.
   */
   popup: function(anchorView, evt) {
+    var items = this.get('items');
+    if (!items || items.get('length') <= 0) return NO;
     if ((!anchorView || !anchorView.isView) && !this.get('usingStaticLayout')) return NO;
   
     if (evt && evt.button && (evt.which === 3 || (evt.ctrlKey && evt.which === 1))) {

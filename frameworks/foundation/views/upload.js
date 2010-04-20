@@ -48,6 +48,12 @@ SCUI.UploadView = SC.View.extend(
     var inputName = this.get('inputName');
     
     if (firstTime) {
+      // This hack is needed because the iframe onload event fires twice in IE, when the
+      // view is first created and after the upload is done. Since I'm using the onload
+      // event to signal when the upload is done, I want to suppress its action the first
+      // time around
+      this._firstTime = YES;
+      
       context.push('<form method="post" enctype="multipart/form-data" target="' + frameId + '" action="' + uploadTarget + '">');
       context.push('<input type="file" name="' + inputName + '" />');
       context.push('</form>');
@@ -132,9 +138,18 @@ SCUI.UploadView = SC.View.extend(
     change the status from BUSY to DONE.
   */
   _uploadDone: function() {
-    SC.RunLoop.begin();
-    this.set('status', SCUI.DONE);
-    SC.RunLoop.end();
+    if (SC.browser.msie) {
+      if (!this._firstTime) {
+        SC.RunLoop.begin();
+        this.set('status', SCUI.DONE);
+        SC.RunLoop.end();
+      }
+      this._firstTime = NO;
+    } else {
+      SC.RunLoop.begin();
+      this.set('status', SCUI.DONE);
+      SC.RunLoop.end();
+    }
   },
   
   /**

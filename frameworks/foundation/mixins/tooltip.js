@@ -1,6 +1,4 @@
-// ==========================================================================
-// SCUI.StatusChanged
-// ==========================================================================
+/*globals SCUI*/
 
 sc_require('core');
 
@@ -16,6 +14,7 @@ sc_require('core');
 SCUI.ToolTip = {
   
   toolTip: '',
+
   /*
     We only want to set the alt attribute if this is mixed-in to an image
     otherwise the alt attribute is useless and pollutes the DOM.
@@ -25,6 +24,9 @@ SCUI.ToolTip = {
   renderMixin: function(context, firstTime){
     var toolTip = this.get('toolTip');
     var isImage = this.get('isImage'), attr;
+    
+    // make sure the tooltip is a string, and don't allow any double quote characters
+    toolTip = (SC.typeOf(toolTip) === SC.T_STRING) ? SC.RenderContext.escapeHTML(toolTip).replace(/\"/g, '\'') : '';
     
     if (isImage) {
       attr = {
@@ -40,4 +42,3 @@ SCUI.ToolTip = {
     context = context.attr(attr);
   }
 };
-

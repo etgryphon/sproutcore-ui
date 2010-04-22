@@ -30,40 +30,27 @@ SCUI.ColorPicker = SC.View.extend(
   
   render: function(context, firstTime){
     var value = this.get('value');
-    if(firstTime){
-      context.push('<input type="text" value="%@" />'.fmt(value));
-    }
-    else if( this._cp && this._output){
+    if( this._cp){
       if(this._cp.color() !== value) this._cp.color(value);
-      if(this._output.value !== value) this._output.value = value;
     }
   },
   
   didAppendToDocument: function(){    
     // this is where colorpickers created
-    var layer = this.$().get(0), that = this, output = this.$('input').get(0), cp;
-    //compute the parent frame
-    var pv = this.get('parentView'), frame = this.get('frame');
-    var newFrame = pv ? pv.convertFrameToView(frame, null) : frame;
-    
-    this._cp = cp = Raphael.colorpicker(newFrame.x, newFrame.y, this.get('size'), this.get('value'), layer);
-    this._output = output;
-    
-    //event handler for color picker view
-    this._cp.onchange = function(color){
-      output.value = color;
-      output.style.background = color; 
-      output.style.color = Raphael.rgb2hsb(color).b < 0.5 ? "#fff" : "#000";
-      that.setIfChanged('value', color);
-    };
-    //event handler for textfield
-    output.onkeyup = function(){
-      var val = this.value;
-      cp.color(val);
-      that.setIfChanged('value', val);
-    };
-    
-    //var cp2 = Raphael.colorwheel(360, 20, 300, "#eee");  
+    if(!this._cp){
+      var layer = this.$().get(0), that = this, cp;
+      //compute the parent frame
+      var pv = this.get('parentView'), frame = this.get('frame');
+      var newFrame = pv ? pv.convertFrameToView(frame, null) : frame;
+
+      this._cp = cp = Raphael.colorpicker(newFrame.x, newFrame.y, this.get('size'), this.get('value'), layer);
+
+      //event handler for color picker view
+      this._cp.onchange = function(color){
+        that.setIfChanged('value', color);
+      };
+    }
+
   },
   
   willDestroyLayer: function(){

@@ -32,7 +32,7 @@ config :linkit, :required => [:foundation, :drawing]
 config :sai, :required => [:foundation]
 
 # WRAPPER FRAMEWORKS
-config :scui, :required => [:foundation, :calendar, :dashboard, :drawing, :linkit]
+config :scui, :required => [:foundation, :calendar, :dashboard, :drawing, :linkit, :sai]
 
 # SPECIAL THEMES
 # These do not require any of the built-in SproutCore frameworks

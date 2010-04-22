@@ -26,12 +26,14 @@ SCUI.ColorWell = SC.View.extend(
   },
   
   mouseDown: function(evt){
+    if(!this.get('isEnabledInPane')) return NO;
     this.set('isActive', YES);
     this.displayDidChange();
     return YES ;
   },
   
   mouseUp: function(evt){
+    if(!this.get('isEnabledInPane')) return NO;
     this._isMouseDown = false;
     this.displayDidChange();
     this._popupColorPicker();

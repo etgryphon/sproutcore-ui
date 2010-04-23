@@ -38,22 +38,30 @@ SCUI.Resizable = {
     if (!i) return YES;
     
     var deltaX = evt.pageX - i.pageX, deltaY = evt.pageY - i.pageY;
+    
+    if (deltaX === 0 && deltaY === 0) return YES;
+    
     var view = i.resizeView;
+    var layout = SC.clone(view.get('layout'));
     
     //adjust width
     var hMove = this.get('horizontalMove');
     if (hMove){
-      view.adjust('width', i.width + deltaX); //you might want to set minimum width
+      layout.width = i.width + deltaX; //you might want to set minimum width
     }
     //adjust height
     var vMove = this.get('verticalMove');
     if (vMove){
-      view.adjust('height', i.height + deltaY); //you might want to set minimum height
+      layout.height = i.height + deltaY; //you might want to set minimum height
     }
     // reset top for centerX coords
-    view.adjust('top', i.top); 
+    layout.top = i.top; 
     // reset left for centerY coords
-    view.adjust('left', i.left);
+    layout.left = i.left;
+    
+    view.set('layout', layout);
+    view.displayDidChange();
+    
     return YES ;
   }
 };

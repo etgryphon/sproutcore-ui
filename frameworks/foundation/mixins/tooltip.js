@@ -8,8 +8,7 @@ sc_require('core');
   A render mixin that adds tooltip attributes to the layer DOM.
   
   @author: Michael Harris
-  @version: 0.5
-  @since: 0.5
+  @author: Jonathan Lewis
 */
 SCUI.ToolTip = {
   

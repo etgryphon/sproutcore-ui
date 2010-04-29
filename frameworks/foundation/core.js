@@ -18,7 +18,7 @@
   
   You can also use the shorthand "SCUI" instead of "Scui".
 */
-var Scui = Scui || {};
+var Scui = Scui || SC.Object.create();
 var SCUI = SCUI || Scui ;
 
 // Upload Constants

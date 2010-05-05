@@ -725,7 +725,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (value !== undefined) {
       
-      var identifier = this.get('layerId') + '-fs-identifier';
+      var identifier = Math.ceil(Math.random() * 1000000);
       
       // apply unique string to font size to act as identifier
       if (doc.execCommand('fontsize', false, identifier)) {
@@ -734,57 +734,77 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         var fontTags = doc.getElementsByTagName('font');
         for (var i = 0, j = fontTags.length; i < j; i++) {
           var fontTag = fontTags[i];
-          
           // verify using identifier
-          if (fontTag.size === identifier) {
+          
+          if (SC.browser.msie) identifier = 7;
+          
+          if (fontTag.size == identifier) {
             fontTag.size = '';
-            fontTag.style.fontSize = value + 'px';
+            fontTag.style.fontSize = value;
             
-            var iterator = document.createNodeIterator(fontTag, 
-                                                       NodeFilter.SHOW_ELEMENT,
-                                                       null,
-                                                       false);
-
             // iterate over children and remove their font sizes... they're 
             // inheriting that value from the parent node
-            var node = iterator.nextNode();
-            while (node) {
-              if (node) {
-                if (node !== fontTag && node.nodeName.toLowerCase() === 'font') {
-                  node.style.fontSize = '';
-                }
-                node = iterator.nextNode();
-              }
-            }
+            this._traverseDomSubTree(fontTag);
       		}
         }
         this.set('isEditing', YES);
         return value;
-      }      
+      }
     }
     
-    // a bit buggy...
     var selection = this._getSelection();
     if (selection) {
       if (selection.anchorNode && selection.focusNode) {
-        var aNode = selection.anchorNode;
-        var fNode = selection.focusNode;
-        
-        if (aNode.nodeType === 3 && fNode.nodeType === 3) {
-          var aParentFontSize = aNode.parentNode.style.fontSize;
-          var fParentFontSize = fNode.parentNode.style.fontSize; 
+        var anchorNode = selection.anchorNode;
+        var focusNode = selection.focusNode;
+
+        if (anchorNode.nodeType === 3 && focusNode.nodeType === 3 && anchorNode === focusNode) {
+          return this._traverseAncestry(anchorNode);
           
-          if (aParentFontSize === fParentFontSize) {
-            if (aParentFontSize.length >= 3) {
-              return aParentFontSize.substring(0, aParentFontSize.length - 2);
-            }
-          }
+        } else {
+          return '';
+          
         }
       }
     }
     
     return '';
   }.property('selection').cacheable(),
+  
+  _traverseAncestry: function(leaf) {
+    var node = leaf;
+    while (node !== null) {
+      if (node.nodeName.toLowerCase() === 'font') {
+        if (node.style.fontSize) {
+          return node.style.fontSize;
+        }
+      }
+      node = node.parentNode;
+    }
+    return '';
+  },
+  
+  _traverseDomSubTree: function(root) {
+    var stack = [];
+
+    var node = root.firstChild;
+    while (node !== null) {
+      if (node.nodeName.toLowerCase() === 'font') {
+        node.style.fontSize = '';
+      }
+      if (node.hasChildNodes()) {
+        if (node.nextSibling) {
+          stack.push(node.nextSibling);
+        }
+        node = node.firstChild;
+      } else {
+        node = node.nextSibling;
+        if (node === null && stack.length > 0) {
+          node = stack.pop();
+        }
+      }
+    }
+  },
   
   selectionFontColor: function(key, value) {
     var doc = this._document ;

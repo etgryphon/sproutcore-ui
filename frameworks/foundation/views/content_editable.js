@@ -718,6 +718,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return name;
   }.property('selection').cacheable(),
   
+  
+  // HACK: [MT] - Not a very good solution here, it's especially brittle in IE...
+  // I'm currently implementing a better fix for this
   selectionFontSize: function(key, value) {
     var frame = this._iframe;
     var doc = this._document;
@@ -726,6 +729,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (value !== undefined) {
       
       var identifier = Math.ceil(Math.random() * 1000000);
+      if (SC.browser.msie) identifier = 7;
       
       // apply unique string to font size to act as identifier
       if (doc.execCommand('fontsize', false, identifier)) {
@@ -734,10 +738,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         var fontTags = doc.getElementsByTagName('font');
         for (var i = 0, j = fontTags.length; i < j; i++) {
           var fontTag = fontTags[i];
+          
           // verify using identifier
-          
-          if (SC.browser.msie) identifier = 7;
-          
           if (fontTag.size == identifier) {
             fontTag.size = '';
             fontTag.style.fontSize = value;

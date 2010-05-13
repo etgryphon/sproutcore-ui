@@ -13,7 +13,7 @@
 SCUI.ColorWell = SC.View.extend(
 /** @scope SC.CheckboxView.prototype */ {
   
-  
+  classNames: ['color-well'],
   
   value: '#eee',
 
@@ -44,16 +44,17 @@ SCUI.ColorWell = SC.View.extend(
     var that = this;
     if(!this._pickerPane){
       this._pickerPane = SC.PickerPane.create({
-        layout: {width: 160, height: 205},
+        layout: {width: 180, height: 240},
+        classNames: ['color-picker', 'picker'],
         contentView: SC.View.design({
           childViews: 'picker textBox'.w(),
           
           picker: SCUI.ColorPicker.design({
-            layout: {top: 0, left: 0, width: 160, height: 185},
+            layout: {centerX: 0, top: 10, width: 160, height: 185},
             valueBinding: SC.binding('value', that)
           }),
           textBox: SC.TextFieldView.design({
-            layout: {left: 2, right: 2, bottom: 0, height: 24},
+            layout: { width: 160, height: 24, bottom: 10, left: 10 },
             valueBinding: SC.binding('value', that)
           })
         })

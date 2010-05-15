@@ -30,6 +30,7 @@ SCUI.Statechart = {
     this._current_state[SCUI.DEFAULT_TREE] = null;
     this._goStateLocked = NO;
     this._pendingStateTransitions = [];
+    this._pendingActions = [];
     //alias sendAction
     this.sendAction = this.sendEvent;
     if(this.get('startOnInit')) this.startupStatechart();
@@ -232,7 +233,7 @@ SCUI.Statechart = {
   
   /** @private
   
-    Called by goState to flush a pending state transition and the front of the 
+    Called by goState to flush a pending state transition at the front of the 
     pending queue.
   */
   _flushPendingStateTransition: function() {
@@ -278,7 +279,19 @@ SCUI.Statechart = {
         currentStates = this._current_state,
         responder;
     
-    this._locked = YES;
+    if (this._sendEventLocked) {
+      // Want to prevent any actions from being processed by the states until 
+      // they have had a chance to handle handle the most immediate action
+      this._pendingActions.push({
+        action: action,
+        sender: sender,
+        context: context
+      });
+      return;
+    }
+    
+    this._sendEventLocked = YES;
+    
     if (trace) {
       console.log("%@: begin action '%@' (%@, %@)".fmt(this, action, sender, context));
     }
@@ -304,9 +317,23 @@ SCUI.Statechart = {
       }
     }
     
-    this._locked = NO ;
+    // Now that all the states have had a chance to process the 
+    // first action, we can go ahead and flush any pending actions.
+    this._sendEventLocked = NO;
+    this._flushPendingActions();
     
     return responder ;
+  },
+  
+  /** @private
+
+     Called by sendEvent to flush a pending actions at the front of the pending
+     queue
+   */
+  _flushPendingActions: function() {
+    var pending = this._pendingActions.shift();
+    if (!pending) return;
+    this.sendEvent(pending.action, pending.sender, pending.context);
   },
 
   _addState: function(name, state){

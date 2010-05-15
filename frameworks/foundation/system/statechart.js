@@ -287,6 +287,7 @@ SCUI.Statechart = {
         sender: sender,
         context: context
       });
+      if (trace) console.log('%@: added %@ to pending actions queue'.fmt(this, action));
       return;
     }
     
@@ -331,8 +332,12 @@ SCUI.Statechart = {
      queue
    */
   _flushPendingActions: function() {
+    var trace = this.get('log');
     var pending = this._pendingActions.shift();
     if (!pending) return;
+    if (trace) {
+      console.log('%@: firing pending action %@'.fmt(this, pending.action));
+    }
     this.sendEvent(pending.action, pending.sender, pending.context);
   },
 

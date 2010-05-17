@@ -138,20 +138,20 @@ SCUI.Statechart = {
     }
   },
   
-  goState: function(requestedState, tree) {
+  goState: function(requestedStateName, tree) {
     var currentState = this._current_state[tree],
         enterStates = [],
         exitStates = [],
         enterMatchIndex,
         exitMatchIndex,
-        pivotState, pState, cState, 
+        requestedState, pivotState, pState, cState,
         i, trace = this.get('log'), loggingStr;
              
     if (!tree) throw '#goState: State requesting go does not have a valid parallel tree';
     
-    requestedState = this._all_states[tree][requestedState];
+    requestedState = this._all_states[tree][requestedStateName];
     
-    if (!requestedState) throw '#goState: Could not find the requested state!';
+    if (!requestedState) throw '#goState: Could not find the requested state: %@'.fmt(requestedStateName);
 
     if (this._goStateLocked) {
       // There is a state transition currently happening. Add this requested state

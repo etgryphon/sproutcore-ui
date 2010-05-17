@@ -29,6 +29,7 @@ SCUI.Statechart = {
     this._current_state = {};
     this._current_state[SCUI.DEFAULT_TREE] = null;
     this._goStateLocked = NO;
+    this._sendEventLocked = NO;
     this._pendingStateTransitions = [];
     this._pendingActions = [];
     //alias sendAction
@@ -144,7 +145,7 @@ SCUI.Statechart = {
         enterMatchIndex,
         exitMatchIndex,
         pivotState, pState, cState, 
-        i, hasLogging = this.get('log'), loggingStr;
+        i, trace = this.get('log'), loggingStr;
              
     if (!tree) throw '#goState: State requesting go does not have a valid parallel tree';
     
@@ -160,6 +161,7 @@ SCUI.Statechart = {
         requestedState: requestedState,
         tree: tree
       });
+      if (trace) console.info('%@: added [%@] to pending state transitions queue for [%@]'.fmt(this, requestedState, tree));
       return;
     }
 
@@ -197,11 +199,11 @@ SCUI.Statechart = {
     // but don't exit the common parent itself since you are technically still in it.
     loggingStr = "";
     for (i = 0; i < exitMatchIndex; i += 1) {
-      if (hasLogging) loggingStr += 'Exiting State: [%@] in [%@]\n'.fmt(exitStates[i], tree);
+      if (trace) loggingStr += 'Exiting State: [%@] in [%@]\n'.fmt(exitStates[i], tree);
       exitStates[i].exitState();
     }
     
-    if (hasLogging) console.info(loggingStr);
+    if (trace) console.info(loggingStr);
     
     // Finally, from the the common parent state, but not including the parent state, enter the 
     // sub states down to the requested state. If the requested state has an initial sub state
@@ -210,7 +212,7 @@ SCUI.Statechart = {
     for (i = enterMatchIndex-1; i >= 0; i -= 1) {
       //TODO call initState?
       cState = enterStates[i];
-      if (hasLogging) loggingStr += 'Entering State: [%@] in [%@]\n'.fmt(cState, tree);
+      if (trace) loggingStr += 'Entering State: [%@] in [%@]\n'.fmt(cState, tree);
       pState = enterStates[i+1];
       if (pState && SC.typeOf(pState) === SC.T_OBJECT) pState.set('history', cState.name);
       cState.enterState();
@@ -220,7 +222,7 @@ SCUI.Statechart = {
         cState.enterInitialSubState(this._all_states[tree || SCUI.DEFAULT_TREE]);
       }
     }
-    if (hasLogging) console.info(loggingStr);
+    if (trace) console.info(loggingStr);
     
     // Set the current state for this state transition
     this._current_state[tree] = requestedState;
@@ -229,6 +231,10 @@ SCUI.Statechart = {
     // goState and let other pending state transitions execute.
     this._goStateLocked = NO;
     this._flushPendingStateTransition();
+    
+    // Once pending state transitions are flushed then go ahead and start flush pending
+    // actions
+    this._flushPendingActions();
   },
   
   /** @private
@@ -237,8 +243,13 @@ SCUI.Statechart = {
     pending queue.
   */
   _flushPendingStateTransition: function() {
+    var trace = this.get('log');
     var pending = this._pendingStateTransitions.shift();
     if (!pending) return;
+    if (trace) {
+      var msg = '%@: performing pending state transition for requested state [%@] in [%@]';
+      console.info(msg.fmt(this, pending.requestedState, pending.tree));
+    }
     this.goState(pending.requestedState, pending.tree);
   },
   
@@ -279,22 +290,23 @@ SCUI.Statechart = {
         currentStates = this._current_state,
         responder;
     
-    if (this._sendEventLocked) {
+    if (this._sendEventLocked || this._goStateLocked) {
       // Want to prevent any actions from being processed by the states until 
-      // they have had a chance to handle handle the most immediate action
+      // they have had a chance to handle handle the most immediate action or 
+      // completed a state transition
       this._pendingActions.push({
         action: action,
         sender: sender,
         context: context
       });
-      if (trace) console.log('%@: added %@ to pending actions queue'.fmt(this, action));
+      if (trace) console.info('%@: added %@ to pending actions queue'.fmt(this, action));
       return;
     }
     
     this._sendEventLocked = YES;
     
     if (trace) {
-      console.log("%@: begin action '%@' (%@, %@)".fmt(this, action, sender, context));
+      console.info("%@: begin action '%@' (%@, %@)".fmt(this, action, sender, context));
     }
     
     for(var tree in currentStates){
@@ -312,8 +324,8 @@ SCUI.Statechart = {
         }
         
         if (trace) {
-          if (!handled) console.log("%@:  action '%@' NOT HANDLED in tree %@".fmt(this,action, tree));
-          else console.log("%@: action '%@' handled by %@ in tree %@".fmt(this, action, responder.get('name'), tree));
+          if (!handled) console.info("%@:  action '%@' NOT HANDLED in tree %@".fmt(this,action, tree));
+          else console.info("%@: action '%@' handled by %@ in tree %@".fmt(this, action, responder.get('name'), tree));
         }
       }
     }
@@ -336,7 +348,7 @@ SCUI.Statechart = {
     var pending = this._pendingActions.shift();
     if (!pending) return;
     if (trace) {
-      console.log('%@: firing pending action %@'.fmt(this, pending.action));
+      console.info('%@: firing pending action %@'.fmt(this, pending.action));
     }
     this.sendEvent(pending.action, pending.sender, pending.context);
   },

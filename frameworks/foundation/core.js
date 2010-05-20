@@ -23,13 +23,10 @@ var SCUI = SCUI || Scui ;
 
 // Upload Constants
 SCUI.READY = 'READY';
-SCUI.BUSY  = 'BUSY';
-SCUI.DONE  = 'DONE';
+SCUI.BUSY = 'BUSY';
+SCUI.DONE = 'DONE';
+SCUI.ERROR = 'ERROR'; // has to be set manually depending on the response written to the iframe
 
-// Upload Constants
-SCUI.READY = 'READY';
-SCUI.BUSY  = 'BUSY';
-SCUI.DONE  = 'DONE';
 
 // ..........................................................
 // Disclosed View Constants

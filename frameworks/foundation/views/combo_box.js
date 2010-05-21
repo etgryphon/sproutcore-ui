@@ -383,6 +383,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
       this._updateListPaneLayout();
       this._listPane.popup(this, SC.PICKER_MENU);
+      this._listView.reload();
     }
   },
   
@@ -714,18 +715,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   },
 
   _sanitizeFilter: function(str){
-    var specials, s;
-
-    if (str) {
-      specials = [
-          '/', '.', '*', '+', '?', '|',
-          '(', ')', '[', ']', '{', '}', '\\'
-      ];
-      
-      s = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
-      return str.replace(s, '\\$1');
-    }
-    return str;
+    return str ? str.replace(this._sanitizeRegEx, '\\$1') : str;
   },
 
   _getObjectName: function(obj, nameKey, shouldLocalize) {
@@ -751,7 +741,11 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _listSelection: null,
   
   _keyDown: NO,
-  _shouldUpdateFilter: NO
+  _shouldUpdateFilter: NO,
+  
+  /**
+    Do this once here so we don't have to spend cpu time recreating this every time the search filter changes
+  */
+  _sanitizeRegEx: new RegExp('(\\' + ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'].join('|\\') + ')', 'g')
 
 });
-

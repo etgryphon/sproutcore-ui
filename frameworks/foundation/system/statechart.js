@@ -12,6 +12,7 @@ require('system/state');
   @author: Mike Ball
   @author: Michael Cohen
   @author: Evin Grano
+  @author: Jonathan Lewis
   @version: 0.1
   @since: 0.1
 */
@@ -20,7 +21,19 @@ SCUI.Statechart = {
   
   isStatechart: true,
   
-  log: NO,
+  /**
+    Log level bit field definitions.  Combine these in any way desired
+    using bitwise operations and apply to 'logLevel'.
+  */
+  LOG_NONE: 0,
+  LOG_STATE_CHANGES: 1,
+  LOG_SENT_EVENTS: 2,
+  LOG_HANDLED_EVENTS: 4,
+  LOG_UNHANDLED_EVENTS: 8,
+  LOG_ALL_EVENTS: 14,
+  LOG_ALL: 15,
+
+  logLevel: 0,
   
   initMixin: function(){
     //setup data
@@ -38,7 +51,6 @@ SCUI.Statechart = {
   },
   
   startOnInit: YES,
-  
   
   startupStatechart: function(){
     //add all unregistered states
@@ -145,7 +157,7 @@ SCUI.Statechart = {
         enterMatchIndex,
         exitMatchIndex,
         requestedState, pivotState, pState, cState,
-        i, trace = this.get('log'), loggingStr;
+        i, logLevel = this.get('logLevel'), loggingStr;
              
     if (!tree) throw '#goState: State requesting go does not have a valid parallel tree';
     
@@ -161,7 +173,12 @@ SCUI.Statechart = {
         requestedState: requestedState,
         tree: tree
       });
-      if (trace) console.info('%@: added [%@] to pending state transitions queue for [%@]'.fmt(this, requestedState, tree));
+
+      // Logging
+      if (logLevel & SCUI.Statechart.LOG_STATE_CHANGES) {
+        console.info('%@: added [%@] to pending state transitions queue for [%@]'.fmt(this, requestedState, tree));
+      }
+
       return;
     }
 
@@ -199,11 +216,18 @@ SCUI.Statechart = {
     // but don't exit the common parent itself since you are technically still in it.
     loggingStr = "";
     for (i = 0; i < exitMatchIndex; i += 1) {
-      if (trace) loggingStr += 'Exiting State: [%@] in [%@]\n'.fmt(exitStates[i], tree);
+      // Logging
+      if (logLevel & SCUI.Statechart.LOG_STATE_CHANGES) {
+        loggingStr += 'Exiting State: [%@] in [%@]\n'.fmt(exitStates[i], tree);
+      }
+
       exitStates[i].exitState();
     }
     
-    if (trace) console.info(loggingStr);
+    // Logging
+    if (logLevel & SCUI.Statechart.LOG_STATE_CHANGES) {
+      console.info(loggingStr);
+    }
     
     // Finally, from the the common parent state, but not including the parent state, enter the 
     // sub states down to the requested state. If the requested state has an initial sub state
@@ -212,7 +236,12 @@ SCUI.Statechart = {
     for (i = enterMatchIndex-1; i >= 0; i -= 1) {
       //TODO call initState?
       cState = enterStates[i];
-      if (trace) loggingStr += 'Entering State: [%@] in [%@]\n'.fmt(cState, tree);
+      
+      // Logging
+      if (logLevel & SCUI.Statechart.LOG_STATE_CHANGES) {
+        loggingStr += 'Entering State: [%@] in [%@]\n'.fmt(cState, tree);
+      }
+
       pState = enterStates[i+1];
       if (pState && SC.typeOf(pState) === SC.T_OBJECT) pState.set('history', cState.name);
       cState.enterState();
@@ -222,7 +251,11 @@ SCUI.Statechart = {
         cState.enterInitialSubState(this._all_states[tree || SCUI.DEFAULT_TREE]);
       }
     }
-    if (trace) console.info(loggingStr);
+
+    // Logging
+    if (logLevel & SCUI.Statechart.LOG_STATE_CHANGES) {
+      console.info(loggingStr);
+    }
     
     // Set the current state for this state transition
     this._current_state[tree] = requestedState;
@@ -243,13 +276,18 @@ SCUI.Statechart = {
     pending queue.
   */
   _flushPendingStateTransition: function() {
-    var trace = this.get('log');
+    var logLevel = this.get('logLevel');
     var pending = this._pendingStateTransitions.shift();
+    var msg;
+
     if (!pending) return;
-    if (trace) {
-      var msg = '%@: performing pending state transition for requested state [%@] in [%@]';
+
+    // Logging
+    if (logLevel & SCUI.Statechart.LOG_STATE_CHANGES) {
+      msg = '%@: performing pending state transition for requested state [%@] in [%@]';
       console.info(msg.fmt(this, pending.requestedState, pending.tree));
     }
+
     this.goState(pending.requestedState, pending.tree);
   },
   
@@ -274,7 +312,6 @@ SCUI.Statechart = {
   //Walk like a duck
   isResponderContext: YES,
   
-  
   /**
     Sends the event to all the parallel state's current state
     and walks up the graph looking if current does not respond
@@ -285,7 +322,7 @@ SCUI.Statechart = {
     @returns {SC.Responder} the responder that handled it or null
   */
   sendEvent: function(action, sender, context) {
-    var trace = this.get('log'),
+    var logLevel = this.get('logLevel'),
         handled = NO,
         currentStates = this._current_state,
         responder;
@@ -299,13 +336,18 @@ SCUI.Statechart = {
         sender: sender,
         context: context
       });
-      if (trace) console.info('%@: added %@ to pending actions queue'.fmt(this, action));
+      
+      // Logging
+      if (logLevel & SCUI.Statechart.LOG_SENT_EVENTS) {
+        console.info('%@: added %@ to pending actions queue'.fmt(this, action));
+      }
+
       return;
     }
     
     this._sendEventLocked = YES;
     
-    if (trace) {
+    if (logLevel & SCUI.Statechart.LOG_SENT_EVENTS) {
       console.info("%@: begin action '%@' (%@, %@)".fmt(this, action, sender, context));
     }
     
@@ -323,9 +365,12 @@ SCUI.Statechart = {
           if(!handled) responder = responder.get('parentState') ? this._all_states[tree][responder.get('parentState')] : null;
         }
         
-        if (trace) {
-          if (!handled) console.info("%@:  action '%@' NOT HANDLED in tree %@".fmt(this,action, tree));
-          else console.info("%@: action '%@' handled by %@ in tree %@".fmt(this, action, responder.get('name'), tree));
+        // Logging
+        if (!handled && (logLevel & SCUI.Statechart.LOG_UNHANDLED_EVENTS)) {
+          console.info("%@:  action '%@' NOT HANDLED in tree %@".fmt(this,action, tree));
+        }
+        else if (handled && (logLevel & SCUI.Statechart.LOG_HANDLED_EVENTS)) {
+          console.info("%@: action '%@' handled by %@ in tree %@".fmt(this, action, responder.get('name'), tree));
         }
       }
     }
@@ -344,12 +389,15 @@ SCUI.Statechart = {
      queue
    */
   _flushPendingActions: function() {
-    var trace = this.get('log');
     var pending = this._pendingActions.shift();
+
     if (!pending) return;
-    if (trace) {
+
+    // Logging
+    if (this.get('logLevel') & SCUI.Statechart.LOG_SENT_EVENTS) {
       console.info('%@: firing pending action %@'.fmt(this, pending.action));
     }
+
     this.sendEvent(pending.action, pending.sender, pending.context);
   },
 

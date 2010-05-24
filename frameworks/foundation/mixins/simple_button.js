@@ -1,8 +1,5 @@
-// ==========================================================================
-// SCUI.SimpleButton
-// ==========================================================================
+/*globals SCUI*/
 /*jslint evil: true */
-sc_require('core');
 
 /** @class
   
@@ -12,8 +9,10 @@ sc_require('core');
   @version 0.1
   @since 0.1
 */
+
 SCUI.SimpleButton = {
 /* SimpleButton Mixin */
+
   target: null,
   action: null,
   hasState: NO,
@@ -26,7 +25,7 @@ SCUI.SimpleButton = {
   
   _isMouseDown: NO, 
   
-  displayProperties: ['inState'],
+  displayProperties: ['inState', 'isEnabled'],
 
   /** @private 
     On mouse down, set active only if enabled.

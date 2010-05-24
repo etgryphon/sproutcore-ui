@@ -60,7 +60,7 @@ sc_require('panes/context_menu_pane');
     a. _getFrame
     b. _getDocument
     c. _getSelection
-    d. _getSelectedElemented
+    d. _getSelectedElement
   - Reversed isOpaque value
     
 */
@@ -284,6 +284,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var value = this.get('value');
     var docBody = doc.body;
     docBody.contentEditable = true;
+    
+    doc.execCommand('styleWithCSS', false, false);
     
     if (!this.get('isOpaque')) {
       docBody.style.background = 'transparent';       
@@ -709,104 +711,62 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return '';
     
     if (val !== undefined) {
-      if (doc.execCommand('fontname', false, val)) {
+       var identifier = '%@%@'.fmt(this.get('layerId'), '-ce-font-temp');
+       
+      if (doc.execCommand('fontname', false, identifier)) {
+        var fontTags = doc.getElementsByTagName('font');
+        for (var i = 0, j = fontTags.length; i < j; i++) {
+          var fontTag = fontTags[i];
+          if (fontTag.face === identifier) {
+            fontTag.face = '';
+            fontTag.style.fontFamily = val;
+          }
+        }
+        
         this.set('isEditing', YES);
       }
+    } else {
+      var elm = this._getSelectedElement();
+      if (elm && elm.nodeName.toLowerCase() === 'font') {
+        return elm.style.fontFamily;
+      } else {
+        return '';
+      }
     }
-    
-    var name = doc.queryCommandValue('fontname') || '';
-    return name;
   }.property('selection').cacheable(),
   
-  
-  // HACK: [MT] - Not a very good solution here, it's especially brittle in IE...
-  // I'm currently implementing a better fix for this
   selectionFontSize: function(key, value) {
     var frame = this._iframe;
     var doc = this._document;
     if (!doc) return '';
     
     if (value !== undefined) {
-      
-      var identifier = Math.ceil(Math.random() * 1000000);
-      if (SC.browser.msie) identifier = 7;
+      var identifier = '%@%@'.fmt(this.get('layerId'), '-ce-size-temp');
       
       // apply unique string to font size to act as identifier
-      if (doc.execCommand('fontsize', false, identifier)) {
-        
+      if (doc.execCommand('fontname', false, identifier)) {
+
         // get all newly created font tags
         var fontTags = doc.getElementsByTagName('font');
         for (var i = 0, j = fontTags.length; i < j; i++) {
           var fontTag = fontTags[i];
-          
-          // verify using identifier
-          if (fontTag.size == identifier) {
-            fontTag.size = '';
+          if (fontTag.face === identifier) {
+            fontTag.face = '';
             fontTag.style.fontSize = value;
-            
-            // iterate over children and remove their font sizes... they're 
-            // inheriting that value from the parent node
-            this._traverseDomSubTree(fontTag);
-      		}
+          }
         }
         this.set('isEditing', YES);
         return value;
       }
-    }
-    
-    var selection = this._getSelection();
-    if (selection) {
-      if (selection.anchorNode && selection.focusNode) {
-        var anchorNode = selection.anchorNode;
-        var focusNode = selection.focusNode;
-
-        if (anchorNode.nodeType === 3 && focusNode.nodeType === 3 && anchorNode === focusNode) {
-          return this._traverseAncestry(anchorNode);
-          
-        } else {
-          return '';
-          
-        }
-      }
-    }
-    
-    return '';
-  }.property('selection').cacheable(),
-  
-  _traverseAncestry: function(leaf) {
-    var node = leaf;
-    while (node !== null) {
-      if (node.nodeName.toLowerCase() === 'font') {
-        if (node.style.fontSize) {
-          return node.style.fontSize;
-        }
-      }
-      node = node.parentNode;
-    }
-    return '';
-  },
-  
-  _traverseDomSubTree: function(root) {
-    var stack = [];
-
-    var node = root.firstChild;
-    while (node !== null) {
-      if (node.nodeName.toLowerCase() === 'font') {
-        node.style.fontSize = '';
-      }
-      if (node.hasChildNodes()) {
-        if (node.nextSibling) {
-          stack.push(node.nextSibling);
-        }
-        node = node.firstChild;
+    } else {
+      var elm = this._getSelectedElement();
+      if (elm && elm.nodeName.toLowerCase() === 'font') {
+        return elm.style.fontSize;
       } else {
-        node = node.nextSibling;
-        if (node === null && stack.length > 0) {
-          node = stack.pop();
-        }
+        return '';
       }
     }
-  },
+  }.property('selection').cacheable(),
   
   selectionFontColor: function(key, value) {
     var doc = this._document ;
@@ -1499,6 +1459,42 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
     }
     return html;
+  },
+  
+  // TODO: [MT] - Port this over to IE
+  _getSelectedElement: function() {
+    var sel = this._getSelection(), range, elm;
+
+    if (sel.rangeCount > 0) {
+      range = sel.getRangeAt(0);
+    }
+
+    if (range) {
+      if (sel.anchorNode && (sel.anchorNode.nodeType == 3)) {
+        if (sel.anchorNode.parentNode) { //next check parentNode
+          elm = sel.anchorNode.parentNode;
+        }
+        if (sel.anchorNode.nextSibling != sel.focusNode.nextSibling) {
+          elm = sel.anchorNode.nextSibling;
+        }
+      }
+
+      if (!elm) {
+        elm = range.commonAncestorContainer;
+
+        if (!range.collapsed) {
+          if (range.startContainer == range.endContainer) {
+            if (range.startOffset - range.endOffset < 2) {
+              if (range.startContainer.hasChildNodes()) {
+                elm = range.startContainer.childNodes[range.startOffset];
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    return elm;
   }
   
 });

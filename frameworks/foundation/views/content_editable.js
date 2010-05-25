@@ -237,16 +237,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var doc = this._document;
     var docBody = doc.body;
     
+    if (this.get('indentOnTab')) SC.Event.remove(docBody, 'keydown', this, this.keyDown);
     SC.Event.remove(docBody, 'mouseup', this, this.mouseUp);
     SC.Event.remove(docBody, 'keyup', this, this.keyUp);
     SC.Event.remove(docBody, 'paste', this, this.paste);
     SC.Event.remove(docBody, 'dblclick', this, this.doubleClick);
-    if (this.get('indentOnTab')) {
-      SC.Event.remove(docBody, 'keydown', this, this.keyDown);
-    }
-    
-    
     SC.Event.remove(doc, 'click', this, this.focus);
+    SC.Event.remove(doc, 'mousedown', this, this.mouseDown);
     SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
     
     sc_super();
@@ -328,17 +325,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.add(docBody, 'keyup', this, this.keyUp);
     SC.Event.add(docBody, 'paste', this, this.paste);
     SC.Event.add(docBody, 'dblclick', this, this.doubleClick);
-    if (this.get('indentOnTab')) {
-      SC.Event.add(docBody, 'keydown', this, this.keyDown);
-    }
-    
+    if (this.get('indentOnTab')) SC.Event.add(docBody, 'keydown', this, this.keyDown);
     // there are certian cases where the body of the iframe won't have focus
     // but the user will be able to type... this happens when the user clicks on
     // the white space where there's no content. This event handler 
     // ensures that the body will receive focus when the user clicks on that area.
-    SC.Event.add(this._document, 'click', this, this.focus);
-
-		SC.Event.add(this._document, 'mousedown', this, this.mouseDown);
+    SC.Event.add(doc, 'click', this, this.focus);
+		SC.Event.add(doc, 'mousedown', this, this.mouseDown);
     
     // call the SC.WebView iframeDidLoad function to finish setting up
     this.iframeDidLoad();

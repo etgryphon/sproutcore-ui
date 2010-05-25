@@ -608,10 +608,11 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
         layout: { left: 0, right: 0, top: 0, bottom: 0 },
         childViews: 'listView spinnerView'.w(),
         
-        listView: SC.ScrollView.extend({
+        listView: Orion.ScrollView.extend({
           classNames: 'scui-combobox-list-scroll-view',
           layout: { left: 0, right: 0, top: 0, bottom: isBusy ? spinnerHeight : 0 },
           hasHorizontalScroller: NO,
+          floating: YES,
         
           contentView: SC.ListView.design({
             classNames: 'scui-combobox-list-view',

@@ -245,6 +245,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.remove(doc, 'click', this, this.focus);
     SC.Event.remove(doc, 'mousedown', this, this.mouseDown);
     SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
+    SC.Event.remove(doc, 'mouseup', this, this.docMouseUp);
     
     sc_super();
   },
@@ -332,6 +333,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     // ensures that the body will receive focus when the user clicks on that area.
     SC.Event.add(doc, 'click', this, this.focus);
 		SC.Event.add(doc, 'mousedown', this, this.mouseDown);
+		SC.Event.add(doc, 'mouseup', this, this.docMouseUp);
     
     // call the SC.WebView iframeDidLoad function to finish setting up
     this.iframeDidLoad();
@@ -357,6 +359,22 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 
 	    pane.popup(this, evt);
 		}
+	},
+	
+  // Can't do this on the body mouseup function (The body mouse
+  // function is not always triggered, e.g, when the mouse cursor is behind
+  // a border)
+	docMouseUp: function(evt) {
+	  SC.RunLoop.begin();
+	  var that = this;
+	  this.invokeLater(function() {
+	    var image = that.get('selectedImage');
+	    if (image) {
+	      image.style.width = image.width + 'px';
+	      image.style.height = image.height + 'px';
+	    }
+	  }, 100);
+	  SC.RunLoop.end();
 	},
 	
 	/**

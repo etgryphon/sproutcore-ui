@@ -67,7 +67,16 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   
       
       // prevent the browsers context meuns (if it has one...). (SC does not handle oncontextmenu event.)
-      document.oncontextmenu = function(e) { return false; };
+      document.oncontextmenu = function(e) {
+        if (evt.preventDefault) {
+          evt.preventDefault();
+        } else { 
+          evt.stop();
+        }
+        evt.returnValue = false;
+        evt.stopPropagation();
+        return false;
+      };
       
       // calculate offset needed from top-left of anchorViewOrElement to position the menu
       // pane next to the mouse click location

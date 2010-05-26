@@ -63,7 +63,13 @@ SCUI.SearchableArrayController = SC.ArrayController.extend(
           searchResults.push(curObj);
         }
       }
-      this.set('searchResults',searchResults);
+      
+      // Add properties for basic selection support
+      searchResults.set('allowsSelection', this.get('allowsSelection'));
+      searchResults.set('allowsMultipleSelection', this.get('allowsMultipleSelection'));
+      searchResults.set('allowsEmptySelection', this.get('allowsEmptySelection'));
+
+      this.set('searchResults', searchResults);
     }
  }
   

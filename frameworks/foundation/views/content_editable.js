@@ -365,16 +365,15 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   // function is not always triggered, e.g, when the mouse cursor is behind
   // a border)
 	docMouseUp: function(evt) {
-	  SC.RunLoop.begin();
-	  var that = this;
-	  this.invokeLater(function() {
+    var that = this;
+	  this.invokeLast(function() {
 	    var image = that.get('selectedImage');
 	    if (image) {
 	      image.style.width = image.width + 'px';
 	      image.style.height = image.height + 'px';
+	      that.set('isEditing', YES);
 	    }
-	  }, 100);
-	  SC.RunLoop.end();
+	  });
 	},
 	
 	/**

@@ -800,16 +800,22 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   selectionBackgroundColor: function(key, value) {
     var doc = this._document ;
     if (!doc) return '';
+    
+    doc.execCommand('styleWithCSS', false, true);
 
     // for now execute this in non IE browsers...
     if (!SC.browser.msie) {
       if (value !== undefined) {
         if (doc.execCommand('hilitecolor', false, value)) {
           this.set('isEditing', YES);
+          // have to do this slightly differently than the selectionFontColor property
+          // for this to work in FF
+          return value;
         }
       }
 
-      var color = this._document.queryCommandValue('hilitecolor');
+      var color = doc.queryCommandValue('hilitecolor');
+      doc.execCommand('styleWithCSS', false, false);
       if (color !== 'transparent') {
         if (SC.parseColor(color)) {
           return SC.parseColor(color);

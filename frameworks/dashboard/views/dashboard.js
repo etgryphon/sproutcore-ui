@@ -142,6 +142,7 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
   _updateItemViews: function() {
     var content = this.get('content');
     var cache = this._itemViewCache || {};
+    var itemViews = this._itemViews || [];
     var finalItemViews = [];
     var finalItemViewCache = {};
     var del = this.get('dashboardDelegate');
@@ -178,7 +179,7 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
       });
     }
 
-    if (!finalItemViews.isEqual(this._itemViews)) {
+    if (!finalItemViews.isEqual(itemViews)) {
       this.beginPropertyChanges();
     
       this.removeAllChildren();
@@ -188,7 +189,7 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
       });
 
       // clean up old views
-      this._itemViews.forEach(function(itemView) {
+      itemViews.forEach(function(itemView) {
         if (finalItemViews.indexOf(itemView) < 0) {
           itemView.set('content', null);
         }
@@ -227,7 +228,8 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
   */
   _itemViewForEvent: function(evt) {
     var responder = this.getPath('pane.rootResponder') ;
-    if (!responder) return null ; // fast path
+
+    if (!responder || !this._itemViewCache) return null ; // fast path
     
     var base    = SC.guidFor(this) + '-',
         baseLen = base.length,
@@ -313,8 +315,8 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
 
   // PRIVATE PROPERTIES
   
-  _itemViewCache: {},
-  _itemViews: []
+  _itemViewCache: null,
+  _itemViews: null
 
 });
 

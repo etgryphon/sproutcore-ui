@@ -1,7 +1,7 @@
 // ==========================================================================
 // LinkIt.CanvasView
 // ==========================================================================
-/*globals G_vmlCanvasManager LinkIt*/
+/*globals G_vmlCanvasManager*/
 
 /** @class
 
@@ -292,7 +292,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     }
   },
 
-  touchStart: function(evt) {
+  mouseDown: function(evt) {
     var pv, frame, globalFrame, canvasX, canvasY, itemView, menuPane, menuOptions;
     var linkSelection;
 
@@ -343,12 +343,10 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     return YES;
   }, 
 
-  touchesDragged: function(evt) {
+  mouseDragged: function(evt) {
     var dX, dY;
-    console.log('touchesdragged');
+
     if (this._dragData) {
-      console.log(this._dragData.startPageX);
-      console.log(this._dragData.startPageY);
       this._dragData.didMove = YES; // so that mouseUp knows whether to report the new position.
       dX = evt.pageX - this._dragData.startPageX;
       dY = evt.pageY - this._dragData.startPageY;
@@ -361,7 +359,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
 
   /**
   */
-  touchEnd: function(evt) {
+  mouseUp: function(evt) {
     var ret = sc_super();
     var layout, content, newPosition;
     
@@ -377,21 +375,6 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     
     this._dragData = null; // clean up
     return ret;
-  },
-  
-  // ..........................................................
-  // Touch Support
-  // 
-  mouseDown: function(evt){
-    return this.touchStart(evt);
-  },
-  
-  mouseUp: function(evt){
-    return this.touchEnd(evt);
-  },
-  
-  mouseDragged: function(evt){
-    return this.touchesDragged(evt);
   },
 
   // PRIVATE METHODS

@@ -101,6 +101,11 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
       }
     });
 
+    // Add properties for basic selection support
+    searchMatches.set('allowsSelection', this.get('allowsSelection'));
+    searchMatches.set('allowsMultipleSelection', this.get('allowsMultipleSelection'));
+    searchMatches.set('allowsEmptySelection', this.get('allowsEmptySelection'));
+
     return searchMatches;
   }
 });

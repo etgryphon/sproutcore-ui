@@ -359,9 +359,12 @@ SCUI.Statechart = {
        
         while(!handled && responder){
           if(responder.tryToPerform){
-            handled = responder.tryToPerform(action, sender, context);
+            try{
+              handled = responder.tryToPerform(action, sender, context);
+            } catch(exp){
+              console.error("Exception occurred while trying perform action: %@ \n %@".fmt(action,exp));
+            }
           }
-          
           if(!handled) responder = responder.get('parentState') ? this._all_states[tree][responder.get('parentState')] : null;
         }
         

@@ -283,7 +283,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var docBody = doc.body;
     docBody.contentEditable = true;
     
-    doc.execCommand('styleWithCSS', false, false);
+    if (!SC.browser.msie) {
+      doc.execCommand('styleWithCSS', false, false);
+    }
     
     if (!this.get('isOpaque')) {
       docBody.style.background = 'transparent';       
@@ -782,47 +784,44 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var doc = this._document ;
     if (!doc) return '';
     
-    // for now execute this in non IE browsers...
-    if (!SC.browser.msie) {
-      if (value !== undefined) {
-        if (doc.execCommand('forecolor', false, value)) {
-          this.set('isEditing', YES);
-        }
+
+    if (value !== undefined) {
+      if (doc.execCommand('forecolor', false, value)) {
+        this.set('isEditing', YES);
       }
-      
-      var color = SC.parseColor(doc.queryCommandValue('forecolor')) || '';
-      return color;
-    } 
+    }
+
+    return SC.parseColor(doc.queryCommandValue('forecolor')) || '';
     
-    return '';
   }.property('selection').cacheable(),
   
   selectionBackgroundColor: function(key, value) {
     var doc = this._document ;
     if (!doc) return '';
     
-    doc.execCommand('styleWithCSS', false, true);
+    var prop;
+    if (SC.browser.msie) prop = 'backcolor';
+    else prop = 'hilitecolor';
 
-    // for now execute this in non IE browsers...
-    if (!SC.browser.msie) {
-      if (value !== undefined) {
-        if (doc.execCommand('hilitecolor', false, value)) {
-          this.set('isEditing', YES);
-          // have to do this slightly differently than the selectionFontColor property
-          // for this to work in FF
-          return value;
-        }
+    if (!SC.browser.msie) doc.execCommand('styleWithCSS', false, true);
+
+    if (value !== undefined) {
+      if (doc.execCommand(prop, false, value)) {
+        this.set('isEditing', YES);
+        // have to do this slightly differently than the selectionFontColor property
+        // for this to work in FF
+        return value;
       }
+    }
 
-      var color = doc.queryCommandValue('hilitecolor');
-      doc.execCommand('styleWithCSS', false, false);
-      if (color !== 'transparent') {
-        if (SC.parseColor(color)) {
-          return SC.parseColor(color);
-        }
+    var color = doc.queryCommandValue(prop);
+    if (!SC.browser.msie)  doc.execCommand('styleWithCSS', false, false);
+    if (color !== 'transparent') {
+      if (SC.parseColor(color)) {
+        return SC.parseColor(color);
       }
-    } 
-
+    }
+    
     return '';
   }.property('selection').cacheable(),
   

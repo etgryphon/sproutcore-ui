@@ -92,8 +92,8 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
       this.set('anchor', anchorView);
       this.set('preferType', SC.PICKER_MENU) ;
       this.endPropertyChanges();
-
-      return arguments.callee.base.apply(this,[anchorView, [offsetX + 2, offsetY + 2, 1]]);
+      
+      return arguments.callee.base.apply(this,[anchorView, [offsetX + 2, offsetY + 2, 1] ]);
     }
     else {
       //document.oncontextmenu = null; // restore default browser context menu handling
@@ -108,7 +108,70 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   remove: function() {
    //this.invokeLater(function(){document.oncontextmenu = null; console.log('removing contextmenu event');}); //invoke later to ensure the event is over...
     return sc_super();
-  }
+  },
+  
+  
+  /**
+   * The following events are receiving the event argument as the second 
+   * argument so we are capturing both args and then pass the evt on to the 
+   * super (menu pane) to be handled or not.
+   *  
+   * This also handles the case where the the event is actually sent correctly
+   * and thus pass on the sender as the event b/c in correct situations the 
+   * sender argument is the event...
+   */
+  
+  keyUp: function(sender, evt) {
+    if (evt && evt.commandCodes) {
+      return sc_super([evt]);
+    }
+    else if (sender && sender.commandCodes) {
+      return sc_super([sender]);
+    }
+    else {
+     return NO; 
+    }
+  },
+  
+  keyDown: function(sender, evt) {
+    if (evt && evt.commandCodes) {
+      return sc_super([evt]);
+    }
+    else if (sender && sender.commandCodes) {
+      return sc_super([sender]);
+    }
+    else {
+     return NO; 
+    }
+
+  },
+  
+  exampleView: SC.MenuItemView.extend({
+    keyUp: function(sender, evt) {
+      if (evt && evt.commandCodes) {
+        return sc_super([evt]);
+      }
+      else if (sender && sender.commandCodes) {
+        return sc_super([sender]);
+      }
+      else {
+       return NO; 
+      }
+    },
+
+    keyDown: function(sender, evt) {
+      if (evt && evt.commandCodes) {
+        return sc_super([evt]);
+      }
+      else if (sender && sender.commandCodes) {
+        return sc_super([sender]);
+      }
+      else {
+       return NO; 
+      }
+    }
+  })
+  
 
 });
 

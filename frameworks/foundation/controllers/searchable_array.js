@@ -45,14 +45,14 @@ SCUI.SearchableArrayController = SC.ArrayController.extend(
     var searchResults  = [];
     var search = this.get('search');
     var searchKey = this.get('searchKey');
-    var searchRegex = new RegExp(search,'i');
-    var content = this.get('content');
+    var content = this.get('content'), searchRegex;
   
     if(search === null || search === '' || search === undefined){ 
       this.set('searchResults', content);
     }
     else {
       search = this._sanitizeSearchString(search).toLowerCase();
+      searchRegex = new RegExp(search,'i');
       
       var curObj, searchField, searchTokens, token, tokenLen;
       for (var i=0, len = content.get('length'); i < len; i++) {

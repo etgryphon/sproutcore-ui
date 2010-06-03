@@ -155,9 +155,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   cleanInsertedText: YES,
   
   /**
-    strip exta \n and \r
+    Replaces '\n' with '&#13;' and '\r' with '&#10;'
   */
-  stripCrap: NO,
+  encodeNewLine: NO,
   
   /**
     CSS to style the edit content
@@ -212,7 +212,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         html = this._encodeValues(html);
       }
       
-      if(this.get('stripCrap')){
+      if(this.get('encodeNewLine')){
         html = html.replace(/\r/g, '&#13;');
         html = html.replace(/\n/g, '&#10;');
       }
@@ -1261,7 +1261,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       value = this.cleanWordHTML(value);
     }
 
-    if(this.get('stripCrap')){
+    if(this.get('encodeNewLine')){
       value = value.replace(/\r/g, '&#13;');
       value = value.replace(/\n/g, '&#10;');
     }

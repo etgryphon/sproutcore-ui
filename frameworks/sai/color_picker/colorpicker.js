@@ -218,9 +218,9 @@ sc_require('raphael');
     };
     ColorPicker.prototype.docOnUp = function (e) {
         this.hsOnTheMove = this.bOnTheMove = false;
-        this.docmove();
+        if(this.docmove) this.docmove();
         delete this.docmove;
-        this.docup();
+        if(this.docup) this.docup();
         delete this.docup;
         this.onchanged && this.onchanged(this.color());
         e.preventDefault && e.preventDefault();

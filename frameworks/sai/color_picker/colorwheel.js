@@ -180,9 +180,9 @@ sc_require('color_picker/colorwheel');
     };
     ColorWheel.prototype.docOnUp = function (e) {
         this.hsbOnTheMove = this.clrOnTheMove = false;
-        this.docmove();
+        if(this.docmove) this.docmove();
         delete this.docmove;
-        this.docup();
+        if(this.docup) this.docup();
         delete this.docup;
         this.onchanged && this.onchanged(this.color());
     };

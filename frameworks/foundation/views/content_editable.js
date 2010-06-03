@@ -212,6 +212,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         html = this._encodeValues(html);
       }
       
+      if(this.get('stripCrap')){
+        html = html.replace(/\r/g, '&#13;');
+        html = html.replace(/\n/g, '&#10;');
+      }
+      
       if (value !== html) {
         this._document.body.innerHTML = value;
         

@@ -123,10 +123,10 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   
   keyUp: function(sender, evt) {
     if (evt && evt.commandCodes) {
-      return sc_super([evt]);
+      return arguments.callee.base.apply(this,[evt]);
     }
     else if (sender && sender.commandCodes) {
-      return sc_super([sender]);
+      return arguments.callee.base.apply(this,[sender]);
     }
     else {
      return NO; 
@@ -135,10 +135,10 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   
   keyDown: function(sender, evt) {
     if (evt && evt.commandCodes) {
-      return sc_super([evt]);
+      return arguments.callee.base.apply(this,[evt]);
     }
     else if (sender && sender.commandCodes) {
-      return sc_super([sender]);
+      return arguments.callee.base.apply(this,[sender]);
     }
     else {
      return NO; 
@@ -149,10 +149,10 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
   exampleView: SC.MenuItemView.extend({
     keyUp: function(sender, evt) {
       if (evt && evt.commandCodes) {
-        return sc_super([evt]);
+        return arguments.callee.base.apply(this,[evt]);
       }
       else if (sender && sender.commandCodes) {
-        return sc_super([sender]);
+        return arguments.callee.base.apply(this,[sender]);
       }
       else {
        return NO; 
@@ -161,10 +161,10 @@ SCUI.ContextMenuPane = SC.MenuPane.extend({
 
     keyDown: function(sender, evt) {
       if (evt && evt.commandCodes) {
-        return sc_super([evt]);
+        return arguments.callee.base.apply(this,[evt]);
       }
       else if (sender && sender.commandCodes) {
-        return sc_super([sender]);
+        return arguments.callee.base.apply(this,[sender]);
       }
       else {
        return NO; 

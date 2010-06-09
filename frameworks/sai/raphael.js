@@ -3393,3 +3393,4 @@ Raphael = (function () {
     R.el = Element[proto];
     return R;
 })();
+

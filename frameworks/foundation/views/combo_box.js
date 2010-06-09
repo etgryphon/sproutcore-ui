@@ -756,3 +756,4 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _sanitizeRegEx: new RegExp('(\\' + ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'].join('|\\') + ')', 'g')
 
 });
+

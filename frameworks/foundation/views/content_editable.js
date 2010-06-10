@@ -793,10 +793,16 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (value !== undefined) {
       if (doc.execCommand('forecolor', false, value)) {
         this.set('isEditing', YES);
+        this._last_font_color_cache = value;
       }
     }
-
-    return SC.parseColor(doc.queryCommandValue('forecolor')) || '';
+    
+    if (this._last_font_color_cache) {
+      return this._last_font_color_cache;
+    } else {
+      this._last_font_color_cache = SC.parseColor(doc.queryCommandValue('forecolor')) || '';
+      return this._last_font_color_cache;
+    }
     
   }.property('selection').cacheable(),
   
@@ -813,17 +819,20 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (value !== undefined) {
       if (doc.execCommand(prop, false, value)) {
         this.set('isEditing', YES);
-        // have to do this slightly differently than the selectionFontColor property
-        // for this to work in FF
-        return value;
+        this._last_background_color_cache = value;
       }
     }
-
-    var color = doc.queryCommandValue(prop);
-    if (!SC.browser.msie)  doc.execCommand('styleWithCSS', false, false);
-    if (color !== 'transparent') {
-      if (SC.parseColor(color)) {
-        return SC.parseColor(color);
+    
+    if (this._last_background_color_cache) {
+      return this._last_background_color_cache;
+    } else {
+      var color = doc.queryCommandValue(prop);
+      if (!SC.browser.msie)  doc.execCommand('styleWithCSS', false, false);
+      if (color !== 'transparent') {
+        if (SC.parseColor(color)) {
+          this._last_background_color_cache = SC.parseColor(color);
+          return this._last_background_color_cache;
+        }
       }
     }
     
@@ -1015,6 +1024,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       var frameWindow = frame.contentWindow;
       selection = frameWindow.getSelection();
     }
+    
+    this._resetColorCache();
     
     this.propertyWillChange('selection');
     this.set('selection', selection.toString());
@@ -1515,6 +1526,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
     
     return elm;
+  },
+  
+  _resetColorCache: function() {
+    this._last_font_color_cache = null;
+    this._last_background_color_cache = null;
   }
   
 });

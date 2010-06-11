@@ -29,7 +29,7 @@ SCUI.ResizablePickerPane = SC.PickerPane.extend({
     view = this.createChildView(
       SC.View.design(SCUI.Resizable, {
         classNames: ['picker-resizable-handle'],
-        layout: {bottom: 0, right: 0, height: 25, width: 25},
+        layout: {bottom: 0, right: 0, height: 16, width: 16},
         viewToResizeBinding: SC.Binding.oneWay('.parentView'),
         maxHeight: this.get('maxHeight'),
         maxWidth: this.get('maxWidth'),

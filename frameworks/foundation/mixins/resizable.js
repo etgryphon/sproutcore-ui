@@ -15,6 +15,10 @@ SCUI.Resizable = {
   viewToResize: null,
   verticalMove: YES,
   horizontalMove: YES,
+  maxHeight: null,
+  minHeight: null,
+  maxWidth: null,
+  minWidth: null,
   
   mouseDown: function(evt) {
     var v, i = {};
@@ -47,12 +51,22 @@ SCUI.Resizable = {
     //adjust width
     var hMove = this.get('horizontalMove');
     if (hMove){
-      layout.width = i.width + deltaX; //you might want to set minimum width
+      var width = i.width + deltaX;
+      var maxWidth = this.get('maxWidth');
+      var minWidth = this.get('minWidth');
+      if (!SC.none(maxWidth) && width > maxWidth) width = maxWidth;
+      else if (!SC.none(minWidth) && width < minWidth) width = minWidth;
+      layout.width = width;
     }
     //adjust height
     var vMove = this.get('verticalMove');
     if (vMove){
-      layout.height = i.height + deltaY; //you might want to set minimum height
+      var height = i.height + deltaY;
+      var maxHeight = this.get('maxHeight');
+      var minHeight = this.get('minHeight');
+      if (!SC.none(maxHeight) && height > maxHeight) height = maxHeight;
+      else if (!SC.none(minHeight) && height < minHeight) height = minHeight;
+      layout.height = height;
     }
     // reset top for centerX coords
     layout.top = i.top; 

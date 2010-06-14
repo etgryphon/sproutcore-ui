@@ -1492,37 +1492,44 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return html;
   },
   
-  // TODO: [MT] - Port this over to IE
   _getSelectedElement: function() {
     var sel = this._getSelection(), range, elm;
-
-    if (sel.rangeCount > 0) {
-      range = sel.getRangeAt(0);
-    }
-
-    if (range) {
-      if (sel.anchorNode && (sel.anchorNode.nodeType == 3)) {
-        if (sel.anchorNode.parentNode) { //next check parentNode
-          elm = sel.anchorNode.parentNode;
-        }
-        if (sel.anchorNode.nextSibling != sel.focusNode.nextSibling) {
-          elm = sel.anchorNode.nextSibling;
-        }
+    var doc = this._document;
+           
+    if (SC.browser.msie) {
+      range = doc.selection.createRange();
+      if (range) {
+        elm = range.item ? range.item(0) : range.parentElement();
       }
+    } else {
+      if (sel.rangeCount > 0) {
+        range = sel.getRangeAt(0);
+      }  
+      
+      if (range) {
+        if (sel.anchorNode && (sel.anchorNode.nodeType == 3)) {
+          if (sel.anchorNode.parentNode) { //next check parentNode
+            elm = sel.anchorNode.parentNode;
+          }
+          if (sel.anchorNode.nextSibling != sel.focusNode.nextSibling) {
+            elm = sel.anchorNode.nextSibling;
+          }
+        }
 
-      if (!elm) {
-        elm = range.commonAncestorContainer;
+        if (!elm) {
+          elm = range.commonAncestorContainer;
 
-        if (!range.collapsed) {
-          if (range.startContainer == range.endContainer) {
-            if (range.startOffset - range.endOffset < 2) {
-              if (range.startContainer.hasChildNodes()) {
-                elm = range.startContainer.childNodes[range.startOffset];
+          if (!range.collapsed) {
+            if (range.startContainer == range.endContainer) {
+              if (range.startOffset - range.endOffset < 2) {
+                if (range.startContainer.hasChildNodes()) {
+                  elm = range.startContainer.childNodes[range.startOffset];
+                }
               }
             }
           }
         }
-      }
+      }      
     }
     
     return elm;

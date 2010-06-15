@@ -1059,30 +1059,28 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
                                     '.com/');
     
     if (doc.execCommand('createlink', false, radomUrl)) {
-      var node = frame.contentWindow.getSelection().focusNode;
-      var hyperlink = node.parentNode;
+      var aTags = doc.getElementsByTagName('A'), hyperlink, child;
+      
+      for (var x = 0, y = aTags.length; x < y; x++) {
+        child = aTags[x];
 
-      if (hyperlink.nodeName.toLowerCase() !== 'a') {
-        var child;
-        for (var x = 0, y = node.childNodes.length; x < y; x++) {
-          child = node.childNodes[x];
-          if (child.nodeName.toLowerCase() === 'a') {
-            if (child.href === radomUrl) {
-              hyperlink = child;
-              break;
-            }
-          }
+        if (child.href === radomUrl) {
+          hyperlink = child;
+          break;
         }
       }
-
+    }
+    
+    if (hyperlink) {
       hyperlink.href = value;
-      
       this.set('selectedHyperlink', hyperlink);
       this.set('isEditing', YES);
       return YES;
+      
+    } else {
+      return NO;
+      
     }
-    
-    return NO;
   },
   
   removeLink: function() {

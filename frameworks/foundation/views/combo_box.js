@@ -598,6 +598,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _createListPane: function() {
     var isBusy = this.get('isBusy');
     var spinnerHeight = this.get('statusIndicatorHeight');
+    var csv = this.get('customScrollView') || SC.ScrollView;
 
     this._listPane = SC.PickerPane.create({
       classNames: ['scui-combobox-list-pane', 'sc-menu'],
@@ -608,7 +609,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
         layout: { left: 0, right: 0, top: 0, bottom: 0 },
         childViews: 'listView spinnerView'.w(),
         
-        listView: SC.ScrollView.extend({
+        listView: csv.extend({
           classNames: 'scui-combobox-list-scroll-view',
           layout: { left: 0, right: 0, top: 0, bottom: isBusy ? spinnerHeight : 0 },
           hasHorizontalScroller: NO,

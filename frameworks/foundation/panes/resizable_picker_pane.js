@@ -41,3 +41,4 @@ SCUI.ResizablePickerPane = SC.PickerPane.extend({
     this.set('childViews', childViews);
   }
 });
+

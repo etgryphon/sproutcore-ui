@@ -36,12 +36,13 @@ SCUI.ColorPicker = SC.View.extend(
   },
   
   didAppendToDocument: function(){    
+    
+    var pv = this.get('parentView'), frame = this.get('frame');
+    var newFrame = pv ? pv.convertFrameToView(frame, null) : frame;
     // this is where colorpickers created
     if(!this._cp){
       var layer = this.$().get(0), that = this, cp;
       //compute the parent frame
-      var pv = this.get('parentView'), frame = this.get('frame');
-      var newFrame = pv ? pv.convertFrameToView(frame, null) : frame;
 
       this._cp = cp = Raphael.colorpicker(newFrame.x, newFrame.y, this.get('size'), this.get('value'), layer);
 
@@ -49,6 +50,10 @@ SCUI.ColorPicker = SC.View.extend(
       this._cp.onchange = function(color){
         that.setIfChanged('value', color);
       };
+    }
+    else{
+      this._cp.x = newFrame.x;
+      this._cp.y = newFrame.y;
     }
 
   },

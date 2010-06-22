@@ -15,14 +15,19 @@ SCUI.ColorWell = SC.View.extend(
   
   classNames: ['color-well'],
   
-  value: '#eee',
+  backgroundColor: '#656565',
+  
+  value: '',
 
   activeClass: 'active',
     
   displayProperties: 'value'.w(),
 
   render: function(context, firstTime){
-    context.addStyle({backgroundColor: this.get('value')}).setClass(this.get('activeClass'), this._isMouseDown);
+    context.begin('div')
+           .addStyle({width:'100%', height:'100%'})
+           .addStyle({backgroundColor: this.get('value')}).setClass(this.get('activeClass'), this._isMouseDown)
+           .end();
   },
   
   mouseDown: function(evt){

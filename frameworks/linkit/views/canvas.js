@@ -1,7 +1,7 @@
 // ==========================================================================
 // LinkIt.CanvasView
 // ==========================================================================
-/*globals G_vmlCanvasManager*/
+/*globals G_vmlCanvasManager LinkIt SCUI*/
 
 /** @class
 
@@ -40,6 +40,17 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     in an empty area.
   */
   allowDeselectAll: YES,
+
+  /**
+    Optional target for an action to be performed upon right-clicking anywhere
+    on the canvas.
+  */
+  contextMenuTarget: null,
+  
+  /**
+    Optional action to be performed when the canvas is right-clicked anywhere.
+  */
+  contextMenuAction: null,
 
   /**
   */
@@ -357,11 +368,9 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     return YES;
   },
 
-  /**
-  */
   mouseUp: function(evt) {
     var ret = sc_super();
-    var layout, content, newPosition;
+    var layout, content, newPosition, action;
     
     if (this._dragData && this._dragData.didMove) {
       layout = this._dragData.view.get('layout');
@@ -372,8 +381,17 @@ LinkIt.CanvasView = SC.CollectionView.extend({
         this._setItemPosition(content, newPosition);
       }
     }
-    
+
     this._dragData = null; // clean up
+
+    if (evt && (evt.which === 3) || (evt.ctrlKey && evt.which === 1)) {
+      action = this.get('contextMenuAction');
+
+      if (action) {
+        this.getPath('pane.rootResponder').sendAction(action, this.get('contextMenuTarget'), this, this.get('pane'), evt);
+      }
+    }
+    
     return ret;
   },
 

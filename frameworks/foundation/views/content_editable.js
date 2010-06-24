@@ -760,7 +760,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       } else {
         ret = null;
       }
-      console.warn(ret);
       return ret;
     }
   }.property('selection').cacheable(),
@@ -796,7 +795,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       } else {
         ret = null;
       }
-      console.warn(ret);
       return ret;
     }
   }.property('selection').cacheable(),

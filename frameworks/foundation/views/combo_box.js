@@ -478,6 +478,18 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     return NO;
   },
 
+  insertTab: function(evt) {
+    var ret = NO;
+
+    // If the drop-down list is open, make a tab event be an 'accept' event
+    if (this._listPane && this._listPane.get('isPaneAttached')) {
+      this.invokeOnce('_selectListItem'); // same action that a 'newline' event eventually triggers
+      ret = YES; // absorb the event
+    }
+    
+    return ret;
+  },
+
   // escape key handler
   cancel: function(evt) {
     if (this._listPane && this._listPane.get('isPaneAttached')) {

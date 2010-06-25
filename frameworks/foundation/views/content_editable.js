@@ -251,6 +251,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.remove(doc, 'mousedown', this, this.mouseDown);
     SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
     SC.Event.remove(doc, 'mouseup', this, this.docMouseUp);
+    SC.Event.remove(doc, 'contextmenu', this, this.contextmenu);
     
     sc_super();
   },
@@ -341,6 +342,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.add(doc, 'click', this, this.focus);
 		SC.Event.add(doc, 'mousedown', this, this.mouseDown);
 		SC.Event.add(doc, 'mouseup', this, this.docMouseUp);
+		SC.Event.add(doc, 'contextmenu', this, this.contextmenu);
     
     // call the SC.WebView iframeDidLoad function to finish setting up
     this.iframeDidLoad();
@@ -366,6 +368,22 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 
 	    pane.popup(this, evt);
 		}
+	},
+	
+	contextmenu: function(evt) {
+	  var menuOptions = this.get('rightClickMenuOptions');
+		var numOptions = menuOptions.get('length');
+		
+		if (menuOptions.length > 0) {
+  	  if (evt.preventDefault) {
+        evt.preventDefault();
+      } else { 
+        evt.stop();
+      }
+      evt.returnValue = false;
+      evt.stopPropagation();
+      return false;
+    }
 	},
 	
   // Can't do this on the body mouseup function (The body mouse
@@ -401,21 +419,24 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       if ((!anchorView || !anchorView.isView) && !this.get('usingStaticLayout')) return NO;
 
       if (evt && evt.button && (evt.which === 3 || (evt.ctrlKey && evt.which === 1))) {
-
+        var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;
 
         // prevent the browsers context meuns (if it has one...). (SC does not handle oncontextmenu event.)
         document.oncontextmenu = function(e) {
-          if (evt.preventDefault) {
-            evt.preventDefault();
-          } else { 
-            evt.stop();
+          var menuOptions = anchorView.get('rightClickMenuOptions');
+      		var numOptions = menuOptions.get('length');
+
+      		if (menuOptions.length > 0) {
+            if (evt.preventDefault) {
+              evt.preventDefault();
+            } else { 
+              evt.stop();
+            }
+            evt.returnValue = false;
+            evt.stopPropagation();
+            return false;
           }
-          evt.returnValue = false;
-          evt.stopPropagation();
-          return false;
         };
-        
-        var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;
 	      
         // Popup the menu pane
         this.beginPropertyChanges();
@@ -427,9 +448,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 
         return arguments.callee.base.base.apply(this,[anchorView, [evt.pageX + 5, evt.pageY + 5, 1]]);
       }
-      else {
-        //document.oncontextmenu = null; // restore default browser context menu handling
-      }
+
       return NO;
     }
 	}),

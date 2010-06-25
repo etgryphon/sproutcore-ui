@@ -46,8 +46,6 @@
 
 SCUI.ContextMenuPane = SC.MenuPane.extend({
   
-  isResponderContext: NO,
-  
   /**
     This flag is for the special case when the anchor view is using static
     layout, i.e ( SC.StackedView, or mixn SC.StaticLayout).

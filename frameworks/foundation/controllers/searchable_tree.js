@@ -110,3 +110,15 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
   }
 });
 
+SCUI.SearchableTreeController.mixin(/** @scope SCUI.SearchableTreeController */ {
+  
+  sanitizeSearchString: function(str) {
+    var specials = [
+        '/', '.', '*', '+', '?', '|',
+        '(', ')', '[', ']', '{', '}', '\\'
+    ];
+    var s = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
+    return str.replace(s, '\\$1');
+  }
+});
+

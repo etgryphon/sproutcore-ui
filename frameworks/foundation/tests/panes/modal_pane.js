@@ -9,8 +9,8 @@ sc_require('core');
 var picker = 
 SCUI.ModalPane.create({
   layout: { centerX: 0, centerY: 0, height: 200, width: 300 },
-  // maxHeight: 150,
-  // maxWidth: 200,
+  maxHeight: 900,
+  maxWidth: 700,
   // minHeight: 50,
   // minWidth: 75,
   title: 'My Test Modal',

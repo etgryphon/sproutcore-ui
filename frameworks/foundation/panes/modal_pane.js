@@ -49,8 +49,28 @@ SCUI.ModalPane = SC.PalettePane.extend({
   _fullscreen: function() {
     if (this._isFullscreened === NO) {
       this._prevLayout = this.get('layout');
+      
       var margin = this.get('margin');
-      this.set('layout', { top: margin, bottom: margin, left: margin, right: margin });
+      var layout = { top: margin, bottom: margin, left: margin, right: margin };
+      layout = SC.View.convertLayoutToAnchoredLayout(layout, this.computeParentDimensions());
+      
+      var maxWidth = this.get('maxWidth');
+      if (maxWidth && maxWidth < layout.width) {
+        layout.width = maxWidth;
+        delete layout.left;
+        delete layout.right;
+        layout.centerX = 0;
+      }
+      
+      var maxHeight = this.get('maxHeight');
+      if (maxHeight && maxHeight < layout.height) {
+        layout.height = maxHeight;
+        delete layout.top;
+        delete layout.bottom;
+        layout.centerY = 0;
+      }
+
+      this.set('layout', layout);
     }
     else {
      this.set('layout', this._prevLayout); 

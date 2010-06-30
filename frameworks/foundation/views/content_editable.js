@@ -489,6 +489,15 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       this.insertHTML(spaces.join(''), NO);
     }
     
+    if (SC.browser.msie) {
+      var doc = this._document;
+      if (SC.FUNCTION_KEYS[event.keyCode] === 'return') {
+        // this.insertHTML('<br><wbr>', NO);
+        doc.execCommand('paste', null, unescape("%0A"));
+        event.preventDefault();
+      }
+    }
+    
     SC.RunLoop.end();
   },
 

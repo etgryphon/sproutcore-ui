@@ -248,7 +248,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.remove(docBody, 'paste', this, this.paste);
     SC.Event.remove(docBody, 'dblclick', this, this.doubleClick);
     SC.Event.remove(doc, 'click', this, this.focus);
-    SC.Event.remove(doc, 'mousedown', this, this.mouseDown);
     SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
     SC.Event.remove(doc, 'mouseup', this, this.docMouseUp);
     SC.Event.remove(doc, 'contextmenu', this, this.contextmenu);
@@ -340,7 +339,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     // the white space where there's no content. This event handler 
     // ensures that the body will receive focus when the user clicks on that area.
     SC.Event.add(doc, 'click', this, this.focus);
-		SC.Event.add(doc, 'mousedown', this, this.mouseDown);
 		SC.Event.add(doc, 'mouseup', this, this.docMouseUp);
 		SC.Event.add(doc, 'contextmenu', this, this.contextmenu);
     
@@ -348,12 +346,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     this.iframeDidLoad();
     this.focus();
   },
-
-	mouseDown: function(evt) {
-		var menuOptions = this.get('rightClickMenuOptions');
+	
+	contextmenu: function(evt) {
+	  var menuOptions = this.get('rightClickMenuOptions');
 		var numOptions = menuOptions.get('length');
 		
 		if (menuOptions.length > 0) {
+		  
 			var pane = this.contextMenuView.create({
 			  defaultResponder: 'Orion',
 			  defaultResponder: this.get('rightClickMenuDefaultResponder'),
@@ -367,14 +366,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	    });
 
 	    pane.popup(this, evt);
-		}
-	},
-	
-	contextmenu: function(evt) {
-	  var menuOptions = this.get('rightClickMenuOptions');
-		var numOptions = menuOptions.get('length');
-		
-		if (menuOptions.length > 0) {
+
   	  if (evt.preventDefault) {
         evt.preventDefault();
       } else { 
@@ -382,7 +374,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
       evt.returnValue = false;
       evt.stopPropagation();
-      return false;
+      return NO;
     }
 	},
 	
@@ -417,40 +409,46 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	contextMenuView: SCUI.ContextMenuPane.extend({
 		popup: function(anchorView, evt) {
       if ((!anchorView || !anchorView.isView) && !this.get('usingStaticLayout')) return NO;
+      
+      var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;
 
-      if (evt && evt.button && (evt.which === 3 || (evt.ctrlKey && evt.which === 1))) {
-        var anchor = anchorView.isView ? anchorView.get('layer') : anchorView;
+      // prevent the browsers context meuns (if it has one...). (SC does not handle oncontextmenu event.)
+      document.oncontextmenu = function(e) {
+        var menuOptions = anchorView.get('rightClickMenuOptions');
+    		var numOptions = menuOptions.get('length');
 
-        // prevent the browsers context meuns (if it has one...). (SC does not handle oncontextmenu event.)
-        document.oncontextmenu = function(e) {
-          var menuOptions = anchorView.get('rightClickMenuOptions');
-      		var numOptions = menuOptions.get('length');
-
-      		if (menuOptions.length > 0) {
-            if (evt.preventDefault) {
-              evt.preventDefault();
-            } else { 
-              evt.stop();
-            }
-            evt.returnValue = false;
-            evt.stopPropagation();
-            return false;
+    		if (menuOptions.length > 0) {
+          if (evt.preventDefault) {
+            evt.preventDefault();
+          } else { 
+            evt.stop();
           }
-        };
-	      
-        // Popup the menu pane
-        this.beginPropertyChanges();
-        var it = this.get('displayItems');
-        this.set('anchorElement', anchor) ;
-        this.set('anchor', anchorView);
-        this.set('preferType', SC.PICKER_MENU) ;
-        this.endPropertyChanges();
+          evt.returnValue = false;
+          evt.stopPropagation();
+          return false;
+        }
+      };
+      
+      // Popup the menu pane
+      this.beginPropertyChanges();
+      var it = this.get('displayItems');
+      this.set('anchorElement', anchor) ;
+      this.set('anchor', anchorView);
+      this.set('preferType', SC.PICKER_MENU) ;
+      this.endPropertyChanges();
 
-        return arguments.callee.base.base.apply(this,[anchorView, [evt.pageX + 5, evt.pageY + 5, 1]]);
+      return arguments.callee.base.base.apply(this,[anchorView, [evt.pageX + 5, evt.pageY + 5, 1]]);
+    },
+    
+    exampleView: SC.MenuItemView.extend({
+      renderLabel: function(context, label) {
+        if (this.get('escapeHTML')) {
+          label = SC.RenderContext.escapeHTML(label) ;
+        }
+        context.push("<span class='value ellipsis' unselectable='on'>"+label+"</span>") ;
       }
-
-      return NO;
-    }
+    })
+    
 	}),
 
   keyUp: function(event) {

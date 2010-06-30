@@ -354,7 +354,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 		if (menuOptions.length > 0) {
 		  
 			var pane = this.contextMenuView.create({
-			  defaultResponder: 'Orion',
 			  defaultResponder: this.get('rightClickMenuDefaultResponder'),
 	      layout: { width: 200},
 	      itemTitleKey: 'title',

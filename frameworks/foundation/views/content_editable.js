@@ -263,7 +263,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       console.error('Curse your sudden but inevitable betrayal! Can\'t find a reference to the document object!');
       return;
     }
-    
+
     var doc = this._document;
     var styleSheetCSS = this.get('styleSheetCSS');
     if (!(SC.none(styleSheetCSS) || styleSheetCSS === '')) {
@@ -273,12 +273,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         el['type'] = "text/css";
         head.appendChild(el);
         if (SC.browser.msie) {
-          el.cssText = styleSheetCSS;
-          
+          el.styleSheet.cssText = styleSheetCSS;
         } else {
           el.innerHTML = styleSheetCSS;
         }
-        
         el = head = null; //clean up memory
       }
     }

@@ -41,6 +41,25 @@ SCUI.ModalPane = SC.PalettePane.extend({
   
   _isFullscreened: NO,
   
+  mouseDown: function(evt) { 
+    if (this._titleBarClicked === YES) {
+      sc_super();
+    }
+    return YES;
+  },
+
+  mouseDragged: function(evt) {
+    if(this._titleBarClicked === YES) {
+      sc_super();
+    }
+    return YES;
+  },
+  
+  mouseUp: function(evt) {  
+    this._titleBarClicked = NO;
+    return sc_super();
+  },
+  
   replaceContent: function(newContent) {
     this._contentView.removeAllChildren() ;
     if (newContent) this._contentView.appendChild(newContent) ;
@@ -84,11 +103,16 @@ SCUI.ModalPane = SC.PalettePane.extend({
     var view = null;
     
     var titleBarHeight = this.get('titleBarHeight');
+    var that = this;
 
     view = this.createChildView(
       SC.View.design({
         classNames: ['title-bar'],
         layout: { top: 0, left: 0, right: 0, height: titleBarHeight },
+        mouseDown: function(evt) {
+          that._titleBarClicked = YES;
+          return NO;
+        },
         childViews: 'closeButton fullScreenButton title'.w(),
         closeButton: SC.View.design(SCUI.SimpleButton, {
           layout: { left: 5, centerY: 0, width: 16, height: 16 },

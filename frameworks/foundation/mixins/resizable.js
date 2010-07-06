@@ -74,7 +74,7 @@ SCUI.Resizable = {
     layout.left = i.left;
     
     view.set('layout', layout);
-    view.displayDidChange();
+    view.updateLayout();
     
     return YES ;
   }

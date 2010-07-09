@@ -40,7 +40,15 @@ SCUI.ColorPicker = SC.View.extend(
     var pv = this.get('parentView'), frame = this.get('frame');
     var newFrame = pv ? pv.convertFrameToView(frame, null) : frame;
     // this is where colorpickers created
-    if(!this._cp){
+    
+    // HACK: [MT] - Hack to get the color picker working at all times in IE by creating a fresh version everytime
+    if(!this._cp || SC.browser.msie){
+      
+      // do some cleanup first if it's IE, then create the color picker
+      if (this._cp && SC.browser.msie) {
+        this._cp.remove();
+      }
+      
       var layer = this.$().get(0), that = this, cp;
       //compute the parent frame
 

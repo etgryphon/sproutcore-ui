@@ -95,6 +95,8 @@ SCUI.ModalPane = SC.PalettePane.extend({
      this.set('layout', this._prevLayout); 
     }
     
+    this.updateLayout();
+    
     this._isFullscreened = !this._isFullscreened;
   },
   
@@ -129,7 +131,7 @@ SCUI.ModalPane = SC.PalettePane.extend({
         }),
         title: SC.LabelView.design({
           layout: { left: 45, right: 45, top: 0, bottom: 0 },
-          value: this.get('title'),
+          valueBinding: SC.Binding.from('title', this).oneWay(),
           textAlign: SC.ALIGN_CENTER,
           fontWeight: SC.BOLD_WEIGHT,
           classNames: ['modal-title'],

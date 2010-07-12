@@ -484,6 +484,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       case 'right':
       case 'up':
       case 'down':
+      case 'return':
         this.querySelection();
         break;
     } 

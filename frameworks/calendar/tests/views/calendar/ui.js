@@ -7,12 +7,12 @@
 
 var pane = SC.ControlTestPane.design()
   .add("basic,small", SCUI.CalendarView, {
-    layout: {width: 200, height: 225},
+    layout: {width: 305, height: 298},
     dateSize: {width: 30, height: 30},
     dateBorderWidth: 0
   })
   .add("basic,small,selected", SCUI.CalendarView, {
-    layout: {width: 200, height: 225},
+    layout: {width: 305, height: 298},
     dateSize: {width: 30, height: 30},
     selectedDate: SC.DateTime.create(),
     dateBorderWidth: 0

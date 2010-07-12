@@ -35,7 +35,7 @@ body {
 /* Calendar
 --------------------------------------------- */
 
-.calendar .pointer {
+.sc-theme .calendar .pointer {
   width: 21px;
   height: 12px;
   position: absolute;
@@ -44,25 +44,25 @@ body {
   margin: 0 0 0 -10px;
 }
 
-.calendar .pointer.perfectBottom {
-  background: url('../img/up.png');
+.sc-theme .calendar .pointer.perfectBottom {
+  background: url('images/calendar/up.png');
 }
 
 /* Header */
 
-.calendar-header {
+.sc-theme .calendar-header {
   width: 203px;
   height: 31px;
   border-width: 1px;
   border-style: solid;
   border-color: #910009 #910009 #5d0006;
-  background: url('../img/header.png') repeat-x;
+  background: url('images/calendar/header.png') repeat-x;
   border-radius: 4px 4px 0 0;
 	-webkit-border-radius: 4px 4px 0 0;
 	-moz-border-radius: 4px 4px 0 0;
 }
 
-.calendar-header .month {
+.sc-theme .calendar-header .month {
   position: absolute;
   top: 0;
   left: 29px;
@@ -72,35 +72,35 @@ body {
   text-align: center;
 }
 
-.calendar-header .button {
+.sc-theme .calendar-header .button {
   width: 9px;
   height: 10px;
   position: absolute;
   top: 12px;
 }
 
-.calendar-header .button.previous {
+.sc-theme .calendar-header .button.previous {
   left: 10px;
-  background: url('../img/previous.png');
+  background: url('images/calendar/previous.png');
 }
 
-.calendar-header .button.previous.active {
-  background: url('../img/previous_active.png');
+.sc-theme .calendar-header .button.previous.active {
+  background: url('images/calendar/previous_active.png');
 }
 
-.calendar-header .button.next {
+.sc-theme .calendar-header .button.next {
   right: 10px;
-  background: url('../img/next.png');
+  background: url('images/calendar/next.png');
 }
 
-.calendar-header .button.next.active {
-  background: url('../img/next_active.png');
+.sc-theme .calendar-header .button.next.active {
+  background: url('images/calendar/next_active.png');
 }
 
 
 /* Body */
 
-.calendar-body {
+.sc-theme .calendar-body {
   display: inline-block;
   padding: 10px;
   border: 1px solid #a6a09c;
@@ -111,7 +111,7 @@ body {
 	-moz-border-radius: 0 0 4px 4px;
 }
 
-.grid {
+.sc-theme .grid {
   width: 182px;
   height: 130px;
   border-top: 1px solid #c6c2be;
@@ -120,7 +120,7 @@ body {
   overflow: hidden;
 }
 
-.day {
+.sc-theme .day {
   width: 25px;
   height: 25px;
   float: left;
@@ -130,37 +130,37 @@ body {
   text-align: center;
 }
 
-.day.header {
+.sc-theme .day.header {
   height: 12px;
   border-color: transparent;
   font-size: 10px;
   line-height: 12px;
 }
 
-.day.present {
+.sc-theme .day.present {
   color: #353535;
   text-shadow: 0 1px 0 rgba(255,255,255,.75);
-  background: url('../img/present.png') repeat-x;
+  background: url('images/calendar/present.png') repeat-x;
 }
 
-.day.past,
-.day.future {
+.sc-theme .day.past,
+.sc-theme .day.future {
   color: #aaa;
   text-shadow: 0 1px 0 rgba(255,255,255,.75);
-  background: #f6f6f6 url('../img/past.png') repeat-x;
+  background: #f6f6f6 url('images/calendar/past.png') repeat-x;
 }
 
-.calendar-header .month,
-.day.today,
-.day.selected {
+.sc-theme .calendar-header .month,
+.sc-theme .day.today,
+.sc-theme .day.selected {
   color: #fff;
   text-shadow: 0 1px 0 rgba(0,0,0,.75);
 }
 
-.day.today {
-  background: #a2a8ae url('../img/today.png') repeat-x;
+.sc-theme .day.today {
+  background: #a2a8ae url('images/calendar/today.png') repeat-x;
 }
 
-.day.selected {
-  background: url('../img/selected.png') repeat-x;
+.sc-theme .day.selected {
+  background: url('images/calendar/selected.png') repeat-x;
 }

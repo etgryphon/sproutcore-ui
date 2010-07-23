@@ -356,6 +356,8 @@ SCUI.Statechart = {
         handled = NO;
         
         responder = currentStates[tree];
+        
+        if (!responder.get) continue;
        
         while(!handled && responder){
           if(responder.tryToPerform){

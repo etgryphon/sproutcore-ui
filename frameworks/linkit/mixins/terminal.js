@@ -1,3 +1,5 @@
+/*globals LinkIt*/
+
 LinkIt.Terminal = {
   
   // PUBLIC PROPERTIES
@@ -101,7 +103,7 @@ LinkIt.Terminal = {
     Not the same as canLink() above in that linking this terminal to another may still
     be allowed, just not triggered by a drag from this terminal.
   */
-  canDragLink: function() {
+  canDragLink: function() { 
     return YES;
   },
 
@@ -160,7 +162,7 @@ LinkIt.Terminal = {
       // should essentially contain any visible drag items.
       var layer = LinkIt.getLayer(this);
 
-      if (layer) {
+      if (layer && layer.get('isEditable')) {
         var parent = this.get('parentView');    
         var fo = parent.convertFrameFromView(parent.get('frame'), this);
         var frame = this.get('frame');

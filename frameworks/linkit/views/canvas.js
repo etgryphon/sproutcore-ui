@@ -275,9 +275,11 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     Handles regular item deletion by calling sc_super() first.
   */
   deleteSelection: function() {
-    var ret = sc_super();
-    this.deleteLinkSelection();
-    
+    if (this.get('isEditable')) {
+      sc_super();
+      this.deleteLinkSelection();
+    }
+
     // Always return YES since this becomes the return value of the keyDown() method
     // in SC.CollectionView and we have to signal we are absorbing backspace keys whether
     // we delete anything or not, or the browser will treat it like the Back button.
@@ -289,7 +291,8 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   */
   deleteLinkSelection: function() {
     var link = this.get('linkSelection');
-    if (link) {
+
+    if (link && this.get('isEditable')) {
       var startNode = link.get('startNode');
       var endNode = link.get('endNode');
       if (startNode && endNode) {
@@ -313,24 +316,26 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     this._dragData = null;
 
     if (evt && (evt.which === 3) || (evt.ctrlKey && evt.which === 1)) {
-      linkSelection = this.get('linkSelection');
-      if (linkSelection && !this.getPath('selection.length')) {
-        menuOptions = [
-          { title: "Delete Selected Link".loc(), target: this, action: 'deleteLinkSelection', isEnabled: YES }
-        ];
+      if (this.get('isEditable')) {
+        linkSelection = this.get('linkSelection');
+        if (linkSelection && !this.getPath('selection.length')) {
+          menuOptions = [
+            { title: "Delete Selected Link".loc(), target: this, action: 'deleteLinkSelection', isEnabled: YES }
+          ];
 
-        menuPane = SCUI.ContextMenuPane.create({
-          contentView: SC.View.design({}),
-          layout: { width: 194, height: 0 },
-          itemTitleKey: 'title',
-          itemTargetKey: 'target',
-          itemActionKey: 'action',
-          itemSeparatorKey: 'isSeparator',
-          itemIsEnabledKey: 'isEnabled',
-          items: menuOptions
-        });
-        
-        menuPane.popup(this, evt);
+          menuPane = SCUI.ContextMenuPane.create({
+            contentView: SC.View.design({}),
+            layout: { width: 194, height: 0 },
+            itemTitleKey: 'title',
+            itemTargetKey: 'target',
+            itemActionKey: 'action',
+            itemSeparatorKey: 'isSeparator',
+            itemIsEnabledKey: 'isEnabled',
+            items: menuOptions
+          });
+    
+          menuPane.popup(this, evt);
+        }
       }
     }
     else {
@@ -341,13 +346,15 @@ LinkIt.CanvasView = SC.CollectionView.extend({
       canvasY = evt.pageY - globalFrame.y;
       this._selectLink( {x: canvasX, y: canvasY} );
 
-      itemView = this.itemViewForEvent(evt);
-      if (itemView) {
-        this._dragData = SC.clone(itemView.get('layout'));
-        this._dragData.startPageX = evt.pageX;
-        this._dragData.startPageY = evt.pageY;
-        this._dragData.view = itemView;
-        this._dragData.didMove = NO; // hasn't moved yet; drag will update this
+      if (this.get('isEditable')) { // only allow possible drag if this view is editable
+        itemView = this.itemViewForEvent(evt);
+        if (itemView) {
+          this._dragData = SC.clone(itemView.get('layout'));
+          this._dragData.startPageX = evt.pageX;
+          this._dragData.startPageY = evt.pageY;
+          this._dragData.view = itemView;
+          this._dragData.didMove = NO; // hasn't moved yet; drag will update this
+        }
       }
     }
     

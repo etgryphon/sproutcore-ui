@@ -208,11 +208,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	*/
 	indentOnTab: YES,
 	tabSize: 2,
-	
+
 	/*
 	  receives actions on click to insert event...
 	*/
 	insertTarget: null,
+
+	isFocused: NO,
 	
 	displayProperties: ['value'],
 	
@@ -271,6 +273,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var docBody = doc.body;
     
     if (this.get('indentOnTab')) SC.Event.remove(docBody, 'keydown', this, this.keyDown);
+    SC.Event.remove(docBody, 'focus', this, this.bodyDidFocus);
+    SC.Event.remove(docBody, 'blur', this, this.bodyDidBlur);
     SC.Event.remove(docBody, 'mouseup', this, this.mouseUp);
     SC.Event.remove(docBody, 'keyup', this, this.keyUp);
     SC.Event.remove(docBody, 'paste', this, this.paste);
@@ -355,6 +359,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
 
     // attach the required events
+    SC.Event.add(docBody, 'focus', this, this.bodyDidFocus);
+    SC.Event.add(docBody, 'blur', this, this.bodyDidBlur);
     SC.Event.add(docBody, 'mouseup', this, this.mouseUp);
     SC.Event.add(docBody, 'keyup', this, this.keyUp);
     SC.Event.add(docBody, 'paste', this, this.paste);
@@ -371,6 +377,15 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     // call the SC.WebView iframeDidLoad function to finish setting up
     this.iframeDidLoad();
     this.focus();
+  },
+  
+  bodyDidFocus: function (evt) {
+    this.set('isFocused', YES);
+    
+  },
+  
+  bodyDidBlur: function (evt) {
+    this.set('isFocused', NO);
   },
 	
 	contextmenu: function(evt) {
@@ -1212,6 +1227,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
         
     if (SC.browser.msie) {
+      if (!this.get('isFocused')) {
+        this.focus();
+      }
       doc.selection.createRange().pasteHTML(value);       
       this.set('isEditing', YES);  
       return YES;

@@ -24,10 +24,20 @@ SCUI.ModalPane = SC.PalettePane.extend({
   titleIcon: null,
   titleBarHeight: 24,
   
+  footerHeight: 40,
+
+  /**
+    The footer view.  Override to provide a custom view, or set to null
+    to exclude.  (Default is empty).
+  */
+  footerView: null,
+  
   isResizable: YES,
   margin: 20, // override if you need to
   
   isModal: YES,
+  
+  nowShowing: null,
   
   /**
     The modal pane to place behind this pane if this pane is modal.  This 
@@ -37,7 +47,7 @@ SCUI.ModalPane = SC.PalettePane.extend({
     classNames: 'for-sc-panel'
   }),
   
-  _contentView: null,
+  _containerView: null,
   
   _isFullscreened: NO,
   
@@ -61,8 +71,7 @@ SCUI.ModalPane = SC.PalettePane.extend({
   },
   
   replaceContent: function(newContent) {
-    this._contentView.removeAllChildren() ;
-    if (newContent) this._contentView.appendChild(newContent) ;
+    this._containerView.replaceContent(newContent);
   },
   
   _fullscreen: function() {
@@ -107,9 +116,10 @@ SCUI.ModalPane = SC.PalettePane.extend({
     var titleBarHeight = this.get('titleBarHeight');
     var that = this;
 
+    // header
     view = this.createChildView(
       SC.View.design({
-        classNames: ['title-bar'],
+        classNames: ['header'],
         layout: { top: 0, left: 0, right: 0, height: titleBarHeight },
         mouseDown: function(evt) {
           that._titleBarClicked = YES;
@@ -141,17 +151,36 @@ SCUI.ModalPane = SC.PalettePane.extend({
     );
     childViews.push(view);
     
-    view = this.createChildView(SC.View.design({
-      layout: { top: titleBarHeight, bottom: 0, left: 0, right: 0 },
-      childViews: 'contentView'.w(),
-      contentView: this.get('contentView')
+    var footerView = this.get('footerView');
+    var footerHeight = this.get('footerHeight');
+    
+    // body
+    view = this.createChildView(SC.ContainerView.design({
+        layout: { top: titleBarHeight + 1, bottom: footerView ? (footerHeight + 1) : 0, left: 0, right: 0 },
+        classNames: 'body',
+        nowShowingBinding: SC.Binding.from('nowShowing', this),
+        contentView: this.get('contentView')
       })
     );
     
-    this._contentView = view;
-    this.contentView = this._contentView.contentView;
+    this._containerView = view;
+    this.contentView = this._containerView.contentView;
     childViews.push(view);
+    
+    // footer
+    if (SC.kindOf(footerView, SC.View) && footerView.isClass) {
+      view = this.createChildView(footerView, {
+        classNames: 'footer',
+        layout: { left: 0, right: 0, bottom: 0, height: footerHeight }
+      });
+      this.set('footerView', view);
+      childViews.push(view);
+    }
+    else {
+      this.set('footerView', null);
+    }
 
+    // thumb
     view = this.createChildView(
       SC.View.design(SCUI.Resizable, {
         classNames: ['picker-resizable-handle'],

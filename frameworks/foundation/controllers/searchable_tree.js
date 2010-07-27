@@ -91,12 +91,7 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
       if (searchKey && child.get(searchKey)) {
         key = child.get(searchKey).toLowerCase();
         if(key.match(searchRegex)){
-          var match = SC.Object.create({});
-          match[searchKey]  = child.get(searchKey);
-          match[nameKey]    = child.get(nameKey);
-          match.treeItem    = child;
-          match.icon        = child.get(this._iconKey);
-          searchMatches.push(match);
+          searchMatches.push(child);
         } 
       }
     });

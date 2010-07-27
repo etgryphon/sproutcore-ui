@@ -216,6 +216,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 
 	isFocused: NO,
 	
+  selectionSaved: NO,
+	
 	displayProperties: ['value'],
 	
 	render: function(context, firstTime) {
@@ -885,8 +887,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return '';
     
 
-    if (value !== undefined) {
+    if (value !== undefined) { 
+      if (this.get('selectionSaved') === YES) {
+        this.restoreSelection();
+      }
       if (doc.execCommand('forecolor', false, value)) {
+        this.saveSelection();
         this.set('isEditing', YES);
         this._last_font_color_cache = value;
       }
@@ -912,7 +918,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!SC.browser.msie) doc.execCommand('styleWithCSS', false, true);
 
     if (value !== undefined) {
+      if (this.get('selectionSaved') === YES) {
+        this.restoreSelection();
+      }
       if (doc.execCommand(prop, false, value)) {
+        this.saveSelection();
         this.set('isEditing', YES);
         this._last_background_color_cache = value;
       }
@@ -1634,7 +1644,60 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   _resetColorCache: function() {
     this._last_font_color_cache = null;
     this._last_background_color_cache = null;
+    this.set('selectionSaved', NO);
+  },
+  
+  saveSelection: function() {
+    this.set('selectionSaved', YES);
+    
+    if (SC.browser.msie) {
+      var win = this._getFrame().window;
+      var doc = win.document;
+      var sel = win.getSelection ? win.getSelection() : doc.selection;
+      var range;
+
+      if (sel) {
+        if (sel.createRange) {
+          range = sel.createRange();
+        } else if (sel.getRangeAt) {
+          range = sel.getRangeAt(0);
+        } else if (sel.anchorNode && sel.focusNode && doc.createRange) {
+          // Older WebKit browsers
+          range = doc.createRange();
+          range.setStart(sel.anchorNode, sel.anchorOffset);
+          range.setEnd(sel.focusNode, sel.focusOffset);
+
+          // Handle the case when the selection was selected backwards (from the end to the start in the
+          // document)
+          if (range.collapsed !== sel.isCollapsed) {
+            range.setStart(sel.focusNode, sel.focusOffset);
+            range.setEnd(sel.anchorNode, sel.anchorOffset);
+          }
+        }
+      }
+      this._range = range;
+    }
+  },
+
+  restoreSelection: function() {
+    this.set('selectionSaved', NO);
+    
+    if (SC.browser.msie) {
+      var win = this._getFrame().window;
+      var doc = win.document;
+      var sel = win.getSelection ? win.getSelection() : doc.selection;
+      var range = this._range;
+
+      if (sel && range) {
+        if (range.select) {
+          range.select();
+        } else if (sel.removeAllRanges && sel.addRange) {
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+    }
+    
   }
   
 });
-

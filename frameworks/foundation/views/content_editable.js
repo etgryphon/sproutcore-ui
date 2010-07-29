@@ -502,6 +502,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   mouseUp: function() {
     this._mouseUp = true;
     SC.RunLoop.begin();
+    if(this.get('insertInProgress')){
+      this.set('insertInProgress', NO);
+      SC._Orion.sendAction('insert');
+    }
     this.querySelection();
     if (!this.get('hasFixedDimensions')) {
       this.invokeLast(this._updateLayout);

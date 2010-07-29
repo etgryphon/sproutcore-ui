@@ -77,38 +77,37 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   },
 
   render: function(context, firstTime) {
-    //console.log('%@.render()'.fmt(this));
     var frame = this.get('frame');
+    
     if (firstTime) {
       if (!SC.browser.msie) {
         context.push('<canvas class="base-layer" width="%@" height="%@">You can\'t use canvas tags</canvas>'.fmt(frame.width, frame.height));
       }
     }
-    else {
-      var canvasElem = this.$('canvas.base-layer');
-      if (canvasElem) {
-        canvasElem.attr('width', frame.width);
-        canvasElem.attr('height', frame.height);
-        if (canvasElem.length > 0) {
-          var cntx = canvasElem[0].getContext('2d'); // Get the actual canvas object context
-          if (cntx) {
-            cntx.clearRect(0, 0, frame.width, frame.height);
-            this._drawLinks(cntx);
-          }
-          else {
-            LinkIt.log("Linkit.LayerView.render(): Canvas object context is not accessible.");
-          }
-        }
-        else {
-          LinkIt.log("Linkit.LayerView.render(): Canvas element array length is zero.");
-        }
-      }
-      else {
-        LinkIt.log("Linkit.LayerView.render(): Canvas element is not accessible.");
-      }
-    }
+
+    this.invokeOnce('updateCanvas');
     
     return sc_super();
+  },
+  
+  updateCanvas: function() {
+    var frame = this.get('clippingFrame');
+    var context = this._canvasContext;
+    
+    if (context) {
+      context.clearRect(frame.x, frame.y, frame.width + 4, frame.height + 4);
+      this._drawLinks(context);
+    }
+  },
+
+  didUpdateLayer: function() {
+    var canvasElement;
+    
+    sc_super();
+
+    // cache the canvas context
+    canvasElement = this.$('canvas.base-layer');
+    this._canvasContext = (canvasElement && canvasElement.length > 0) ? canvasElement[0].getContext('2d') : null;
   },
   
   didCreateLayer: function() {
@@ -276,7 +275,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
       dY = evt.pageY - this._dragData.startPageY;
       this._dragData.view.adjust({ left: this._dragData.left + dX, top: this._dragData.top + dY });
       
-      this.displayDidChange(); // so that links get redrawn
+      this.invokeOnce('updateCanvas'); // so that lines get redrawn
     }
     return YES;
   },
@@ -344,7 +343,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
            links = links.concat(nodeLinks);
          }
        }
-
+    
        var linkSelection = this.get('linkSelection');
        this.set('linkSelection', null);
        if (linkSelection) {
@@ -444,7 +443,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     }
 
     // trigger a redraw of the canvas
-    this.displayDidChange();
+    this.invokeOnce('updateCanvas');
   },
   
   _terminalViewFor: function(node, terminal) {
@@ -535,7 +534,9 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   /**
     @private: parameters
   */
-  _dragData: null
+  _dragData: null,
+  
+  _canvasContext: null
   
 });
 

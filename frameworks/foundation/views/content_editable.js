@@ -186,6 +186,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 	indentOnTab: YES,
 	tabSize: 2,
 	
+	/*
+	  receives actions on click to insert event...
+	*/
+	insertTarget: null,
+	
 	displayProperties: ['value'],
 	
 	render: function(context, firstTime) {
@@ -504,7 +509,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.RunLoop.begin();
     if(this.get('insertInProgress')){
       this.set('insertInProgress', NO);
-      SC._Orion.sendAction('insert');
+      this.get('insertTarget').sendAction('insert');
     }
     this.querySelection();
     if (!this.get('hasFixedDimensions')) {

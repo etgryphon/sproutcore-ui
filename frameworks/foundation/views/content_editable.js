@@ -536,9 +536,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (SC.browser.msie) {
       var doc = this._document;
       if (SC.FUNCTION_KEYS[event.keyCode] === 'return') {
-        this.insertHTML('<br><wbr></wbr>', NO);
-        // doc.execCommand('paste', null, unescape("%0A"));
-        event.preventDefault();
+        // this.insertHTML('<br><wbr></wbr>', NO);
+        // // doc.execCommand('paste', null, unescape("%0A"));
+        // event.preventDefault();
       }
     }
     
@@ -697,10 +697,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return NO;
     
     if (val !== undefined) {
-      if (doc.execCommand('insertorderedlist', false, val)) {
-        this.querySelection();
-        this.set('isEditing', YES);
+      if (SC.browser.msie && val === YES) {
+        this._createListForIE('ol');
+      } else {
+        if (doc.execCommand('insertorderedlist', false, val)) {
+          this.querySelection();
+        }
       }
+      this.set('isEditing', YES);
     }
     
     return doc.queryCommandState('insertorderedlist');
@@ -710,16 +714,35 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var doc = this._document ;
     if (!doc) return NO;
     
-    if (val !== undefined) {
-      if (doc.execCommand('insertunorderedlist', false, val)) {
-        this.querySelection();
-        this.set('isEditing', YES);
+    if (val !== undefined) {      
+      if (SC.browser.msie && val === YES) {
+        this._createListForIE('ul');
+      } else {
+        if (doc.execCommand('insertunorderedlist', false, val)) {
+          this.querySelection();
+        }
       }
+      this.set('isEditing', YES);
     }
     
     return doc.queryCommandState('insertunorderedlist');
   }.property('selection').cacheable(),
   
+  _createListForIE: function(tag) {
+    var html = '';
+    var range = this._iframe.document.selection.createRange();
+    var text = range.text;
+    var textArray = text.split('\n');
+
+    if (textArray.length > 1) {
+      for (var i = 0; i < textArray.length; i++) {
+        html += '<li>%@</li>'.fmt(textArray[i]);
+      }
+    } else {
+      html = '<li>%@<li>'.fmt(text);
+    }
+    range.pasteHTML('<%@>%@<%@>'.fmt(tag, html, tag));
+  },
 
   // indent/outdent have some sort of problem with every
   // browser. Check,

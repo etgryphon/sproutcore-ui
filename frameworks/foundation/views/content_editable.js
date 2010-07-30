@@ -534,11 +534,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
     
     if (SC.browser.msie) {
-      var doc = this._document;
-      if (SC.FUNCTION_KEYS[event.keyCode] === 'return') {
-        // this.insertHTML('<br><wbr></wbr>', NO);
-        // // doc.execCommand('paste', null, unescape("%0A"));
-        // event.preventDefault();
+      var element = this._getSelectedElement();
+
+      if (SC.FUNCTION_KEYS[event.keyCode] === 'return' && element.nodeName !== 'LI') {
+        var range = this._iframe.document.selection.createRange();
+        range.pasteHTML('<br>');
+        range.collapse(false);
+        range.select();
+        event.preventDefault();
       }
     }
     

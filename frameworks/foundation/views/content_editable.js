@@ -644,10 +644,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return NO;
     
     if (val !== undefined) {
-      if (doc.execCommand('justifycenter', false, val)) {
-        this.querySelection();
-        this.set('isEditing', YES);
+      if (SC.browser.msie) {
+        this._alignTextForIE('center');
+      } else {
+        doc.execCommand('justifycenter', false, val);
       }
+      
+      this.querySelection();
+      this.set('isEditing', YES);
     }
     
     return doc.queryCommandState('justifycenter');
@@ -658,10 +662,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return NO;
     
     if (val !== undefined) {
-      if (doc.execCommand('justifyright', false, val)) {
-        this.querySelection();
-        this.set('isEditing', YES);
+      if (SC.browser.msie) {
+        this._alignTextForIE('right');
+      } else {
+        doc.execCommand('justifyright', false, val);
       }
+      
+      this.querySelection();
+      this.set('isEditing', YES);
     }
     
     return doc.queryCommandState('justifyright');
@@ -672,10 +680,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return NO;
     
     if (val !== undefined) {
-      if (doc.execCommand('justifyleft', false, val)) {
-        this.querySelection();
-        this.set('isEditing', YES);
+      if (SC.browser.msie) {
+        this._alignTextForIE('left');
+      } else {
+        doc.execCommand('justifyleft', false, val);
       }
+      
+      this.querySelection();
+      this.set('isEditing', YES);
     }
     
     return doc.queryCommandState('justifyleft');
@@ -686,14 +698,40 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (!doc) return NO;
     
     if (val !== undefined) {
-      if (doc.execCommand('justifyfull', false, val)) {
-        this.querySelection();
-        this.set('isEditing', YES);
+      if (SC.browser.msie) {
+        this._alignTextForIE('justify');
+      } else {
+        doc.execCommand('justifyfull', false, val);
       }
+
+      this.querySelection();
+      this.set('isEditing', YES);
     }
     
     return doc.queryCommandState('justifyfull');
   }.property('selection').cacheable(),
+  
+  _alignTextForIE: function(alignment) {
+    var doc = this._document ;
+    var elem = this._getSelectedElement();
+    var range = doc.selection.createRange();
+    var html, newHTML;
+    
+    if (elem.nodeName !== 'DIV') {
+      html = range.htmlText;
+      newHTML = '<div align="%@" style="text-align: %@">%@</div>'.fmt(alignment, alignment, html);
+      range.pasteHTML(newHTML);
+    } else {
+      if (elem.innerText !== range.text) {
+        html = range.htmlText;
+        newHTML = '<div align="%@" style="text-align: %@">%@</div>'.fmt(alignment, alignment, html);
+        range.pasteHTML(newHTML);
+      } else {
+        elem.style.textAlign = alignment;
+        elem.align = alignment;
+      }
+    }
+  },
   
   selectionIsOrderedList: function(key, val) {
     var doc = this._document ;
@@ -1579,29 +1617,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       selection = this._getFrame().contentWindow.getSelection();
     }
     return selection;
-  },
-  
-  /** @private */
-  _getSelectedElemented: function() {
-    var selection = this._getSelection();
-    var selectedElement;
-    
-    if (SC.browser.msie) {
-      selectedElement = selection.createRange().parentElement();
-    } else {
-      var anchorNode = selection.anchorNode;
-      var focusNode = selection.focusNode;
-        
-      if (anchorNode && focusNode) {
-        if (anchorNode.nodeType === 3 && focusNode.nodeType === 3) {
-          if (anchorNode.parentNode === focusNode.parentNode) {
-            selectedElement = anchorNode.parentNode;
-          }
-        }
-      }
-    }
-    
-    return selectedElement;
   },
   
   _encodeValues: function(html) {

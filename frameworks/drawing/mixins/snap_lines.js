@@ -206,8 +206,11 @@ SCUI.SnapLines = {
     this._yPositions = null;
     this._globalFrame = null;
     if(this._drawingView) {
-      this.removeChild(this._drawingView);
-      this._drawingView = null;
+      var that = this;
+      this.invokeOnce(function(){
+        that.removeChild(that._drawingView);
+        that._drawingView = null;
+      });
     }
   },
   

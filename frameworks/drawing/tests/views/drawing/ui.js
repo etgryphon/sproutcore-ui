@@ -5,6 +5,10 @@
 /* Test SCUI.DrawingView */
 
 var pane = SC.ControlTestPane.design()
+  .add("basic,null", SCUI.DrawingView, {
+    layout: {width: 350, height: 200}, // This normally handled by Dashboard...
+    shapes: null
+  })
   .add("basic,shapes,stroke", SCUI.DrawingView, {
     layout: {width: 350, height: 200}, // This normally handled by Dashboard...
     shapes: [
@@ -109,6 +113,9 @@ window.pane = pane ;
 // BASIC TESTS
 // 
 module("Basic Tests", pane.standardSetup());
+test("init basic,null shapes", function() {
+  var view = pane.view('basic,null');
+});
 
 test("init basic,shapes,stroke", function() {
   var view = pane.view('basic,shapes,stroke');

@@ -80,6 +80,7 @@ SCUI.UploadView = SC.View.extend(
       this._firstTime = YES;
       
       if (cssImageClass) {
+                
         context .begin('form')
                   .attr('method', 'post')
                   .attr('enctype', 'multipart/form-data')
@@ -104,19 +105,18 @@ SCUI.UploadView = SC.View.extend(
         
                     .end()
                   .end()
+                .end()
+        
+                .begin('iframe')
+                  .attr('frameBorder', 0)
+                  .attr('src', '#')
+                  .attr('id', frameId)
+                  .attr('name', frameId)
+                  .styles({ 'width': 0, 'height': 0 })
                 .end();
-        // WebKit will load iframe with "/" if it is not supplied a src or any content, so better just not create it
-        // avoids triggering onload as well, which was causing OR-8266
-        if (!((SC.browser.safari || SC.browser.chrome) && this.get('requestPrototype'))) {
-          context.begin('iframe')
-                .attr('frameBorder', 0)
-                .attr('src', '#')
-                .attr('id', frameId)
-                .attr('name', frameId)
-                .styles({ 'width': 0, 'height': 0 })
-              .end();
-        }
+                
       } else {
+        
         context .begin('form')
                   .attr('method', 'post')
                   .attr('enctype', 'multipart/form-data')
@@ -127,17 +127,17 @@ SCUI.UploadView = SC.View.extend(
                     .attr('type', 'file')
                     .attr('name', inputName)
                   .end()
-                .end();
-        // qv comment above
-        if (!((SC.browser.safari || SC.browser.chrome) && this.get('requestPrototype'))) {
-          context.begin('iframe')
+        
+                .end()
+        
+                .begin('iframe')
                   .attr('frameBorder', 0)
                   .attr('src', '#')
                   .attr('id', frameId)
                   .attr('name', frameId)
                   .styles({ 'width': 0, 'height': 0 })
                 .end();
-        }
+        
       }
       
     } else {

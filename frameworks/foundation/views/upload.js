@@ -40,12 +40,22 @@ SCUI.UploadView = SC.View.extend(
   inputName: "Filedata",
   
   displayProperties: 'uploadTarget'.w(),
+  
+  /*
+    If set to a value, then the view will attempt to use the CSS rule to style 
+    the input=file. The CSS rule needs to define a,
+      - width (pixels)
+      - height (pixels)
+      - background image
+  */
+  cssImageClass: null,
 
   render: function(context, firstTime) {
     var frameId = this.get('layerId') + 'Frame';
     var uploadTarget = this.get('uploadTarget');
     var label = this.get('label');
     var inputName = this.get('inputName');
+    var cssImageClass = this.get('cssImageClass');
     
     if (firstTime) {
       // This hack is needed because the iframe onload event fires twice in IE, when the
@@ -54,16 +64,99 @@ SCUI.UploadView = SC.View.extend(
       // time around
       this._firstTime = YES;
       
-      context.push('<form method="post" enctype="multipart/form-data" target="' + frameId + '" action="' + uploadTarget + '">');
-      context.push('<input type="file" name="' + inputName + '" />');
-      context.push('</form>');
-      context.push('<iframe frameborder="0" id="' + frameId + '" name="' + frameId + '" style="width:0; height:0;"></iframe>');
+      if (cssImageClass) {
+                
+        context .begin('form')
+                  .attr('method', 'post')
+                  .attr('enctype', 'multipart/form-data')
+                  .attr('action', uploadTarget)
+                  .attr('target', frameId)
+        
+                  .begin('label')
+                    .setClass(cssImageClass, YES)
+                    .styles({ 'display': 'block',
+                              'cursor': 'pointer',
+                              'overflow': 'hidden'  })
+        
+                    .begin('input')
+                      .attr('type', 'file')
+                      .attr('name', inputName)
+                      .styles({ 'position': 'relative',
+                                'height': '100%',
+                                'width': 'auto',
+                                'opacity': '0',
+                                '-moz-opacity': '0',
+                                'filter': 'progid:DXImageTransform.Microsoft.Alpha(opacity=0)' })
+        
+                    .end()
+                  .end()
+                .end()
+        
+                .begin('iframe')
+                  .attr('frameBorder', 0)
+                  .attr('src', '#')
+                  .attr('id', frameId)
+                  .attr('name', frameId)
+                  .styles({ 'width': 0, 'height': 0 })
+                .end();
+                
+      } else {
+        
+        context .begin('form')
+                  .attr('method', 'post')
+                  .attr('enctype', 'multipart/form-data')
+                  .attr('action', uploadTarget)
+                  .attr('target', frameId)
+        
+                  .begin('input')
+                    .attr('type', 'file')
+                    .attr('name', inputName)
+                  .end()
+        
+                .end()
+        
+                .begin('iframe')
+                  .attr('frameBorder', 0)
+                  .attr('src', '#')
+                  .attr('id', frameId)
+                  .attr('name', frameId)
+                  .styles({ 'width': 0, 'height': 0 })
+                .end();
+        
+      }
       
     } else {
       var f = this._getForm();
       if (f) f.action = uploadTarget;
     }
     sc_super();
+  },
+  
+  mouseMoved: function(evt) {
+    if (evt.target.nodeName === 'LABEL') {
+      var ox = 0;
+      var oy = 0;
+      var elem = evt.target;
+      
+      if (elem.offsetParent) {
+        ox = elem.offsetLeft;
+        oy = elem.offsetTop;
+        
+        while (elem = elem.offsetParent) {
+          ox += elem.offsetLeft;
+          oy += elem.offsetTop;
+        }
+      }
+  
+      var x = evt.pageX - ox;
+      var y = evt.pageY - oy;
+      var w = evt.target.file.offsetWidth;
+      var h = evt.target.file.offsetHeight;
+      
+      var input = this.$('input').firstObject();
+      input.style.top   = y - (h / 2)  + 'px';
+      input.style.left  = x - (w - 30) + 'px';
+    }
   },
   
   didCreateLayer: function() {

@@ -209,6 +209,7 @@ SCUI.SnapLines = {
       var that = this;
       this.invokeOnce(function(){
         that.removeChild(that._drawingView);
+        that._drawingView.destroy();
         that._drawingView = null;
       });
     }

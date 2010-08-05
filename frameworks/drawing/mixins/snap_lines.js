@@ -124,7 +124,11 @@ SCUI.SnapLines = {
     if(!this._xPositions || !this._yPositions) return;
     if(!this._drawingView){
       this._drawingView = this.createChildView(SCUI.DrawingView.design({
-        shapes: []
+        shapes: [],
+        mouseDown: function(evt){
+          this.removeFromParent(); //sometimes the lines still stick around... if they do this gives you an out!
+          return YES;
+        }
       }));
       this.appendChild(this._drawingView);
     }
@@ -209,7 +213,7 @@ SCUI.SnapLines = {
       var that = this;
       this.invokeOnce(function(){
         that.removeChild(that._drawingView);
-        that._drawingView.destroy();
+        if(that._drawingView) that._drawingView.destroy();
         that._drawingView = null;
       });
     }

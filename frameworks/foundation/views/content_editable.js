@@ -167,8 +167,31 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   /**
     List of menu options to display on right click
   */
-	rightClickMenuOptions: [],
+	rightClickMenuOptionsWithoutSelection: [],
 	
+	/**
+    List of menu options to display on right click with selection
+  */
+	rightClickMenuOptionsWithSelection: [],
+	
+	/*
+	  returns right click menu options
+	*/
+	rightClickMenuOptions: function(){
+    //get
+    var ret = [];
+    var wos = this.get('rightClickMenuOptionsWithoutSelection'), ws = this.get('rightClickMenuOptionsWithSelection');
+    if(this.get('selection') && this.get('selection').length > 0){
+      ws.forEach(function(j){
+        ret.pushObject(j);
+      });
+    }
+    wos.forEach(function(i){
+      ret.pushObject(i);
+    });
+
+    return ret;
+	}.property('rightClickMenuOptionsWithoutSelection', 'rightClickMenuOptionsWithSelection', 'selection').cacheable(),
 	/**
 	  Used specifically for encoding special characters in an anchor tag's
 	  href attribute. This is mostly an edge case.

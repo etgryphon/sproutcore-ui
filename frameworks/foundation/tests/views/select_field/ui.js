@@ -63,7 +63,7 @@ test("basic", function() {
 });
 
 test("multiple", function() {
-  var view = pane.view('basic');
+  var view = pane.view('multiple');
   ok(view.get('isVisibleInWindow'), 'should be visible in window');
   ok(!view.$().hasClass('disabled'), 'should not have disabled class');
   ok(!view.$().hasClass('sel'), 'should not have sel class');

@@ -5,6 +5,12 @@ var pane = SC.ControlTestPane.design()
     .add("basic", SCUI.SelectFieldView, { 
        objects:["1","2","3","4","5"]
     })
+    
+    .add("multiple", SCUI.SelectFieldView, { 
+      layout: {left:0,right:0,height:80},
+       objects:["1","2","3","4","5"],
+       multiple: YES
+    })
   
     .add("disabled", SCUI.SelectFieldView, { 
       isEnabled: NO, objects:["1","2","3","4","5"]

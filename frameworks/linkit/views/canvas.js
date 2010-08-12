@@ -453,12 +453,16 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     }
     return null;
   },
+
+  _handleContentDidChange: function() {
+    this._nodeSetup();
+    this.linksDidChange(); // schedules a links update at the end of the run loop
+  },
   
   /**
   */
   _contentDidChange: function() {
-    this._nodeSetup();
-    this.linksDidChange(); // schedules a links update at the end of the run loop
+    this.invokeOnce('_handleContentDidChange');
   }.observes('*content.[]'), // without the '*' at the beginning, this doesn't get triggered
   
   _nodeSetup: function(){

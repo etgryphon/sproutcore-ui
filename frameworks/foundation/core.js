@@ -18,8 +18,8 @@
   
   You can also use the shorthand "SCUI" instead of "Scui".
 */
-var Scui = Scui || SC.Object.create();
-var SCUI = SCUI || Scui ;
+window.Scui = window.Scui || SC.Object.create();
+window.SCUI = window.SCUI || window.Scui ;
 
 // Upload Constants
 SCUI.READY = 'READY';

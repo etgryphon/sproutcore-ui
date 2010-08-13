@@ -12,7 +12,7 @@
   @author Evin Grano
   @version: 0.1
 */
-LinkIt = SC.Object.create({
+window.LinkIt = SC.Object.create({
 
   // CONST
   ROUND: 'round',

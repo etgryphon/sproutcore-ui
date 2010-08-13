@@ -24,10 +24,10 @@ SCUI.CalendarView = SC.View.extend({
     
     var monthStartOn = this.get('monthStartOn');
     
-    if (evt.target.className === 'button previous') {
+    if (evt.target.className === 'button previous active') {
       this.set('monthStartOn', monthStartOn.advance({month: -1}));
       this.$('.button.previous').removeClass('active');
-    } else if (evt.target.className === 'button next') {
+    } else if (evt.target.className === 'button next active') {
       this.set('monthStartOn', monthStartOn.advance({month: 1}));
       this.$('.button.next').removeClass('active');
     }

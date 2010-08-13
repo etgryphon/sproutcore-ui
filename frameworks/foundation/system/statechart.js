@@ -52,9 +52,11 @@ SCUI.Statechart = {
   
   startOnInit: YES,
   
+  statechartIsStarted: NO,
+  
   startupStatechart: function(){
     //add all unregistered states
-    if(!this._started){
+    if (!this.get('statechartIsStarted')) {
       var key, tree, state, trees, startStates, startState, currTree;
       for(key in this){
         if(this.hasOwnProperty(key) && SC.kindOf(this[key], SCUI.State) && this[key].get && !this[key].get('beenAddedToStatechart')){
@@ -90,7 +92,7 @@ SCUI.Statechart = {
         }
       }
     }
-    this._started = YES;
+    this.setIfChanged('statechartIsStarted', YES);
   },
   
   

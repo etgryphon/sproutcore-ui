@@ -201,9 +201,9 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   /**
     The drop down button view class.  Override this to change layout, CSS, etc.
   */
-  dropDownButtonView: SC.View.extend( SCUI.SimpleButton, {
-    classNames: 'scui-combobox-dropdown-button-view',
-    layout: { top: 0, right: 0, height: 24, width: 28 }
+  dropDownButtonView: SC.ButtonView.extend({
+    layout: { top: 0, right: 0, height: 24, width: 28 },
+    icon: 'caret'
   }),
 
   displayProperties: ['isEditing'],

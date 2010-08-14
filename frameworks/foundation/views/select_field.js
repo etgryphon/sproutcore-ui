@@ -261,3 +261,4 @@ SCUI.SelectFieldView = SC.SelectFieldView.extend({
     }
   }
 });
+

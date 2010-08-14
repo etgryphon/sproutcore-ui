@@ -113,3 +113,4 @@ test("redraw", function(){
   SC.RunLoop.end();
   ok(view.$('option').length === 5, "options length should be 5");
 });
+

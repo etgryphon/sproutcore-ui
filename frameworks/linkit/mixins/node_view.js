@@ -83,4 +83,3 @@ LinkIt.NodeView = {
   }
   
 };
-

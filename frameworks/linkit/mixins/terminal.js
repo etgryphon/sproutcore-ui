@@ -346,6 +346,7 @@ LinkIt.Terminal = {
   _nodeAllowsLink: function(otherTerminal) {
     var myLinkObj, myNodeAccepted, otherLinkObj, otherNodeAccepted;
     if (otherTerminal && otherTerminal.get('isTerminal')) {
+
       var myNode = this.get('node');
       var otherNode = otherTerminal.get('node');
       

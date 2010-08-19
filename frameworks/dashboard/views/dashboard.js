@@ -296,7 +296,7 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
       sizeKey = item.get('sizeKey');
       size = sizeKey ? item.get(sizeKey) : null;
       if (size) {
-        return { width: (parseFloat(size.width) || 0), height: (parseFloat(size.height) || 0) };
+        return { width: (parseFloat(size.width) || 10), height: (parseFloat(size.height) || 10) };
       }
     }
     

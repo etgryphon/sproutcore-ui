@@ -390,7 +390,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
       this.beginEditing();
 
       this._updateListPaneLayout();
-      this._listPane.popup(this, SC.PICKER_MENU);
+      this._listPane.append();
 
       // HACK: [JL] (Or is it?)  Tell the list view that its visible area
       // has changed when showing the list.  Otherwise if the list was previously
@@ -708,26 +708,44 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     autosizes the pane appropriately.
   */
   _updateListPaneLayout: function() {
-    var rowHeight, length, width, height, frame, minHeight, maxHeight, spinnerHeight, isBusy;
+    var rowHeight, length, frame, worldFrame, screenSize,
+        pv, minHeight, maxHeight, spinnerHeight, isBusy, layout;
 
     if (this._listView && this._listPane && this._listScrollView) {
-      frame = this.get('frame');
-      width = frame ? frame.width : 200;
+      frame = this.get('frame'); // frame in local coord system
+      pv = this.get('parentView');
+      worldFrame = pv ? pv.convertFrameToView(frame, null) : frame; // frame in world coord system
+
+      // begin constructing the layout of the list pane
+      layout = {
+        left: worldFrame.x,
+        width: frame.width
+      };
 
       isBusy = this.get('isBusy');
       spinnerHeight = this.get('statusIndicatorHeight');
       rowHeight = this._listView.get('rowHeight') || 18;
-
+    
       // even when list is empty, show at least one row's worth of height,
       // unless we're showing the busy indicator there
       length = this.getPath('filteredObjects.length') || (isBusy ? 0 : 1);
+    
+      // calculate list pane height
+      layout.height = (rowHeight * length) + (isBusy ? spinnerHeight : 0);
+      layout.height = Math.min(layout.height, this.get('maxListHeight')); // limit to max height
+      layout.height = Math.max(layout.height, this.get('minListHeight')); // but be sure it is always at least the min height
 
-      height = (rowHeight * length) + (isBusy ? spinnerHeight : 0);
-      height = Math.min(height, this.get('maxListHeight')); // limit to max height
-      height = Math.max(height, this.get('minListHeight')); // but be sure it is always at least the min height
+      // calculate list pane position
+      screenSize = SC.RootResponder.responder.computeWindowSize();
+      if ((worldFrame.y + worldFrame.height + layout.height) < screenSize.height) {
+        layout.top = worldFrame.y + worldFrame.height; // position below the combo box
+      }
+      else {
+        layout.top = worldFrame.y - layout.height - 2; // position above the combo box
+      }
 
       this._listScrollView.adjust({ bottom: isBusy ? spinnerHeight : 0 });
-      this._listPane.adjust({ width: width, height: height });
+      this._listPane.adjust(layout);
       this._listPane.updateLayout(); // force pane to re-render layout
       this._listPane.positionPane(); // since size has changed, force pane to recompute its position on the screen
     }

@@ -357,7 +357,15 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
       this._selectedObjectDidChange();
 
       this.set('isEditing', NO);
-      this.hideList();
+      // in IE, as soon as you the user browses through the results in the picker pane by 
+      // clicking on the scroll bar or the scroll thumb, the textfield loses focus causing 
+      // commitEditing to be called and subsequently hideList which makes for a very annoying 
+      // experience. With this change, clicking outside the pane will hide it (same as original behavior), 
+      // however, if the user directly shifts focus to another text field, then the pane 
+      // won't be removed. This behavior is still buggy but less buggy than it was before.
+      if (!SC.browser.msie) {
+        this.hideList();
+      }
     }
 
     if (textField && textField.get('isEditing')) {

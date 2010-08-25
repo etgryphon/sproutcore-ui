@@ -106,8 +106,10 @@ SCUI.SelectFieldTab = SC.View.extend(
     The selectFieldView managed by this tab view.  Note that this TabView uses
     a custom segmented view.  You can access this view but you cannot change
     it.
+    
+    --Updated this to a selectButton view to remove the select element. [jcd]
   */
-  selectFieldView: SC.SelectFieldView.extend({
+  selectFieldView: SC.SelectButtonView.extend({
     layout: { left: 4, right: 0, height: 24 },
 
     //litte items => objects alias so I can use the same properties as a tab view...
@@ -119,7 +121,7 @@ SCUI.SelectFieldTab = SC.View.extend(
         return this.set('objects', value);
       }
     }.property('objects').cacheable(),
-
+    
     itemTitleKey: function(key, value){
       if(value === undefined){
         return this.get('nameKey');

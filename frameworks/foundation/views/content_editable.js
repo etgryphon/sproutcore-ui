@@ -304,7 +304,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       var head = doc.getElementsByTagName('head')[0];
       if (head) {
         var el = doc.createElement("style");
-        el['type'] = "text/css";
+        el.type = "text/css";
         head.appendChild(el);
         if (SC.browser.msie) {
           el.styleSheet.cssText = styleSheetCSS;
@@ -1654,11 +1654,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }  
       
       if (range) {
-        if (sel.anchorNode && (sel.anchorNode.nodeType == 3)) {
+        if (sel.anchorNode && (sel.anchorNode.nodeType === 3)) {
           if (sel.anchorNode.parentNode) { //next check parentNode
             elm = sel.anchorNode.parentNode;
           }
-          if (sel.anchorNode.nextSibling != sel.focusNode.nextSibling) {
+          if (sel.anchorNode.nextSibling !== sel.focusNode.nextSibling) {
             elm = sel.anchorNode.nextSibling;
           }
         }
@@ -1667,7 +1667,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
           elm = range.commonAncestorContainer;
 
           if (!range.collapsed) {
-            if (range.startContainer == range.endContainer) {
+            if (range.startContainer === range.endContainer) {
               if (range.startOffset - range.endOffset < 2) {
                 if (range.startContainer.hasChildNodes()) {
                   elm = range.startContainer.childNodes[range.startOffset];

@@ -25,6 +25,7 @@ SCUI.SimpleButton = {
   
   _isMouseDown: NO,
   _isContinuedMouseDown: NO, // This is so we can maintain a held state in the case of mousing out behavior
+  _canFireAction: NO,
   
   displayProperties: ['inState', 'isEnabled'],
 
@@ -34,7 +35,7 @@ SCUI.SimpleButton = {
   mouseDown: function(evt) {
     //console.log('SimpleButton#mouseDown()...');
     if (!this.get('isEnabledInPane')) return YES ; // handled event, but do nothing
-    this._isMouseDown = this._isContinuedMouseDown = YES;
+    this._isMouseDown = this._isContinuedMouseDown = this._canFireAction = YES;
     this.displayDidChange();
     return YES ;
   },
@@ -44,8 +45,13 @@ SCUI.SimpleButton = {
   */  
   mouseExited: function(evt) {
     //console.log('SimpleButton#mouseExited()...');
-    this._hover = NO;
-    if (this._isMouseDown) { this._isMouseDown = NO; }
+    if (this.get('hasHover')) {
+      this._hover = NO;
+    }
+    if (this._isMouseDown) {
+      this._isMouseDown = NO;
+      this._canFireAction = NO;
+    }
     this.displayDidChange();
     return YES;
   },
@@ -55,8 +61,13 @@ SCUI.SimpleButton = {
   */  
   mouseEntered: function(evt) {
     //console.log('SimpleButton#mouseEntered()...');
-    this._hover = YES;
-    if ( this._isContinuedMouseDown ) { this._isMouseDown = YES; }
+    if ( this.get('hasHover') ){
+      this._hover = YES; 
+    }
+    if ( this._isContinuedMouseDown ) { 
+      this._isMouseDown = YES;
+      this._canFireAction = YES;
+    }
     this.displayDidChange();
     return YES;
   },
@@ -72,7 +83,7 @@ SCUI.SimpleButton = {
     var target = this.get('target') || null;
     var action = this.get('action');    
     // Support inline functions
-    if (this._hover) {
+    if (this._canFireAction) {
       if (this._hasLegacyActionHandler()) {
         // old school... 
         this._triggerLegacyActionHandler(evt);
@@ -81,10 +92,10 @@ SCUI.SimpleButton = {
         this.getPath('pane.rootResponder').sendAction(action, target, this, this.get('pane'));
       }
     }
-    
     if (this.get('hasState')) {
       this.set('inState', !this.get('inState'));
     }
+    this._canFireAction = false;
     this.displayDidChange(); 
     return YES;
   },

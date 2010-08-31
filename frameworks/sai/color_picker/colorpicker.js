@@ -29,7 +29,7 @@ sc_require('raphael');
         for (var i = 0; i < segments; i++) {
             this.path(path).attr({
                 stroke: "none",
-                fill: "hsb(" + (segments - i) * (255 / segments) + ", 255, 255)",
+                fill: "hsb(" + (segments - i) * (360 / segments) + ", 100, 100)",
                 rotation: [90 + (360 / segments) * i, x, y]
             });
         }
@@ -45,32 +45,6 @@ sc_require('raphael');
         return (x < 0) * 180 + Math.atan(-y / -x) * 180 / pi;
     }
     var doc = document, win = window,
-        addEvent = (function () {
-        if (doc.addEventListener) {
-            return function (obj, type, fn, element) {
-                var f = function (e) {
-                    return fn.call(element, e);
-                };
-                obj.addEventListener(type, f, false);
-                return function () {
-                    obj.removeEventListener(type, f, false);
-                    return true;
-                };
-            };
-        } else if (doc.attachEvent) {
-            return function (obj, type, fn, element) {
-                var f = function (e) {
-                    return fn.call(element, e || win.event);
-                };
-                obj.attachEvent("on" + type, f);
-                var detacher = function () {
-                    obj.detachEvent("on" + type, f);
-                    return true;
-                };
-                return detacher;
-            };
-        }
-    })(),
         ColorPicker = function (x, y, size, initcolor, element) {
             size = size || 200;
             var w3 = 3 * size / 200,
@@ -153,28 +127,25 @@ sc_require('raphael');
             t.y = y;
 
             // events
-            t.hson = addEvent(t.disc.node, "mousedown", function (e) {
+            t.disc.drag(function (dx, dy, x, y) {
+                t.docOnMove(dx, dy, x, y);
+            }, function (x, y) {
                 var scrollY = doc.documentElement.scrollTop || doc.body.scrollTop,
                     scrollX = doc.documentElement.scrollLeft || doc.body.scrollLeft;
-                this.hsOnTheMove = true;
-                this.setHS(e.clientX + scrollX - this.x, e.clientY + scrollY - this.y);
-                this.docmove = addEvent(doc, "mousemove", this.docOnMove, this);
-                this.docup = addEvent(doc, "mouseup", this.docOnUp, this);
-            }, t);
-            t.bon = addEvent(t.btop.node, "mousedown", function (e) {
+                t.hsOnTheMove = true;
+                t.setHS(x + scrollX - t.x, y + scrollY - t.y);
+            }, function () {
+                t.hsOnTheMove = false;
+            });
+            t.btop.drag(function (dx, dy, x, y) {
+                t.docOnMove(dx, dy, x, y);
+            }, function (x, y) {
                 var scrollX = doc.documentElement.scrollLeft || doc.body.scrollLeft;
-                this.bOnTheMove = true;
-                this.setB(e.clientX + scrollX - this.x);
-                this.docmove = addEvent(doc, "mousemove", this.docOnMove, this);
-                this.docup = addEvent(doc, "mouseup", this.docOnUp, this);
-            }, t);
-            t.winunload = addEvent(win, "unload", function () {
-                this.hson();
-                this.bon();
-                this.docmove && this.docmove();
-                this.docup && this.docup();
-                this.winunload();
-            }, t);
+                t.bOnTheMove = true;
+                t.setB(x + scrollX - t.x);
+            }, function () {
+                t.bOnTheMove = false;
+            });
 
             t.color(initcolor || "#fff");
             this.onchanged && this.onchanged(this.color());
@@ -200,33 +171,18 @@ sc_require('raphael');
         this.cursor.attr({cx: x, cy: y});
         this.H = (1 - d / 360) % 1;
         this.S = Math.min((X * X + Y * Y) / R / R, 1);
-        this.brect.attr({fill: "180-hsb(" + [this.H, this.S] + ",1)-#000"});
+        this.brect.attr({fill: "180-hsl(" + [this.H, this.S] + ",1)-#000"});
         this.onchange && this.onchange(this.color());
     };
-    ColorPicker.prototype.docOnMove = function (e) {
+    ColorPicker.prototype.docOnMove = function (dx, dy, x, y) {
         var scrollY = doc.documentElement.scrollTop || doc.body.scrollTop,
             scrollX = doc.documentElement.scrollLeft || doc.body.scrollLeft;
         if (this.hsOnTheMove) {
-            this.setHS(e.clientX + scrollX - this.x, e.clientY + scrollY - this.y);
+            this.setHS(x + scrollX - this.x, y + scrollY - this.y);
         }
         if (this.bOnTheMove) {
-            this.setB(e.clientX + scrollX - this.x);
+            this.setB(x + scrollX - this.x);
         }
-        e.preventDefault && e.preventDefault();
-        e.returnValue = false;
-        return false;
-    };
-    ColorPicker.prototype.docOnUp = function (e) {
-        this.hsOnTheMove = this.bOnTheMove = false;
-        if(this.docmove) this.docmove();
-        delete this.docmove;
-        if(this.docup) this.docup();
-        delete this.docup;
-        this.onchanged && this.onchanged(this.color());
-        e.preventDefault && e.preventDefault();
-        e.stopPropagation && e.stopPropagation();
-        e.returnValue = false;
-        return false;
     };
     ColorPicker.prototype.remove = function () {
         this.raphael.remove();
@@ -245,7 +201,7 @@ sc_require('raphael');
             this.B = color.b;
 
             this.cursorb.attr({x: this.B * (this.maxx - this.minx) + this.minx - this.bwidth});
-            this.brect.attr({fill: "180-hsb(" + [this.H, this.S] + ",1)-#000"});
+            this.brect.attr({fill: "180-hsl(" + [this.H, this.S] + ",1)-#000"});
 
             var d = (1 - this.H) * 360,
                 rd = d * pi / 180,
@@ -259,4 +215,3 @@ sc_require('raphael');
         }
     };
 })(window.Raphael);
-

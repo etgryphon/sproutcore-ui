@@ -1,6 +1,7 @@
 // ==========================================================================
 // SCUI.DatePickerView
 // ==========================================================================
+/*globals SCUI */
 
 sc_require('core');
 
@@ -43,7 +44,7 @@ SCUI.DatePickerView = SC.View.extend(
     this.set('dateString', this._genDateString(this.get('date')));
     
     // Setup default layout values
-    var layout = this.get('layout');
+    var layout = this.get('layout'), that = this;
     layout = SC.merge(this._layout, layout);
     this.set('layout', layout);
     
@@ -56,7 +57,7 @@ SCUI.DatePickerView = SC.View.extend(
           layout: { left: 10, top: 0},
           dateSize: {width: 25, height: 25},
           weekdayStrings: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-          selectedDate: this.get('date') // init this so waking up the binding won't null out anything we had before
+          selectedDateBinding: SC.Binding.from('date', that)
         }),
         todayButton: SC.View.extend(SCUI.SimpleButton, {
           classNames: ['scui-datepicker-today'],
@@ -85,7 +86,6 @@ SCUI.DatePickerView = SC.View.extend(
     
     // Setup the Binding to the SelectedDate
     if (this._calendar_popup) {
-      this.bind('date', '._calendar_popup.contentView.calendar.selectedDate');
       this.bind('isShowingCalendar', '._calendar_popup.isPaneAttached');
       this._calendar = this._calendar_popup.getPath('contentView.calendar');
     }

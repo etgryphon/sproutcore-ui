@@ -22,7 +22,7 @@ SCUI.SimpleButton = {
   stateClass: 'state',
   hoverClass: 'hover',
   activeClass: 'active', // Used to show the button as being active (pressed)
-  
+  alwaysEnableToolTip: NO,  
   _isMouseDown: NO,
   _isContinuedMouseDown: NO, // This is so we can maintain a held state in the case of mousing out behavior
   _canFireAction: NO,
@@ -135,6 +135,12 @@ SCUI.SimpleButton = {
     
     // If there is a toolTip set, grab it and localize if necessary.
     var toolTip = this.get('toolTip') ;
+    
+    // if SCUI.SimpleButton.alwaysEnableToolTip is YES and toolTip is null
+    // get and use title if available.
+    if(this.get('alwaysEnableToolTip') && !toolTip) {
+      toolTip = this.get('title');
+    }
     if (SC.typeOf(toolTip) === SC.T_STRING) {
       if (this.get('localize')) toolTip = toolTip.loc();
       context.attr('title', toolTip);

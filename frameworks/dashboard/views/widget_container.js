@@ -47,7 +47,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     the view is instantiated.
   */
   deleteHandleViewClass: SC.View.extend( SCUI.SimpleButton, {
-    classNames: ['scui-widget-delete-handle-view'],
+    classNames: ['remove-button'],
     layout: { left: 0, top: 0, width: 28, height: 28 }
   }),
 
@@ -58,7 +58,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     the view is instantiated.
   */
   editHandleViewClass: SC.View.extend( SCUI.SimpleButton, {
-    classNames: ['scui-widget-edit-handle-view'],
+    classNames: ['settings-button'],
     layout: { right: 0, top: 0, width: 28, height: 28 }
   }),
 
@@ -69,7 +69,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     the view is instantiated.
   */
   doneButtonViewClass: SC.ButtonView.extend({
-    classNames: ['scui-widget-done-button-view'],
+    classNames: ['done-button'],
     layout: { right: 10, bottom: 10, width: 80, height: 24 },
     title: "Done".loc()
   }),

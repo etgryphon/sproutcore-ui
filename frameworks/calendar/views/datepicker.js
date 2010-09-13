@@ -24,7 +24,7 @@ SCUI.DatePickerView = SC.View.extend(
   dateString: "",
   isShowingCalendar: NO,
   // Params for the textfield
-  hint: "",
+  hint: "Click to choose...",
   dateFormat: null,
   
   // @private
@@ -93,21 +93,25 @@ SCUI.DatePickerView = SC.View.extend(
   
   createChildViews: function(){
     var view, childViews = [];
-    
+    var that = this;
     // First, Build the Textfield for the date chooser
     view = this._textfield = this.createChildView( 
       SC.TextFieldView.design( {
         layout: {left: 0, top: 0, right: 0, bottom: 0},
         classNames: ['scui-datechooser-text'],
-        isEnabled: NO,
+        isEnabled: YES,
+        isEnabledBinding: SC.binding('isEnabled', that),
         valueBinding: '.parentView.dateString',
-        hint: this.get('hint')
+        hint: this.get('hint'),
+        mouseDown: function (evt) {
+          that.toggle();
+          sc_super();
+        }
       })
     );
     childViews.push(view);
     
     // Now, set up the button to launch the Calendar Datepicker
-    var that = this;
     view = this._date_button = this.createChildView( 
       SC.View.design( SCUI.SimpleButton, {
         classNames: ['scui-datechooser-button', 'calendar-icon'],

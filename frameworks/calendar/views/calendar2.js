@@ -11,17 +11,24 @@ SCUI.CalendarView = SC.View.extend({
   
   displayProperties: ['monthStartOn'],
   
+  resetToSelectedDate: function(){
+    var selectedDate = this.get('selectedDate');
+    if (selectedDate) this.set('monthStartOn', selectedDate.adjust({ day: 1 }));
+  },
+  
   mouseDown: function(evt) {
-     if (evt.target.className === 'button previous') {
-       this.$('.button.previous').addClass('active');
-      } else if (evt.target.className === 'button next') {
-        this.$('.button.next').addClass('active');
-      }
-      return YES;
+    var date = this._parseSelectedDate(evt.target.id);
+    if (date) this.set('selectedDate', date);
+    
+    if (evt.target.className === 'button previous') {
+      this.$('.button.previous').addClass('active');
+    } else if (evt.target.className === 'button next') {
+      this.$('.button.next').addClass('active');
+    }
+    return YES;
   },
   
   mouseUp: function(evt) {
-    
     var monthStartOn = this.get('monthStartOn');
     
     if (evt.target.className === 'button previous active') {
@@ -30,62 +37,95 @@ SCUI.CalendarView = SC.View.extend({
     } else if (evt.target.className === 'button next active') {
       this.set('monthStartOn', monthStartOn.advance({month: 1}));
       this.$('.button.next').removeClass('active');
+      
     }
     return YES;
   },
   
   render: function(context, firstTime) {
-    
     var monthStartOn = this.get('monthStartOn');
     var startDay = monthStartOn.get('dayOfWeek');
     var currDate = monthStartOn.advance({day: -startDay});
     var selDate = this.get('selectedDate');
     var todaysDate = SC.DateTime.create();
-    var classNames;
-    
-    context.push(
-      '<div class="calendar" style="width: 205px; height: 198px; position: absolute; top: 50px; left: 50px;">',
-      '<div class="calendar-header">',
-      '<div class="month">%@</div>'.fmt(monthStartOn.toFormattedString('%B %Y')),
-      '<div class="button previous"></div>',
-      '<div class="button next"></div>',
-      '</div>',
-      '<div class="calendar-body">'
-    );
-    
     var weekdayStrings = this.get('weekdayStrings');
+    var classNames, uniqueDayIdentifier;
+    
+    context.push( '<div class="calendar-header">',
+                    '<div class="month">%@</div>'.fmt(SC.RenderContext.escapeHTML(monthStartOn.toFormattedString('%B %Y'))),
+                    '<div class="button previous"></div>',
+                    '<div class="button next"></div>',
+                  '</div>',
+                  '<div class="calendar-body">' );
     
     for (var i = 0; i < 7; i++) {
-      context.push('<div class="day header">%@</div>'.fmt(weekdayStrings[i]));
+      context .begin('div')
+              .addClass('day header')
+              .text(weekdayStrings[i])
+              .end();
     }
     
-    context.push('<div class="grid">');
+    context.begin('div').addClass('grid');
     
     for (var gIdx = 0; gIdx < 42; gIdx++) {
-      if(currDate.get('month')< monthStartOn.get('month') || currDate.get('month') > monthStartOn.get('month')) {
-        context.push('<div class="day previous">'+currDate.get('day')+'</div>');
-      } else {
+      uniqueDayIdentifier = this._createUniqueDayIdentifier(currDate);
+      
+      if (currDate.get('month') < monthStartOn.get('month') || currDate.get('month') > monthStartOn.get('month')) {
+        context .begin('div')
+                .attr('id', uniqueDayIdentifier)
+                .addClass('day')
+                .addClass('previous')
+                .text(currDate.get('day'))
+                .end();
         
+      } else {
         classNames = ['present'];
         
-        if (currDate.get('day') === todaysDate.get('day') && currDate.get('month') === todaysDate.get('month') && currDate.get('year') === todaysDate.get('year')) {
+        if (currDate.get('day') === todaysDate.get('day') && 
+            currDate.get('month') === todaysDate.get('month') && 
+            currDate.get('year') === todaysDate.get('year')) {
           classNames.push('today');
         } 
         
-        if (selDate && currDate.get('day') === selDate.get('day') && currDate.get('month') === selDate.get('month') && currDate.get('year') === selDate.get('year')) {
+        if (selDate && 
+            currDate.get('day') === selDate.get('day') && 
+            currDate.get('month') === selDate.get('month') && 
+            currDate.get('year') === selDate.get('year')) {
           classNames.push('selected');
         }
         
-        context.push('<div class="day %@"> %@ </div>'.fmt(classNames.join(' '), currDate.get('day')));
+        context .begin('div')
+                .attr('id', uniqueDayIdentifier)
+                .addClass('day')
+                .addClass(classNames.join(' '))
+                .text(currDate.get('day'))
+                .end();
       }
-      currDate = currDate.advance({day: 1});
+      
+      currDate = currDate.advance({ day: 1 });
     }
     
-    context.push(
-      '</div>',
-      '</div>',
-      '<div class="pointer perfectBottom"></div>',
-      '</div>'
-    );
+    context.push('</div>', '</div>');
+  },
+  
+  _createUniqueDayIdentifier: function(currDate) {
+    var day = currDate.get('day');
+    var month = currDate.get('month');
+    var year = currDate.get('year');
+    return 'scuidate-%@-%@-%@-%@'.fmt(this.get('layerId'), day, month, year);
+  },
+  
+  _parseSelectedDate: function(dateIdentifier) {
+    if (!SC.empty(dateIdentifier)) {
+      var dataArray = dateIdentifier.split('-');
+      if (dataArray.length === 5 && dataArray[0] === 'scuidate' && dataArray[1] === this.get('layerId')) {
+        var day = dataArray[2];
+        var month = dataArray[3];
+        var year = dataArray[4];
+        return SC.DateTime.create({ day: day, month: month, year: year });
+      }
+    }
+    return null;
   }
+  
 });

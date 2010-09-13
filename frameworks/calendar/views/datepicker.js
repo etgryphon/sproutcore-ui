@@ -50,18 +50,16 @@ SCUI.DatePickerView = SC.View.extend(
     
     // Create the reference to the calendar
     this._calendar_popup = SC.PickerPane.create({
-      layout: {width: 195, height: 215},
+      layout: { width: 205, height: 255 },
       contentView: SC.View.design({
         childViews: 'calendar todayButton noneButton'.w(),
         calendar: SCUI.CalendarView.design({
-          layout: { left: 10, top: 0},
-          dateSize: {width: 25, height: 25},
-          weekdayStrings: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+          layout: { left: 0, top: 0, height: 230, right: 0 },
           selectedDateBinding: SC.Binding.from('date', that)
         }),
         todayButton: SC.View.extend(SCUI.SimpleButton, {
           classNames: ['scui-datepicker-today'],
-          layout: {left: 10, bottom: 0, width: 50, height: 18},
+          layout: {left: 10, bottom: 5, width: 50, height: 18},
           target: this,
           action: 'selectToday',
           render: function(context, firstTime) {
@@ -72,7 +70,7 @@ SCUI.DatePickerView = SC.View.extend(
         }),
         noneButton: SC.View.design( SCUI.SimpleButton, {
           classNames: ['scui-datepicker-none'],
-          layout: {right: 10, bottom: 0, width: 50, height: 18},
+          layout: {right: 10, bottom: 5, width: 50, height: 18},
           target: this,
           action: 'clearSelection',
           render: function(context, firstTime) {

@@ -15,7 +15,7 @@ sc_require('views/date');
   @since 0.1
 */
 
-SCUI.CalendarView = SC.View.extend(
+SCUI.CalendarView1 = SC.View.extend(
 /** @scope SCUI.CalendarView.prototype */ {
   classNames: ['scui-calendar'],
   

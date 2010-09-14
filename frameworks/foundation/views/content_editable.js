@@ -645,7 +645,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (SC.browser.msie) {
-        this._alignTextForIE('center');
+        this._alignContentForIE('center');
       } else {
         doc.execCommand('justifycenter', false, val);
       }
@@ -663,7 +663,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (SC.browser.msie) {
-        this._alignTextForIE('right');
+        this._alignContentForIE('right');
       } else {
         doc.execCommand('justifyright', false, val);
       }
@@ -681,7 +681,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (SC.browser.msie) {
-        this._alignTextForIE('left');
+        this._alignContentForIE('left');
       } else {
         doc.execCommand('justifyleft', false, val);
       }
@@ -699,7 +699,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (val !== undefined) {
       if (SC.browser.msie) {
-        this._alignTextForIE('justify');
+        this._alignContentForIE('justify');
       } else {
         doc.execCommand('justifyfull', false, val);
       }
@@ -711,13 +711,18 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return doc.queryCommandState('justifyfull');
   }.property('selection').cacheable(),
   
-  _alignTextForIE: function(alignment) {
+  _alignContentForIE: function(alignment) {
     var doc = this._document ;
     var elem = this._getSelectedElement();
     var range = doc.selection.createRange();
     var html, newHTML;
-    
-    if (elem.nodeName !== 'DIV') {
+
+    if (elem.nodeName === 'IMG') {
+      if (alignment !== 'justify') {
+        elem.style.textAlign = alignment;
+        elem.align = alignment;
+      }
+    } else if (elem.nodeName !== 'DIV') {
       html = range.htmlText;
       newHTML = '<div align="%@" style="text-align: %@">%@</div>'.fmt(alignment, alignment, html);
       range.pasteHTML(newHTML);
@@ -729,6 +734,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       } else {
         elem.style.textAlign = alignment;
         elem.align = alignment;
+        
       }
     }
   },

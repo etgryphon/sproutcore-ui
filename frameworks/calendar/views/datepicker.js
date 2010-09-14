@@ -54,6 +54,7 @@ SCUI.DatePickerView = SC.View.extend(
       contentView: SC.View.design({
         childViews: 'calendar todayButton noneButton'.w(),
         calendar: SCUI.CalendarView.design({
+          classNames: ['calendar'],
           layout: { left: 0, top: 0, height: 230, right: 0 },
           selectedDateBinding: SC.Binding.from('date', that)
         }),

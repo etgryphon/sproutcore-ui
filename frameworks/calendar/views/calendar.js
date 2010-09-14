@@ -51,12 +51,12 @@ SCUI.CalendarView = SC.View.extend({
     var weekdayStrings = this.get('weekdayStrings');
     var classNames, uniqueDayIdentifier;
     
-    context.push( '<div class="calendar-header">',
+    context.push( '<div class="header">',
                     '<div class="month">%@</div>'.fmt(SC.RenderContext.escapeHTML(monthStartOn.toFormattedString('%B %Y'))),
                     '<div class="button previous"></div>',
                     '<div class="button next"></div>',
                   '</div>',
-                  '<div class="calendar-body">' );
+                  '<div class="body">' );
     
     for (var i = 0; i < 7; i++) {
       context .begin('div')
@@ -74,7 +74,7 @@ SCUI.CalendarView = SC.View.extend({
         context .begin('div')
                 .attr('id', uniqueDayIdentifier)
                 .addClass('day')
-                .addClass('previous')
+                .addClass('past')
                 .text(currDate.get('day'))
                 .end();
         

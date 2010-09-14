@@ -65,7 +65,7 @@ SCUI.CalendarView = SC.View.extend({
               .end();
     }
     
-    context.begin('div').addClass('grid');
+    context.push('<div class="grid">');
     
     for (var gIdx = 0; gIdx < 42; gIdx++) {
       uniqueDayIdentifier = this._createUniqueDayIdentifier(currDate);

@@ -78,7 +78,7 @@ SCUI.CalendarView = SC.View.extend({
         } 
         
         if (selDate && currDate.get('day') === selDate.get('day') && currDate.get('month') === selDate.get('month') && currDate.get('year') === selDate.get('year')) {
-          classNames.push('selected');
+          classNames.push('sel');
         }
         
         context = context.begin('div').attr('id', uniqueDayIdentifier).addClass('day').addClass(classNames.join(' ')).text(currDate.get('day')).end();

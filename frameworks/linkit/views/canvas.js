@@ -3,6 +3,8 @@
 // ==========================================================================
 /*globals G_vmlCanvasManager LinkIt SCUI*/
 
+sc_require('libs/excanvas');
+
 /** @class
 
   This is the canvas tag that draws the line on the screen

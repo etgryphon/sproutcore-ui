@@ -234,3 +234,4 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     this.set('childViews', childViews);
   }
 });
+

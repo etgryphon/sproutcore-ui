@@ -47,7 +47,7 @@ SCUI.SearchableArrayController = SC.ArrayController.extend(
     var searchKey = this.get('searchKey');
     var content = this.get('content'), searchRegex;
   
-    if(search === null || search === '' || search === undefined){ 
+    if(SC.none(search) || search === '' || SC.none(content)){ 
       this.set('searchResults', content);
     }
     else {

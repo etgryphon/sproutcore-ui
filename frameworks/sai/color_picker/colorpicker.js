@@ -215,3 +215,4 @@ sc_require('raphael');
         }
     };
 })(window.Raphael);
+

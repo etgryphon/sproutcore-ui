@@ -156,7 +156,7 @@ SCUI.ModalPane = SC.PalettePane.extend({
     
     // body
     view = this.createChildView(SC.ContainerView.design({
-        layout: { top: titleBarHeight + 1, bottom: footerView ? (footerHeight + 1) : 0, left: 0, right: 0 },
+        layout: { top: titleBarHeight, bottom: footerView ? footerHeight : 0, left: 0, right: 0 },
         classNames: 'body',
         nowShowingBinding: SC.Binding.from('nowShowing', this),
         contentView: this.get('contentView')

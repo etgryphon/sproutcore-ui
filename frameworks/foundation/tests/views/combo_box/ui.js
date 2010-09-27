@@ -30,7 +30,7 @@
   pane.show();
 
   var textFieldClass = 'scui-combobox-text-field-view';
-  var buttonClass = 'scui-combobox-dropdown-button-view';
+  var buttonClass = 'sc-button-view';
   var listPaneClass = 'scui-combobox-list-pane';
   var listScrollClass = 'scui-combobox-list-scroll-view';
   var listViewClass = 'scui-combobox-list-view';

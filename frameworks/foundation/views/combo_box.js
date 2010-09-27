@@ -1,7 +1,6 @@
 /*globals SCUI*/
 
 sc_require('mixins/simple_button');
-sc_require('views/localizable_list_item');
 
 /** @class
 
@@ -79,6 +78,13 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     if this is null, the collection objects themselves will be used.
   */
   nameKey: null,
+
+  /*
+    @optional
+    If set to a number, will truncate the item display names in the drop-down
+    list to this length.  No truncation if null.
+  */
+  maxNameLength: null,
 
   /**
     If this is non-null, the drop down list will add an icon for each
@@ -532,6 +538,10 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   // get replaced, just modified.
   _objectsDidChange: function() {
     this.notifyPropertyChange('filteredObjects'); // force a recompute next time 'filteredObjects' is asked for
+
+    if (this.get('value') && this.get('valueKey') && !this.get('selectedObject')) {
+      this.invokeOnce('_valueDidChange');
+    }
   }.observes('*objects.[]'),
 
   _filteredObjectsLengthDidChange: function() {
@@ -545,6 +555,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _selectedObjectDidChange: function() {
     var sel = this.get('selectedObject');
     var textField = this.get('textFieldView');
+    var i, content;
 
     // Update 'value' since the selected object changed
     this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
@@ -552,6 +563,15 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     // Update the text in the text field as well
     if (textField) {
       textField.setIfChanged('value', this._getObjectName(sel, this.get('nameKey'), this.get('localize')));
+    }
+
+    // Update the listview's selection
+    if (this._listView.getPath('selection.firstObject') !== sel) {
+      content = this._listView.get('content') || [];
+      i = content.indexOf(sel);
+      if (i >= 0) {
+        this._listView.select(i);
+      }
     }
     
     // null out the filter since we aren't searching any more at this point.
@@ -575,7 +595,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
           // Since we're using a 'valueKey', find the object where object[valueKey] === value.
           // If not found, 'selectedObject' and 'value' get forced to null.
           selectedObject = (objects && objects.isEnumerable) ? objects.findProperty(valueKey, value) : null;
-          this.set('selectedObject', selectedObject);
+          this.setIfChanged('selectedObject', selectedObject);
         }
       }
       else {
@@ -586,7 +606,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     }
     else {
       // When 'value' is set to null, make sure 'selectedObject' goes to null as well.
-      this.set('selectedObject', null);
+      this.setIfChanged('selectedObject', null);
     }
   }.observes('value'),
 
@@ -648,7 +668,45 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
             localizeBinding: SC.Binding.from('localize', this).oneWay(),
 
             // A regular ListItemView, but with localization added
-            exampleView: SCUI.LocalizableListItemView,
+            exampleView: SC.ListItemView.extend({
+              maxNameLength: this.get('maxNameLength'),
+              localize: this.get('localize'),
+
+              renderLabel: function(context, label) {
+                var maxLength = this.get('maxNameLength');
+                
+                if (!SC.none(maxLength)) {
+                  label = this.truncateMaxLength(label, maxLength);
+                  context.push('<label>', label || '', '</label>');
+                }
+                else {
+                  return sc_super();
+                }
+              },
+              
+              truncateMaxLength: function(str, maxLength) {
+                var i, frontLength, endLength, ret = str;
+
+                if ((SC.typeOf(str) === SC.T_STRING) && (str.length > maxLength)) {
+                  // split character budget between beginning and end of the string
+                  frontLength = Math.max(Math.ceil((maxLength - 3) / 2), 0);
+                  endLength = Math.max(maxLength - 3 - frontLength, 0);
+
+                  // grab segment from front of string
+                  ret = str.substring(0, frontLength);
+
+                  // Add up to three ellipses
+                  for (i = 0; (i < 3) && ((i + frontLength) < maxLength); i++) {
+                    ret = ret + '.';
+                  }
+
+                  // append segment from end of string
+                  ret = ret + str.substring(str.length - endLength);
+                }
+
+                return ret;
+              }
+            }),
           
             // transparently notice mouseUp and use it as trigger
             // to close the list pane
@@ -737,7 +795,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _selectListItem: function() {
     var selection = this._listView ? this._listView.getPath('selection.firstObject') : null;
     if (selection) {
-      this.set('selectedObject', selection);
+      this.setIfChanged('selectedObject', selection);
     }
     this.hideList();
   },

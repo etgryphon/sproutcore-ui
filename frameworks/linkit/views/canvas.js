@@ -255,6 +255,8 @@ LinkIt.CanvasView = SC.CollectionView.extend({
           this._dragData.startPageX = evt.pageX;
           this._dragData.startPageY = evt.pageY;
           this._dragData.view = itemView;
+          this._dragData.itemFrame = itemView.get('frame'); // note this assumes the item's frame will not change during the drag
+          this._dragData.ownerFrame = this.get('frame'); // note this assumes the canvas' frame will not change during the drag
           this._dragData.didMove = NO; // hasn't moved yet; drag will update this
         }
       }
@@ -264,16 +266,39 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   }, 
 
   mouseDragged: function(evt) {
-    var dX, dY;
+    var x, y, itemFrame, thisFrame;
 
     if (this._dragData) {
       this._dragData.didMove = YES; // so that mouseUp knows whether to report the new position.
-      dX = evt.pageX - this._dragData.startPageX;
-      dY = evt.pageY - this._dragData.startPageY;
-      this._dragData.view.adjust({ left: this._dragData.left + dX, top: this._dragData.top + dY });
+
+      // Get width & height of item and the canvas.  Note that this assumes neither will change
+      // during the drag.
+      itemFrame = this._dragData.itemFrame;
+      thisFrame = this._dragData.ownerFrame;
+
+      // proposed new position
+      x = this._dragData.left + evt.pageX - this._dragData.startPageX;
+      y = this._dragData.top + evt.pageY - this._dragData.startPageY;
+
+      // disallow dragging beyond the borders
+      if (x < 0) {
+        x = 0;
+      }
+      else if ((x + itemFrame.width) > thisFrame.width) {
+        x = thisFrame.width - itemFrame.width;
+      }
       
+      if (y < 0) {
+        y = 0;
+      }
+      else if ((y + itemFrame.height) > thisFrame.height) {
+        y = thisFrame.height - itemFrame.height;
+      }
+
+      this._dragData.view.adjust({ left: x, top: y });
       this.invokeOnce('updateCanvas'); // so that lines get redrawn
     }
+
     return YES;
   },
 

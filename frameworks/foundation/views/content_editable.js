@@ -711,16 +711,29 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return doc.queryCommandState('justifyfull');
   }.property('selection').cacheable(),
   
+  // TODO: [MT] - Clean some of this code up
   _alignContentForIE: function(alignment) {
     var doc = this._document ;
     var elem = this._getSelectedElement();
     var range = doc.selection.createRange();
     var html, newHTML;
-
+    
+    // if it's an image, use the native execcommand for alignment for consistent
+    // behaviour with FF
     if (elem.nodeName === 'IMG') {
-      if (alignment !== 'justify') {
-        elem.style.textAlign = alignment;
-        elem.align = alignment;
+      switch (alignment) {
+        case 'center':
+          doc.execCommand('justifycenter', false, null);
+          break;
+        case 'left':
+          doc.execCommand('justifyleft', false, null);
+          break;
+        case 'right':
+          doc.execCommand('justifyright', false, null);
+          break;
+        case 'justify':
+          doc.execCommand('justifyfull', false, null);
+          break;
       }
     } else if (elem.nodeName !== 'DIV') {
       html = range.htmlText;

@@ -22,62 +22,37 @@
  
 
 */
-SCUI.TimeSelectorFieldView = SC.View.extend(
- /** @scope SCUI.TimeSelectorFieldView.prototype */{
+
+SCUI.TimeSelectorFieldView = SC.View.extend({
    
+  // PUBLIC PROPERTIES
+
   classNames: ['scui-timeselector'],
-  
-  value: null,
-  
+
   // this can be styled, but for the time being, need a
   // min width and height to fit everything in conveniently
-  layout: {minHeight: 24, minWidth: 100},
+  layout: { minHeight: 24, minWidth: 100 },
   
-  // need to have these available otherwise the values
-  // you type in will be overwritten over and over
-  _hour: null,
-  _minute: null,
-  _meridian: null,
-  
-  
-  // grabs current time and converts to SC.DateTime if
-  // no record exists
-  _getCurrentTime: function () {
-    var time = new Date();
-    return SC.DateTime.create(time);
-  },
-  
-  // convenience function to toggle meridian on click
-  _toggleMeridian: function () {
-    var mer = this.get('_meridian');
-    mer = (mer == 'PM') ? 'AM' : 'PM';
-    this.set('_meridian',mer);
-    this._setTime();
-  },
-  
-  _validNumber: function (n) {
-    var ret,len;
-    if (!parseInt(n,10)) {
-      n = 1;
+  value: null,
+
+  hour: function(key, value) {
+    var time = this.get('value'), didCreate = NO;
+
+    if (value !== undefined) {
+      if (!time) { 
+        time = SC.DateTime.create();
+        didCreate = YES;
+      }
+
+      time.adjust({ hour: value });
+      this.set('value', time);
     }
-    ret = String(n);
-    len = ret.length;
-    if (len>2) {
-      ret = ret.substring(len-2,len);
+    else {
+      value = time ? time.toFormattedString('%i') : null;
     }
-    return parseInt(ret,10);
-  },
-  
-  // actually sets the value using the private values
-  _setTime: function() {
-    var hour = this.get('_hour'), minute = this.get('_minute'), meridian = this.get('_meridian'), time = new Date();
     
-    minute = this._validNumber(minute);
-    time = SC.DateTime.create(time);
-    if (meridian === 'PM') {hour=hour+12;}
-    this.set('value',time.adjust({hour: hour, minute: minute}));
-  },
-  
+    return value;
+  }.property('value').cacheable(),
   
   // get or set hour
   getHour: function (k,v) {
@@ -85,7 +60,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     if (!time) { time = this._getCurrentTime(); }
     
     if (v !== undefined) {
-      hour = this._validNumber(v);
+      hour = this._toValidNumber(v);
       if (hour > 12 && hour < 24) {
         hour = hour - 12;
       }
@@ -108,7 +83,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     if (!time) { time = this._getCurrentTime(); }
     
     if (v !== undefined) {
-      minute = this._validNumber(v);
+      minute = this._toValidNumber(v);
       this.set('_minute',minute);
       this._setTime();
     } else {
@@ -168,6 +143,13 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     hint: 'PM'
   }),
   
+  // PUBLIC METHODS
+  
+  init: function() {
+    sc_super();
+    this.addProbe('value');
+  },
+  
   // setup the entire view
   createChildViews: function () {
     var childViews = [], view;
@@ -177,7 +159,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     view = this.get('hourView');
     if (SC.kindOf(view, SC.View)) {
       view = this.createChildView(view, {
-        valueBinding: SC.Binding.from('getHour', this),
+        valueBinding: SC.Binding.from('hour', this),
         isEnabledBinding: SC.Binding.from('isEnabled',this)
       });
       childViews.push(view);
@@ -204,7 +186,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     view = this.get('minuteView');
     if (SC.kindOf(view, SC.View)) {
       view = this.createChildView(view, {
-        valueBinding: SC.Binding.from('getMinute', this),
+        //valueBinding: SC.Binding.from('getMinute', this),
         isEnabledBinding: SC.Binding.from('isEnabled',this)
       });
       childViews.push(view);
@@ -218,7 +200,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     view = this.get('meridianView');
     if (SC.kindOf(view, SC.View)) {
       view = this.createChildView(view, {
-        valueBinding: SC.Binding.from('getMeridian', this),
+        //valueBinding: SC.Binding.from('getMeridian', this),
         isEnabledBinding: SC.Binding.from('isEnabled',this),
         mouseDown: function () {
           that._toggleMeridian();
@@ -232,6 +214,55 @@ SCUI.TimeSelectorFieldView = SC.View.extend(
     this.set('meridianView', view);
     
     this.set('childViews', childViews);
-  }
+  },
+  
+  // PRIVATE METHODS
+  
+  // grabs current time and converts to SC.DateTime if
+  // no record exists
+  _getCurrentTime: function () {
+    var time = new Date();
+    return SC.DateTime.create(time);
+  },
+  
+  // convenience function to toggle meridian on click
+  _toggleMeridian: function () {
+    var mer = this.get('_meridian');
+    mer = (mer == 'PM') ? 'AM' : 'PM';
+    this.set('_meridian',mer);
+    this._setTime();
+  },
+  
+  _toValidNumber: function (n) {
+    var ret,len;
+    if (!parseInt(n,10)) {
+      n = 1;
+    }
+    ret = String(n);
+    len = ret.length;
+    if (len>2) {
+      ret = ret.substring(len-2,len);
+    }
+    return parseInt(ret,10);
+  },
+  
+  // actually sets the value using the private values
+  _setTime: function() {
+    var hour = this.get('_hour'), minute = this.get('_minute'), meridian = this.get('_meridian'), time = new Date();
+    
+    minute = this._toValidNumber(minute);
+    time = SC.DateTime.create(time);
+    if (meridian === 'PM') {hour=hour+12;}
+    this.set('value',time.adjust({hour: hour, minute: minute}));
+  },
+  
+  // PRIVATE PROPERTIES
+
+  // need to have these available otherwise the values
+  // you type in will be overwritten over and over
+  _hour: null,
+  _minute: null,
+  _meridian: null
+
 });
 

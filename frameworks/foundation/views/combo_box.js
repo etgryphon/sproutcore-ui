@@ -636,9 +636,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var i, content;
 
     // Update 'value' since the selected object changed
-    if (!SC.none(sel) && !SC.none(this.get('value'))) {
-      this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
-    }
+    this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
 
     // Update the text in the text field as well
     if (textField) {

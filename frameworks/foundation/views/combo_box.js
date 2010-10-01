@@ -630,10 +630,68 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     this.invokeOnce('_updateListPaneLayout');
   }.observes('isBusy'),
 
-  /*
-    Triggered by arrowing up/down in the drop down list -- show the name
-    of the highlighted item in the text field.
-  */
+  _selectedObjectDidChange: function() {
+    var sel = this.get('selectedObject');
+    var textField = this.get('textFieldView');
+    var i, content;
+
+    // Update 'value' since the selected object changed
+    if (!SC.none(sel) && !SC.none(this.get('value'))) {
+      this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
+    }
+
+    // Update the text in the text field as well
+    if (textField) {
+      textField.setIfChanged('value', this._getObjectName(sel, this.get('nameKey'), this.get('localize')));
+    }
+
+    // Update the listview's selection
+    if (this._listView.getPath('selection.firstObject') !== sel) {
+      content = this._listView.get('content') || [];
+      i = content.indexOf(sel);
+      if (i >= 0) {
+        this._listView.select(i);
+      }
+    }
+    
+    // null out the filter since we aren't searching any more at this point.
+    this.set('filter', null);
+  }.observes('selectedObject'),
+
+  // When the selected item ('value') changes, try to map back to a 'selectedObject'
+  // as well.
+  _valueDidChange: function() {
+    var value = this.get('value');
+    var selectedObject = this.get('selectedObject');
+    var valueKey = this.get('valueKey');
+    var objects;
+
+    if (value) {
+      if (valueKey) {
+        // we need to update 'selectedObject' if 'selectedObject[valueKey]' is not 'value
+        if (value !== this._getObjectValue(selectedObject, valueKey)) {
+          objects = this.get('objects');
+
+          // Since we're using a 'valueKey', find the object where object[valueKey] === value.
+          // If not found, 'selectedObject' and 'value' get forced to null.
+          selectedObject = (objects && objects.isEnumerable) ? objects.findProperty(valueKey, value) : null;
+          this.setIfChanged('selectedObject', selectedObject);
+        }
+      }
+      else {
+        // with no 'valueKey' set, we allow setting 'value' and 'selectedObject'
+        // to something not found in 'objects'
+        this.setIfChanged('selectedObject', value);
+      }
+    }
+    else {
+      // When 'value' is set to null, make sure 'selectedObject' goes to null as well.
+      this.setIfChanged('selectedObject', null);
+    }
+  }.observes('value'),
+
+  // triggered by arrowing up/down in the drop down list -- show the name
+  // of the highlighted item in the text field.
   _listSelectionDidChange: function() {
     var selection = this.getPath('_listSelection.firstObject');
     var name;

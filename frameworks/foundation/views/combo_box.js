@@ -24,46 +24,18 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     return this.get('isEnabled');
   }.property('isEnabled').cacheable(),
 
-  /**
-    An array of items that will form the menu you want to show.
-  */
-  objects: null,
-  
-  objectsBindingDefault: SC.Binding.oneWay(),
-  
-  /**
-    The value represented by this control.  If you have defined a 'valueKey',
-    this will be 'selectedObject[valueKey]', otherwise it will be
-    'selectedObject' itself.
+  /*
+    The item selected in the combo box.  Every time a different item is chosen in
+    the drop-down list, this property will be updated.
 
-    Setting 'value':
+    This property may be used in conjunction with 'valueKey', in which case this
+    property will be equal to 'selectedObject[valueKey]' when an item is selected
+    in the drop-down list.
     
-    When 'valueKey' is defined, setting 'value' will make the combo box
-    attempt to find an object in 'objects' where object[valueKey] === value.
-    If it can't find such an object, 'value' and 'selectedObject' will be forced
-    to null. In the case where both 'objects' and 'value' are both bound to something
-    and 'value' happens to update before 'objects' (so that for a small amount of time 'value' is
-    not found in 'object[valueKey]s') 'value' can be set wrongly to null.
-    'valueKey' is really meant for use in read-only situations.
-    
-    When 'valueKey' is not defined, setting 'value' to something not found in
-    'objects' is just fine -- 'selectedObject' will simply be set to 'value'.
-    
-    Setting this to null also forces 'selectedObject' to null.
-    
-    @property {Object}
+    If no 'valueKey' is set, then 'value' will be equal to the selected item 'selectedObject'
+    itself.
   */
   value: null,
-
-  /**
-    Provided because we have to keep track of this internally -- the
-    actual item from 'objects' that was selected, regardless of how we are
-    displaying it or what property on it is considered its 'value'.
-    
-    Usually you won't use this -- 'value' is the normal property for this
-    purpose.  However, this is also fully bindable, etc.
-  */
-  selectedObject: null,
 
   /**
      Set this to a non-null value to use a key from the passed set of objects
@@ -71,7 +43,14 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
      objects themselves will be used as the value.
   */
   valueKey: null,
+
+  /**
+    An array of items that will form the menu you want to show.
+  */
+  objects: null,
   
+  objectsBindingDefault: SC.Binding.oneWay(),
+
   /**
     If you set this to a non-null value, then the name shown for each 
     menu item will be pulled from the object using the named property.
@@ -167,16 +146,17 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     pass 'objects' through unchanged.
   */
   filteredObjects: function() {
-    var ret, filter, objects, nameKey, name, that, shouldLocalize;
+    var ret, objects, nameKey, name, that, shouldLocalize;
+    var filter = this.get('filter');
 
-    if (this.get('useExternalFilter')) {
+    if (this.get('useExternalFilter') || !filter) {
       ret = this.get('objects');
     }
     else {
       objects = this.get('objects') || [];
       nameKey = this.get('nameKey');
 
-      filter = this._sanitizeFilter(this.get('filter')) || '';
+      filter = this._sanitizeFilter(filter) || '';
       filter = filter.toLowerCase();
 
       shouldLocalize = this.get('localize');
@@ -195,6 +175,53 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
     return this.sortObjects(ret);
   }.property('objects', 'filter').cacheable(),
+
+  /*
+    The actual item from the 'objects' list that was selected, mainly for internal use,
+    though it is bindable if desired.
+    
+    If 'valueKey' is in use, then when 'value' is changed, this property will attempt
+    to update itself by searching the 'objects' list for an object P where P[valueKey]
+    equals 'value'.  Otherwise, this property just makes sure that 'selectedObject' and
+    'value' are always the same.
+    
+    Note that when using 'value' in conjunction with 'valueKey', 'selectedObject' will be null
+    if an appropriate object in 'objects' cannot be found.
+  */
+  selectedObject: function(key, value) {
+    var objects, comboBoxValue, valueKey;
+
+    if (value !== undefined) {
+      this.setIfChanged('value', this._getObjectValue(value, this.get('valueKey')));
+    }
+    else {
+      if (this.get('valueKey')) {
+        comboBoxValue = this.get('value');
+        valueKey = this.get('valueKey');
+        
+        if (this._getObjectValue(this._lastSelectedObject, valueKey) !== comboBoxValue) {
+          objects = this.get('objects');
+          if (objects && objects.isEnumerable) {
+            value = objects.findProperty(valueKey, comboBoxValue);
+          }
+        }
+        else {
+          value = this._lastSelectedObject;
+        }
+      }
+      else {
+        value = this.get('value');
+      }
+    }
+
+    this._lastSelectedObject = value;
+
+    return value;
+  }.property('value').cacheable(),
+
+  selectedObjectName: function() {
+    return this._getObjectName(this.get('selectedObject'), this.get('nameKey'), this.get('localize'));
+  }.property('selectedObject').cacheable(),
 
   /**
     The text field child view class.  Override this to change layout, CSS, etc.
@@ -219,8 +246,6 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   init: function() {
     sc_super();
     this._createListPane();
-    this._valueDidChange();
-
     this.bind('status', SC.Binding.from('*objects.status', this).oneWay());
   },
   
@@ -358,9 +383,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var textField = this.get('textFieldView');
 
     if (this.get('isEditing')) {
-      // force it walk through its sequence one more time
-      // to make sure text field display is in sync with selected stuff
-      this._selectedObjectDidChange();
+      // sync text field value with name of selected object
+      this._selectedObjectNameDidChange();
 
       this.set('isEditing', NO);
       // in IE, as soon as you the user browses through the results in the picker pane by 
@@ -537,11 +561,10 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   // since in some cases the entire 'objects' array-like object doesn't
   // get replaced, just modified.
   _objectsDidChange: function() {
-    this.notifyPropertyChange('filteredObjects'); // force a recompute next time 'filteredObjects' is asked for
+    //console.log('%@._objectsDidChange(%@)'.fmt(this, this.get('objects')));
 
-    if (this.get('value') && this.get('valueKey') && !this.get('selectedObject')) {
-      this.invokeOnce('_valueDidChange');
-    }
+    this.notifyPropertyChange('filteredObjects'); // force a recompute next time 'filteredObjects' is asked for
+    this.notifyPropertyChange('selectedObject');
   }.observes('*objects.[]'),
 
   _filteredObjectsLengthDidChange: function() {
@@ -552,77 +575,17 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     this.invokeOnce('_updateListPaneLayout');
   }.observes('isBusy'),
 
-  _selectedObjectDidChange: function() {
-    var sel = this.get('selectedObject');
-    var textField = this.get('textFieldView');
-    var i, content;
-
-    // Update 'value' since the selected object changed
-    this.setIfChanged('value', this._getObjectValue(sel, this.get('valueKey')));
-
-    // Update the text in the text field as well
-    if (textField) {
-      textField.setIfChanged('value', this._getObjectName(sel, this.get('nameKey'), this.get('localize')));
-    }
-
-    // Update the listview's selection
-    if (this._listView.getPath('selection.firstObject') !== sel) {
-      content = this._listView.get('content') || [];
-      i = content.indexOf(sel);
-      if (i >= 0) {
-        this._listView.select(i);
-      }
-    }
-    
-    // null out the filter since we aren't searching any more at this point.
-    this.set('filter', null);
-  }.observes('selectedObject'),
-
-  // When the selected item ('value') changes, try to map back to a 'selectedObject'
-  // as well.
-  _valueDidChange: function() {
-    var value = this.get('value');
-    var selectedObject = this.get('selectedObject');
-    var valueKey = this.get('valueKey');
-    var objects;
-
-    if (value) {
-      if (valueKey) {
-        // we need to update 'selectedObject' if 'selectedObject[valueKey]' is not 'value
-        if (value !== this._getObjectValue(selectedObject, valueKey)) {
-          objects = this.get('objects');
-
-          // Since we're using a 'valueKey', find the object where object[valueKey] === value.
-          // If not found, 'selectedObject' and 'value' get forced to null.
-          selectedObject = (objects && objects.isEnumerable) ? objects.findProperty(valueKey, value) : null;
-          this.setIfChanged('selectedObject', selectedObject);
-        }
-      }
-      else {
-        // with no 'valueKey' set, we allow setting 'value' and 'selectedObject'
-        // to something not found in 'objects'
-        this.setIfChanged('selectedObject', value);
-      }
-    }
-    else {
-      // When 'value' is set to null, make sure 'selectedObject' goes to null as well.
-      this.setIfChanged('selectedObject', null);
-    }
-  }.observes('value'),
-
-  // triggered by arrowing up/down in the drop down list -- show the name
-  // of the highlighted item in the text field.
+  /*
+    Triggered by arrowing up/down in the drop down list -- show the name
+    of the highlighted item in the text field.
+  */
   _listSelectionDidChange: function() {
     var selection = this.getPath('_listSelection.firstObject');
-    var name, textField;
-
+    var name;
+    
     if (selection && this._listPane && this._listPane.get('isPaneAttached')) {
       name = this._getObjectName(selection, this.get('nameKey'), this.get('localize'));
-      textField = this.get('textFieldView');
-
-      if (textField) {
-        textField.setIfChanged('value', name);
-      }
+      this.setPathIfChanged('textFieldView.value', name);
     }
   }.observes('_listSelection'),
 
@@ -640,6 +603,21 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
       this.setIfChanged('filter', textFieldValue);
     }
   }.observes('*textFieldView.value'),
+
+  _selectedObjectDidChange: function() {
+    var selectedObject = this.get('selectedObject');
+
+    if (this.getPath('_listSelection.firstObject') !== selectedObject) {
+      this.setPath('_listSelection', selectedObject ? SC.SelectionSet.create().addObject(selectedObject) : SC.SelectionSet.EMPTY);
+    }
+  }.observes('selectedObject'),
+
+  /*
+    Observer added dynamically in init() fires this function
+  */
+  _selectedObjectNameDidChange: function() {
+    this.setPathIfChanged('textFieldView.value', this.get('selectedObjectName'));
+  }.observes('selectedObjectName'),
 
   _createListPane: function() {
     var isBusy = this.get('isBusy');
@@ -826,6 +804,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   },
 
   // PRIVATE PROPERTIES
+  
+  _lastSelectedObject: null,
   
   _listPane: null,
   _listScrollView: null,

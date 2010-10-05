@@ -629,9 +629,15 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   // If the text field value changed as a result of typing,
   // update the filter.
   _textFieldValueDidChange: function() {
-    if (this._shouldUpdateFilter) {
+    var textFieldValue = this.getPath('textFieldView.value');
+    if (!textFieldValue) {
+      // Clear out the value and hide the list if the user deletes everything
+      // in the text field.
+      this.setIfChanged('value', null);
+      this.hideList();
+    } else if (this._shouldUpdateFilter) {
       this._shouldUpdateFilter = NO;
-      this.setIfChanged('filter', this.getPath('textFieldView.value'));
+      this.setIfChanged('filter', textFieldValue);
     }
   }.observes('*textFieldView.value'),
 

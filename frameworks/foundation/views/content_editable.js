@@ -790,9 +790,23 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   
   _createListForIE: function(tag) {
     var html = '';
+    var doc = this._document ;
     var range = this._iframe.document.selection.createRange();
     var text = range.text;
     var textArray = text.split('\n');
+    var elem = this._getSelectedElement();
+    
+    if (elem.nodeName === 'LI') {
+      elem = elem.parentNode;
+    }
+    
+    if (elem.nodeName === 'OL' || elem.nodeName === 'UL') {
+      var newEl = doc.createElement(tag);
+      newEl.innerHTML = elem.innerHTML;
+      elem.parentNode.replaceChild(newEl, elem);
+      this.querySelection();
+      return;
+    }
 
     if (textArray.length > 1) {
       for (var i = 0; i < textArray.length; i++) {

@@ -1,9 +1,7 @@
 // ==========================================================================
 // SCUI.SearchableTreeController
 // ==========================================================================
-
-sc_require('core');
-
+sc_require('controllers/searchable');
 /** @class
   
   An tree controller that is searchable and creates a flat search results like
@@ -16,56 +14,26 @@ sc_require('core');
   @since 0.5
 */
 
-SCUI.SearchableTreeController = SC.TreeController.extend(
+SCUI.SearchableTreeController = SC.TreeController.extend( SCUI.Searchable,
 /** @scope SCUI.SearchableTreeController.prototype */ 
 {
-   search: null,
-   searchResults: [],
-   searchKey: 'name',
-   iconKey: 'icon',
-   nameKey: 'name',
+  iconKey: 'icon',
+  nameKey: 'name',
 
-   init: function(){
-     sc_super();
-     this.set('searchResults', []);
-     this._runSearch();
-   },
-
-   _searchDidChange: function(){
-     this._runSearch();
-   }.observes('search', 'content'),
-
-  _sanitizeSearchString: function(str){
-    var specials = [
-        '/', '.', '*', '+', '?', '|',
-        '(', ')', '[', ']', '{', '}', '\\'
-    ];
-    var s = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
-    return str.replace(s, '\\$1');
-  },
-
-  _runSearch: function(){
-    var searchResults = [];
-    var search = this.get('search');
-    var c = this.get('content');
-    if(search === null || search === '' || search === undefined){ 
-      this.set('searchResults', c);
-    }
-    else {
-      search = this._sanitizeSearchString(search).toLowerCase();
-      var searchRegex = new RegExp(search,'i');
-      var searchKey = this.get('searchKey');
-      this._iconKey = this.get('iconKey');
-      this._nameKey = this.get('nameKey');
-      searchResults = this._runSearchOnItem(c, search, searchRegex, searchKey);
-      
-      // create the root search tree
-      var searchedTree = SC.Object.create({
-        treeItemIsExpanded: YES,
-        treeItemChildren: searchResults
-      });
-      this.set('searchResults', searchedTree);
-    }
+  runSearch: function(search, content, searchKey){
+    var searchResults, searchRegex = new RegExp(search,'i');
+    
+    this._iconKey = this.get('iconKey');
+    this._nameKey = this.get('nameKey');
+    searchResults = this._runSearchOnItem(content, search, searchRegex, searchKey);
+    
+    // create the root search tree
+    var searchedTree = SC.Object.create({
+      treeItemIsExpanded: YES,
+      treeItemChildren: searchResults
+    });
+    
+    return searchedTree;
   },
   
   /** 
@@ -102,18 +70,6 @@ SCUI.SearchableTreeController = SC.TreeController.extend(
     searchMatches.set('allowsEmptySelection', this.get('allowsEmptySelection'));
 
     return searchMatches;
-  }
-});
-
-SCUI.SearchableTreeController.mixin(/** @scope SCUI.SearchableTreeController */ {
-  
-  sanitizeSearchString: function(str) {
-    var specials = [
-        '/', '.', '*', '+', '?', '|',
-        '(', ')', '[', ']', '{', '}', '\\'
-    ];
-    var s = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
-    return str.replace(s, '\\$1');
   }
 });
 

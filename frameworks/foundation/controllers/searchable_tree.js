@@ -17,17 +17,23 @@ sc_require('controllers/searchable');
 SCUI.SearchableTreeController = SC.TreeController.extend( SCUI.Searchable,
 /** @scope SCUI.SearchableTreeController.prototype */ 
 {
-  iconKey: 'icon',
-  nameKey: 'name',
-
+  
+  /*  This can be an array or single */
+  store: null,
+  orderBy: 'name ASC',
+  baseSearchQuery: null,
+  baseSearchArray: null,
+  
+  _baseArray: null,
+  
   runSearch: function(search, content, searchKey){
     var searchResults, searchRegex = new RegExp(search,'i');
     
-    this._iconKey = this.get('iconKey');
-    this._nameKey = this.get('nameKey');
-    searchResults = this._runSearchOnItem(content, search, searchRegex, searchKey);
-    
+    this._baseArray = this.get('baseSearchArray') || this._createRecordArray();
+    searchResults = this._searchInternalArray(searchRegex, this._baseArray, searchKey);
+        
     // create the root search tree
+    // TODO: [EG] Potential optimization, use the same SC.Object
     var searchedTree = SC.Object.create({
       treeItemIsExpanded: YES,
       treeItemChildren: searchResults
@@ -36,40 +42,24 @@ SCUI.SearchableTreeController = SC.TreeController.extend( SCUI.Searchable,
     return searchedTree;
   },
   
-  /** 
-    @private
-    Returns a flat list of matches for the foldered tree item.
-  */
-  _runSearchOnItem: function(treeItem, search, searchRegex, searchKey) {
-    var searchMatches = [], iconKey = this.get('iconKey'),
-        searchedList, key, searchLen, 
-        children, nameKey = this._nameKey, that;
-    
-    if (SC.none(treeItem)) return searchMatches;
-    
-    children = treeItem.get('treeItemChildren');
-    if (!children) children = treeItem.get('children');
-    that = this;
-    children.forEach( function(child){      
-      if (child.treeItemChildren) {
-        var searchedList = that._runSearchOnItem(child, search, searchRegex, searchKey);
-        searchedList.forEach( function(m){ searchMatches.push(m); });
-      }
-      
-      if (searchKey && child.get(searchKey)) {
-        key = child.get(searchKey).toLowerCase();
-        if(key.match(searchRegex)){
-          searchMatches.push(child);
-        } 
+  _createRecordArray: function(){
+    var query, params = {}, store = this.get('store'),
+        bsq = this.get('baseSearchQuery'), ret = [];
+    if (store && bsq) ret = store.find(bsq);
+    return ret;
+  },
+  
+  _searchInternalArray: function(search, content, searchKey){
+    var searchField, searchResults = [];
+  
+    content.forEach( function(x){
+      searchField = x.get(searchKey);
+      if ( searchField && searchField.match(search) ){
+        searchResults.push(x);
       }
     });
-
-    // Add properties for basic selection support
-    searchMatches.set('allowsSelection', this.get('allowsSelection'));
-    searchMatches.set('allowsMultipleSelection', this.get('allowsMultipleSelection'));
-    searchMatches.set('allowsEmptySelection', this.get('allowsEmptySelection'));
-
-    return searchMatches;
+  
+    return searchResults;
   }
 });
 

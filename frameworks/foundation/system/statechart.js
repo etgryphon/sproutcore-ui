@@ -399,10 +399,13 @@ SCUI.Statechart = {
     var pending = this._pendingActions.shift();
 
     if (!pending) return;
-
+    
     // Logging
     if (this.get('logLevel') & SCUI.Statechart.LOG_SENT_EVENTS) {
       console.info('%@: firing pending action %@'.fmt(this, pending.action));
+    }
+    else{
+      this.toString(); //HACK: [MB] prevents crashes for now...
     }
 
     this.sendEvent(pending.action, pending.sender, pending.context);

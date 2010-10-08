@@ -1,3 +1,5 @@
+/*globals SCUI */
+
 SCUI.Searchable = {  
   isSearchable: YES,
   
@@ -6,8 +8,7 @@ SCUI.Searchable = {
   searchResults: [],
   searchKey: 'name',
   minSearchLen: null,
-  searchPause: null, 
-  ignoreLastSearch: NO,
+  searchPause: null,
   
   _lastTime: null,
   
@@ -66,7 +67,7 @@ SCUI.Searchable = {
         sk, search = this.get('search'),
         c = this.get('content');
         
-    if (c && !SC.none(search) && ((search !== this._lastSearch) || this.get('ignoreLastSearch'))){
+    if (c && !SC.none(search)) {
       if (sr) delete sr;
       search = this._sanitizeSearchString(search).toLowerCase();
       this._lastSearch = search;

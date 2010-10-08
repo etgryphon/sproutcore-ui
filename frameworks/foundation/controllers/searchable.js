@@ -7,6 +7,7 @@ SCUI.Searchable = {
   searchKey: 'name',
   minSearchLen: null,
   searchPause: null, 
+  ignoreLastSearch: NO,
   
   _lastTime: null,
   
@@ -22,6 +23,7 @@ SCUI.Searchable = {
     var sp = this.searchPause, c,
         s = this.get('search') || "",
         mc = this.minSearchLen;
+        
     // Check for min length
     if (s.length < mc) {
       c = this.get('content');
@@ -63,7 +65,8 @@ SCUI.Searchable = {
     var sr = this.get('searchResults'), 
         sk, search = this.get('search'),
         c = this.get('content');
-    if (c && !SC.none(search) && search !== this._lastSearch){
+        
+    if (c && !SC.none(search) && ((search !== this._lastSearch) || this.get('ignoreLastSearch'))){
       if (sr) delete sr;
       search = this._sanitizeSearchString(search).toLowerCase();
       this._lastSearch = search;

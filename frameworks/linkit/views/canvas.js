@@ -79,37 +79,32 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   },
 
   render: function(context, firstTime) {
-    var frame = this.get('frame');
+    var ctx, ce, frame = this.get('frame');
     
-    if (firstTime) {
-      if (!SC.browser.msie) {
-        context.push('<canvas class="base-layer" width="%@" height="%@">You can\'t use canvas tags</canvas>'.fmt(frame.width, frame.height));
-      }
+    if (firstTime && !SC.browser.msie) {
+      context.push('<canvas class="base-layer" width="%@" height="%@">You can\'t use canvas tags</canvas>'.fmt(frame.width, frame.height));
+      this._canvasContext = null;
     }
 
     this.invokeOnce('updateCanvas');
     
-    return sc_super();
+    sc_super();
   },
   
   updateCanvas: function() {
-    var frame = this.get('clippingFrame');
-    var context = this._canvasContext;
-    
-    if (context) {
-      context.clearRect(frame.x, frame.y, frame.width + 4, frame.height + 4);
-      this._drawLinks(context);
+    var ce, ctx = this._canvasContext, 
+        frame = this.get('clippingFrame');
+    if (!ctx){
+      ce = this.$('canvas.base-layer');
+      ctx = (ce && ce.length > 0) ? ce[0].getContext('2d') : null;
     }
-  },
-
-  didUpdateLayer: function() {
-    var canvasElement;
     
-    sc_super();
-
-    // cache the canvas context
-    canvasElement = this.$('canvas.base-layer');
-    this._canvasContext = (canvasElement && canvasElement.length > 0) ? canvasElement[0].getContext('2d') : null;
+    if (ctx) {
+      ctx.clearRect(frame.x, frame.y, frame.width + 4, frame.height + 4);      
+      this._drawLinks(ctx);
+    } else {
+      this.set('layerNeedsUpdate', YES) ;
+    }
   },
   
   didCreateLayer: function() {

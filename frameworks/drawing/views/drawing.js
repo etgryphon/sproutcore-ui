@@ -159,7 +159,7 @@ SCUI.DrawingView = SC.View.extend({
     var frame = this.get('frame');
     if (firstTime) {
       if (!SC.browser.msie) {
-        context.push('<canvas class="base-layer" width="%@" height="%@">You can\'t use canvas tags</canvas>'.fmt(frame.width, frame.height));
+        context.push('<canvas class="base-layer" width="%@" height="%@"></canvas>'.fmt(frame.width, frame.height));
       }
     }
     else {

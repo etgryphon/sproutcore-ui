@@ -127,18 +127,18 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   /**
     The drop down pane resizes automatically.  Set the minimum allowed height here.
   */
-  minListHeight: 20,
+  minListHeight: 18,
 
   /**
     The drop down pane resizes automatically.  Set the maximum allowed height here.
   */
-  maxListHeight: 200,
+  maxListHeight: 194, // 10 rows at 18px, plus 7px margin on top and bottom
 
   /**
     When 'isBusy' is true, the combo box shows a busy indicator at the bottom of the
     drop down pane.  Set its height here.
   */
-  statusIndicatorHeight: 18,
+  statusIndicatorHeight: 20,
 
   /**
     'objects' above, filtered by 'filter', then optionally sorted.
@@ -394,7 +394,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
       // however, if the user directly shifts focus to another text field, then the pane 
       // won't be removed. This behavior is still buggy but less buggy than it was before.
       if (!SC.browser.msie) {
-        this.hideList();
+        //this.hideList();
       }
     }
 
@@ -764,7 +764,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
       // unless we're showing the busy indicator there
       length = this.getPath('filteredObjects.length') || (isBusy ? 0 : 1);
 
-      height = (rowHeight * length) + (isBusy ? spinnerHeight : 0);
+      height = (rowHeight * length) + (isBusy ? spinnerHeight : 0) + 14; // content view of pane is inset by a total of 7px top and bottom, so accounting for that
       height = Math.min(height, this.get('maxListHeight')); // limit to max height
       height = Math.max(height, this.get('minListHeight')); // but be sure it is always at least the min height
 

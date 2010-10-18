@@ -338,14 +338,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         docBodyStyle[key.toString().camelize()] = inlineStyle[key];
       }
     }
-    
-    // we have to do this differently in FF and IE... execCommand('inserthtml', false, val) fails
-    // in IE and frameBody.innerHTML is resulting in a FF bug
-    if (SC.browser.msie || SC.browser.safari) {
-      docBody.innerHTML = value;
-    } else {
-      this.insertHTML(value, NO);
-    }
+
+    docBody.innerHTML = value;
+
 
     // set min height beyond which ContentEditableView can't shrink if hasFixedDimensions is set to false
     if (!this.get('hasFixedDimensions')) {
@@ -379,6 +374,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     // call the SC.WebView iframeDidLoad function to finish setting up
     this.iframeDidLoad();
     this.focus();
+    
+    // When body.innerHTML is used to insert HTML into the iframe, it results in a bug 
+    // (if you select-all then try and delete, it won't have any effect). This
+    // is a hack for that problem
+    doc.execCommand('inserthtml', false, ' ');
+    doc.execCommand('undo', false, null);
   },
   
   bodyDidFocus: function (evt) {

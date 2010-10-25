@@ -174,6 +174,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   */
 	rightClickMenuOptionsWithSelection: [],
 	
+	docType: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+	
 	/*
 	  returns right click menu options
 	*/
@@ -299,6 +301,12 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
 
     var doc = this._document;
+    
+    doc.open();
+    doc.write(this.get('docType'));
+    doc.write('<html><head></head><body></body></html>');
+    doc.close();
+    
     var styleSheetCSS = this.get('styleSheetCSS');
     if (!(SC.none(styleSheetCSS) || styleSheetCSS === '')) {
       var head = doc.getElementsByTagName('head')[0];

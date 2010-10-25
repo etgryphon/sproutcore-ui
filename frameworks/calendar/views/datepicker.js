@@ -29,6 +29,8 @@ SCUI.DatePickerView = SC.View.extend(
   calendarLayout: null,
   hasHelperButtons: YES,
   
+  isEditing: NO,
+  
   // @private
   _textfield: null,
   _date_button: null,
@@ -37,7 +39,7 @@ SCUI.DatePickerView = SC.View.extend(
   _layout: {width: 195, height: 25},
   
   // display properties that should automatically cause a refresh.
-  displayProperties: ['date'],
+  displayProperties: ['date', 'isEditing'],
   
   init: function(){
     sc_super();
@@ -71,7 +73,8 @@ SCUI.DatePickerView = SC.View.extend(
       })
     );
     childViews.push(view);
-    
+    this.bind('isEditing', SC.Binding.from('isEditing', view).oneWay());
+        
     // Now, set up the button to launch the Calendar Datepicker
     view = this._date_button = this.createChildView( 
       SC.View.design( SCUI.SimpleButton, {
@@ -138,12 +141,17 @@ SCUI.DatePickerView = SC.View.extend(
     }
   },
   
+  render: function(context, firstTime) {
+    sc_super();
+    context.setClass('focus', this.get('isEditing'));
+  },
+
   /**  
     Hides the attached menu if present.  This is called automatically when
     the button gets toggled off.
   */
   hideCalendar: function() {
-    if (this._calendar_popup) {
+    if (this._calendar_popup && this.get('isShowingCalendar')) {
       this._calendar_popup.remove();
       this.set('isShowingCalendar', NO);
     }

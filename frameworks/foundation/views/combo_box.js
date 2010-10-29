@@ -768,6 +768,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
             contentIconKey: this.get('iconKey'),
             selectionBinding: SC.Binding.from('_listSelection', this),
             localizeBinding: SC.Binding.from('localize', this).oneWay(),
+            actOnSelect: SC.platform.touch,
 
             // A regular ListItemView, but with localization added
             exampleView: SC.ListItemView.extend({

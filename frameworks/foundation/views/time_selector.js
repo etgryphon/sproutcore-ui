@@ -55,12 +55,26 @@ SCUI.TimeSelectorFieldView = SC.View.extend({
         time = time.adjust({hour: 12, minute: 0});
       }
 
-      lastHour = time.toFormattedString('%i'); // in 12 hour format, as if someone typed it in
+      lastHour = time.toFormattedString('%i') * 1; // in 12 hour format, as if someone typed it in
       lastMinute = time.get('minute') * 1;
       meridian = time.toFormattedString('%p');
 
-      newHour = isNaN(value * 1) ? lastHour * 1 : value * 1; // revert to last hour if invalid input
-      newHour = (meridian === 'PM' && newHour < 12) ? newHour + 12 : newHour; // compensate for 'PM' already being set
+      newHour = (isNaN(value * 1) || value === '') ? lastHour : Math.abs(value * 1); // revert to last hour if invalid input
+
+      if (newHour > 12) {
+        newHour = newHour % 10; // just take the last digit
+      }
+      
+      if (meridian === 'PM') {
+        if (newHour < 12) { // convert to 24-hour time
+          newHour = newHour + 12;
+        }
+      }
+      else { // AM
+        if (newHour === 12) { // special case for entering 12AM
+          newHour = 0;
+        }
+      }
 
       // wrap this set call to make sure that every change causes a notification
       // for proper formatting, even if two equivalent time values are entered.
@@ -88,8 +102,12 @@ SCUI.TimeSelectorFieldView = SC.View.extend({
         time = time.adjust({hour: 12, minute: 0});
       }
 
-      lastMinute = time.get('minute');
-      newMinute = isNaN(value * 1) ? lastMinute * 1 : value * 1; // revert to last minute value if input is invalid
+      lastMinute = time.get('minute') * 1;
+      newMinute = (isNaN(value * 1) || value === '') ? lastMinute : Math.abs(value * 1); // revert to last minute value if input is invalid
+
+      if (newMinute > 59) {
+        newMinute = newMinute % 10; // just take the last digit
+      }
 
       this.propertyWillChange('value');
       this.set('value', time.adjust({ minute: newMinute }));

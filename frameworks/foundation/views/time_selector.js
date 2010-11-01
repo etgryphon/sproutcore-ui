@@ -52,6 +52,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend({
     if (value !== undefined) {
       if (!time) { // only create from scratch if we have to, to avoid losing any time zone data already stored in an existing value
         time = SC.DateTime.create();
+        time = time.adjust({hour: 12, minute: 0});
       }
 
       lastHour = time.toFormattedString('%i'); // in 12 hour format, as if someone typed it in
@@ -84,6 +85,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend({
     if (value !== undefined) {
       if (!time) { // only create from scratch if we have to, to avoid losing any time zone data already stored in an existing value
         time = SC.DateTime.create();
+        time = time.adjust({hour: 12, minute: 0});
       }
 
       lastMinute = time.get('minute');
@@ -111,6 +113,7 @@ SCUI.TimeSelectorFieldView = SC.View.extend({
     if (value !== undefined) {
       if (!time) {
         time = SC.DateTime.create();
+        time = time.adjust({hour: 12, minute: 0});
       }
 
       hour = time.toFormattedString('%H') * 1; // in 24-hour format

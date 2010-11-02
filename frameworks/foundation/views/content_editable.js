@@ -989,6 +989,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   },
   
   selectionFontColor: function(key, value) {
+    if (!this.get('isVisibleInWindow')) return '';
+    
     var doc = this._document ;
     if (!doc) return '';
     
@@ -1017,6 +1019,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }.property('selection').cacheable(),
   
   selectionBackgroundColor: function(key, value) {
+    if (!this.get('isVisibleInWindow')) return '';
+    
     var doc = this._document ;
     if (!doc) return '';
     

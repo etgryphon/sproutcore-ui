@@ -394,7 +394,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
       // however, if the user directly shifts focus to another text field, then the pane 
       // won't be removed. This behavior is still buggy but less buggy than it was before.
       if (!SC.browser.msie) {
-        //this.hideList();
+        this.hideList();
       }
     }
 

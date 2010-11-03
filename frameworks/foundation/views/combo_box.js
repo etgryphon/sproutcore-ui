@@ -223,6 +223,10 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     return this._getObjectName(this.get('selectedObject'), this.get('nameKey'), this.get('localize'));
   }.property('selectedObject').cacheable(),
 
+  selectedObjectIcon: function() {
+    return this._getObjectIcon(this.get('selectedObject'), this.get('iconKey'));
+  }.property('selectedObject').cacheable(),
+
   /**
     The text field child view class.  Override this to change layout, CSS, etc.
   */
@@ -238,7 +242,35 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     layout: { top: 0, right: 0, height: 24, width: 28 },
     icon: 'caret'
   }),
+  
+  /*
+    Set at design time only.  Should be a view class specified at design time.
+    At run time, if used, it will be replaced with an instance of the type as a
+    convenience shortcut for testing purposes.  This property will not be used
+    unless you set 'iconKey' above, indicating that you want to show icons for
+    your list items and your selected item.
+  */
+  iconView: SC.ImageView.extend({
+    layout: { left: 7, top: 4, width: 16, height: 16 }
+  }),
 
+  /*
+    @private
+  */
+  leftAccessoryView: function() {
+    var view = this.get('iconView');
+
+    if (SC.kindOf(view, SC.View)) {
+      view = view.create();
+    }
+    else {
+      view = null;
+    }
+    this.set('iconView', view);
+
+    return view;
+  }.property().cacheable(), // only run once, then cache
+  
   displayProperties: ['isEditing'],
 
   // PUBLIC METHODS
@@ -586,6 +618,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     if (selection && this._listPane && this._listPane.get('isPaneAttached')) {
       name = this._getObjectName(selection, this.get('nameKey'), this.get('localize'));
       this.setPathIfChanged('textFieldView.value', name);
+      this._setIcon(this._getObjectIcon(selection, this.get('iconKey')));
     }
   }.observes('_listSelection'),
 
@@ -618,6 +651,10 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   _selectedObjectNameDidChange: function() {
     this.setPathIfChanged('textFieldView.value', this.get('selectedObjectName'));
   }.observes('selectedObjectName'),
+
+  _selectedObjectIconDidChange: function() {
+    this._setIcon(this.get('selectedObjectIcon'));
+  }.observes('selectedObjectIcon'),
 
   _createListPane: function() {
     var isBusy = this.get('isBusy');
@@ -788,6 +825,16 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     return str ? str.replace(this._sanitizeRegEx, '\\$1') : str;
   },
 
+  _setIcon: function(icon) {
+    if (icon) {
+      this.setPathIfChanged('leftAccessoryView.value', icon);
+      this.setPathIfChanged('textFieldView.leftAccessoryView', this.get('leftAccessoryView'));
+    }
+    else {
+      this.setPathIfChanged('textFieldView.leftAccessoryView', null);
+    }
+  },
+
   _getObjectName: function(obj, nameKey, shouldLocalize) {
     var name = obj ? (nameKey ? (obj.get ? obj.get(nameKey) : obj[nameKey]) : obj) : null;
 
@@ -797,6 +844,16 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     }
     
     return name;
+  },
+
+  _getObjectIcon: function(obj, iconKey) {
+    var ret = null;
+
+    if (obj && iconKey) {
+      ret = (obj.get ? obj.get(iconKey) : obj[iconKey]) || sc_static('blank');
+    }
+    
+    return ret;
   },
 
   _getObjectValue: function(obj, valueKey) {

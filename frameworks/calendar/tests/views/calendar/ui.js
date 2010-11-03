@@ -37,3 +37,4 @@ test("basic,small,selected selected date shows up", function() {
   var view = pane.view('basic,small,selected');
   ok(view.$('.selected').get(0), 'basic,small,selected has a selected date');
 });
+

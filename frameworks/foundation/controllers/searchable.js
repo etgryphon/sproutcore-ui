@@ -82,3 +82,4 @@ SCUI.Searchable = {
     return content;
   }
 };
+

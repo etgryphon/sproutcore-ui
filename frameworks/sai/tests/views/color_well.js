@@ -12,6 +12,7 @@ htmlbody('<style> .sc-static-layout { border: 1px red dotted; } </style>');
   var pane = SC.ControlTestPane.design()
     
     .add("well1", SCUI.ColorWell, { 
+      value: '#eee',
       layout: {width: 44, height: 23}
     });
     

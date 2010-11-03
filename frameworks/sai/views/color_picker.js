@@ -25,15 +25,12 @@ SCUI.ColorPicker = SC.View.extend(
   */
   size: 160,
   
-  displayProperties: 'value'.w(),
-  
-  
-  render: function(context, firstTime){
+  _valueChanged: function(){
     var value = this.get('value');
     if( this._cp){
       if(this._cp.color() !== value) this._cp.color(value);
     }
-  },
+  }.observes('value'),
   
   didAppendToDocument: function(){    
     

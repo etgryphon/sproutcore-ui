@@ -101,7 +101,7 @@ SCUI.DatePickerView = SC.View.extend(
         isEnabled: YES,
         isEnabledBinding: SC.binding('isEnabled', that),
         valueBinding: '.parentView.dateString',
-        hint: this.get('hint'),
+        hintBinding: SC.Binding.from('hint', that),
         mouseDown: function (evt) {
           that.toggle();
           sc_super();

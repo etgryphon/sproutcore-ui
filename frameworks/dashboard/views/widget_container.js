@@ -187,6 +187,9 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     if (key === this.getPath('content.sizeKey')) {
       this._sizeDidChange();
     }
+    else if (key === this.getPath('content.positionKey')) {
+      this._positionDidChange();
+    }
     else if (key === 'isEditing') {
       this._isEditingDidChange();
     }
@@ -202,6 +205,17 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
 
     if (size) {
       this.adjust({ width: (parseFloat(size.width) || 0), height: (parseFloat(size.height) || 0) });
+    }
+  },
+
+  _positionDidChange: function() {
+    var posKey = this.getPath('content.positionKey');
+    var pos = posKey ? this.getPath('content.%@'.fmt(posKey)) : null;
+
+    //console.log('%@._positionDidChange()'.fmt(this));
+
+    if (pos) {
+      this.adjust({ centerX: (parseFloat(pos.x) || 0), centerY: (parseFloat(pos.y) || 0) });
     }
   },
 

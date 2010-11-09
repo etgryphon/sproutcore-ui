@@ -10,14 +10,19 @@
   @since 0.1
 */
 
+// Constants - reference SC button mixin constants for plugability
+SCUI.ACTION_BEHAVIOR = SC.PUSH_BEHAVIOR;
+SCUI.TOGGLE_BEHAVIOR = SC.TOGGLE_BEHAVIOR;
+SCUI.RADIO_BEHAVIOR = "radio";
+
 SCUI.SimpleButton = {
 /* SimpleButton Mixin */
 
   target: null,
   action: null,
-  hasState: NO,
   hasHover: NO,
   inState: NO,
+  buttonBehavior: SCUI.ACTION_BEHAVIOR, // uses constants above
   _hover: NO,
   stateClass: 'state',
   hoverClass: 'hover',
@@ -78,6 +83,13 @@ SCUI.SimpleButton = {
   mouseUp: function(evt) {
     this._isMouseDown = this._isContinuedMouseDown = false;
     if (!this.get('isEnabledInPane')) return YES;
+    
+    if (this.get('buttonBehavior') === SCUI.RADIO_BUTTON && this.get('inState')) {
+      this._canFireAction = false;
+      this.displayDidChange();
+      return YES;
+    }
+    
     //console.log('SimpleButton#mouseUp()...');
     // Trigger the action
     var target = this.get('target') || null;
@@ -92,7 +104,7 @@ SCUI.SimpleButton = {
         this.getPath('pane.rootResponder').sendAction(action, target, this, this.get('pane'));
       }
     }
-    if (this.get('hasState')) {
+    if (this.get('buttonBehavior') !== SCUI.ACTION_BEHAVIOR) {
       this.set('inState', !this.get('inState'));
     }
     this._canFireAction = false;
@@ -125,7 +137,7 @@ SCUI.SimpleButton = {
       context.setClass(hoverClass, this._hover && !this._isMouseDown); // addClass if YES, removeClass if NO
     }
     
-    if (this.get('hasState')) {
+    if (this.get('buttonBehavior') !== SCUI.ACTION_BEHAVIOR) {
       var stateClass = this.get('stateClass');
       context.setClass(stateClass, this.inState); // addClass if YES, removeClass if NO
     }
@@ -178,7 +190,35 @@ SCUI.SimpleButton = {
       eval("this.action = function(e) { return "+ action +"(this, e); };");
       this.action(evt);
     }
-  }
+  },
   
+  _hasStateProperty: function(key, value) {
+    SC.Logger.warn("Deprecation: hasState replaced by buttonBehavior.");
+
+    if (value !== undefined) {
+      this.set('buttonBehavior', value ? SCUI.TOGGLE_BEHAVIOR : SCUI.ACTION_BEHAVIOR);
+    } else {
+      value = this.get('buttonBehavior') !== SCUI.ACTION_BEHAVIOR;
+    }
+    return value;
+  },
+  
+  initMixin: function() {
+    var hasStateProperty = this.hasState;
+
+    if (arguments.callee.base) {
+      // sc_super barfs if parent class doesn't have this method, or there's no parent class
+      sc_super();
+    }
+
+    // assign computed property
+    this.hasState = this._hasStateProperty.property('buttonBehavior').cacheable();
+
+    // now continue initialization - force through that function to get deprecation warning
+    if (hasStateProperty !== undefined) {
+      this.set('hasState', hasStateProperty);
+    }
+  }
+
 };
 

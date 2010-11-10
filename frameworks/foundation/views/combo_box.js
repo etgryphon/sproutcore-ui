@@ -84,6 +84,9 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */  
   disableSort: NO,
   
+  /**
+    if true, the object list names will be localized.
+  */
   localize: NO,
   
   /**
@@ -501,13 +504,33 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     return NO;
   },
   
+  _checkDeletedAll: function(delBackward) {
+    var value = this.get('textFieldView').get('value'),
+        selection = this.get('textFieldView').get('selection'),
+        wouldDeleteLastChar = NO;
+    if (!value.length) {
+      wouldDeleteLastChar = YES;
+    } else if (value.length === selection.length()) {
+      wouldDeleteLastChar = YES;
+    } else if (value.length === 1 && selection.start === (delBackward ? 1 : 0)) {
+      wouldDeleteLastChar = YES;
+    }
+
+    if (wouldDeleteLastChar) {
+      this.set('selectedObject', null);
+      this.set('value', null);
+    }
+  },
+
   deleteBackward: function(evt) {
+    this._checkDeletedAll(YES);
     this._shouldUpdateFilter = YES; // someone typed something
     this.showList();
     return NO;
   },
   
   deleteForward: function(evt) {
+    this._checkDeletedAll(NO);
     this._shouldUpdateFilter = YES;
     this.showList();
     return NO;

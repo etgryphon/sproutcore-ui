@@ -206,11 +206,6 @@ SCUI.SimpleButton = {
   initMixin: function() {
     var hasStateProperty = this.hasState;
 
-    if (arguments.callee.base) {
-      // sc_super barfs if parent class doesn't have this method, or there's no parent class
-      sc_super();
-    }
-
     // assign computed property
     this.hasState = this._hasStateProperty.property('buttonBehavior').cacheable();
 

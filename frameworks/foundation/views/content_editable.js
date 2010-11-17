@@ -165,6 +165,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   styleSheetCSS: '',
   
   /**
+    An array of link strings. Each string is expected to be a fully formed link tag, eg.
+    
+      '<link href="http://link/to/stylshee.css" rel="stylesheet" type="text/css" />'
+  */
+  styleSheetsLinks: [],
+  
+  /**
     List of menu options to display on right click
   */
 	rightClickMenuOptionsWithoutSelection: [],
@@ -304,8 +311,21 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     doc.open();
     doc.write(this.get('docType'));
-    doc.write('<html><head></head><body></body></html>');
+    doc.write('<html><head>');
+    
+    var styleSheetsLinks = this.get('styleSheetsLinks'), styleSheetLink;
+    if (styleSheetsLinks.length && styleSheetsLinks.length > 0) {
+      for (var i = 0, j = styleSheetsLinks.length; i < j ; i++) {
+        styleSheetLink = styleSheetsLinks[i];
+        if (styleSheetLink.match(/\<link.*?>/)) {
+          doc.write(styleSheetsLinks[i]);
+        }
+      }
+    }
+
+    doc.write('</head><body></body></html>');
     doc.close();
+    
     
     var styleSheetCSS = this.get('styleSheetCSS');
     if (!(SC.none(styleSheetCSS) || styleSheetCSS === '')) {
@@ -346,6 +366,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         docBodyStyle[key.toString().camelize()] = inlineStyle[key];
       }
     }
+    
+    
 
     docBody.innerHTML = value;
 

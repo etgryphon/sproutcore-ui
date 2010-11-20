@@ -194,23 +194,26 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   deleteLinkSelection: function() {
     var link = this.get('linkSelection');
 
-    if (link && this.get('isEditable')) {
+    if (link && link.canDelete() && this.get('isEditable')) {
       var startNode = link.get('startNode');
       var endNode = link.get('endNode');
-      if (startNode && endNode) {
-        if (startNode.canDeleteLink(link) && endNode.canDeleteLink(link)) {
-          startNode.deleteLink(link);
-          endNode.deleteLink(link);
-          this.set('linkSelection', null);
-          this.displayDidChange();
-        }
+      
+      if (startNode) {
+        startNode.deleteLink(link);
       }
+      
+      if (endNode) {
+        endNode.deleteLink(link);
+      }
+      
+      this.set('linkSelection', null);
+      this.displayDidChange();
     }
   },
 
   mouseDown: function(evt) {
     var pv, frame, globalFrame, canvasX, canvasY, itemView, menuPane, menuOptions;
-    var linkSelection;
+    var linkSelection, startNode, endNode, canDelete;
 
     sc_super();
 
@@ -220,7 +223,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     if (evt && (evt.which === 3) || (evt.ctrlKey && evt.which === 1)) {
       if (this.get('isEditable')) {
         linkSelection = this.get('linkSelection');
-        if (linkSelection && !this.getPath('selection.length')) {
+        if (linkSelection && linkSelection.canDelete() && !this.getPath('selection.length')) {
           menuOptions = [
             { title: "Delete Selected Link".loc(), target: this, action: 'deleteLinkSelection', isEnabled: YES }
           ];
@@ -235,7 +238,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
             itemIsEnabledKey: 'isEnabled',
             items: menuOptions
           });
-    
+  
           menuPane.popup(this, evt);
         }
       }

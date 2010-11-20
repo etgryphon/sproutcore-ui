@@ -42,7 +42,7 @@ LinkIt.Link = {
   
   selectionColor: '#FFFF64',
   selectionWidth: 7,
-  
+    
   // Graph-Related Properties
 
   /**
@@ -71,6 +71,15 @@ LinkIt.Link = {
   endPt: null,
 
   // PUBLIC METHODS
+
+  /*
+    Returns YES if both start and end nodes are present and allow removal of the connection.
+  */
+  canDelete: function() {
+    var startNode = this.get('startNode');
+    var endNode = this.get('endNode');
+    return !!(startNode && endNode && startNode.canDeleteLink(this) && endNode.canDeleteLink(this));
+  },
 
   drawLink: function(context){
     var linkStyle = this.get('linkStyle') || {};

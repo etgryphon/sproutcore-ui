@@ -160,10 +160,12 @@ SCUI.DatePickerView = SC.View.extend(
   
   selectToday: function(){
     this._calendar.set('selectedDate', SC.DateTime.create());
+    this.hideCalendar();
   },
   
   clearSelection: function(){
     this._calendar.set('selectedDate', null);
+    this.hideCalendar();
   },
   
   /**

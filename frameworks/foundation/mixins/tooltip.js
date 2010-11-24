@@ -19,6 +19,8 @@ SCUI.ToolTip = {
     otherwise the alt attribute is useless and pollutes the DOM.
   */
   isImage: NO,
+  
+  displayProperties: ['toolTip'],
 
   renderMixin: function(context, firstTime){
     var toolTip = this.get('toolTip');

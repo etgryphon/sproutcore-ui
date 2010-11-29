@@ -284,6 +284,14 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     this.bind('status', SC.Binding.from('*objects.status', this).oneWay());
   },
   
+  willDestroyLayer: function() {
+    if (this._listPane) {
+      this._listPane.destroy();
+    }
+
+    sc_super();
+  },
+
   createChildViews: function() {
     var childViews = [], view;
     var isEnabled = this.get('isEnabled');

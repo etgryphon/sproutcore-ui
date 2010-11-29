@@ -1251,6 +1251,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     this.propertyDidChange('selection');
   },
   
+  canCreateLink: function() {
+    var selection = this.get('selection');
+    return selection && selection.length > 0 ? YES : NO;
+  }.property('selection'),
+  
   createLink: function(value) {
     var doc = this._document;
     var frame = this._iframe;
@@ -1573,6 +1578,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     this.set('selectedImage', currentImage);
     this.set('selectedHyperlink', currentHyperlink);
+    if (currentHyperlink === null) this.removeLink();
     
   }.observes('selection'),
 

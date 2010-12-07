@@ -579,7 +579,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.RunLoop.end();
   },
 
-  mouseUp: function() {
+  mouseUp: function(evt) {
     this._mouseUp = true;
     SC.RunLoop.begin();
     if(this.get('insertInProgress')){
@@ -587,6 +587,18 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       this.get('insertTarget').sendAction('insert');
     }
     this.querySelection();
+    
+    //attempting to help webkit select images...
+    if(evt.target && evt.target.nodeName === "IMG"){
+      var sel = this._iframe.contentWindow.getSelection(),
+          range = this._iframe.contentWindow.document.createRange();
+          
+      range.selectNode(evt.target);
+      sel.removeAllRanges();
+      sel.addRange(range);
+     }
+    
+    
     if (!this.get('hasFixedDimensions')) {
       this.invokeLast(this._updateLayout);
     }
@@ -1135,8 +1147,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (value !== undefined) {
       this.set('isEditing', YES);
-      image.width = value;
-      image.style.width = value;
+      image.width = value*1;
+      image.style.width = value+"px";
       return value;
       
     } else { 
@@ -1151,8 +1163,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     if (value !== undefined) {
       this.set('isEditing', YES);
-      image.height = value;
-      image.style.height = value;
+      image.height = value*1;
+      image.style.height = value+"px";
       return value;
       
     } else { 
@@ -1443,7 +1455,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     if (SC.browser.msie) {
       html = '<span contenteditable=false unselectable="on">' + context + '</span>';      
     } else {
-      html = '<span contenteditable=false style="-moz-user-select: all">' + context + '</span>';
+      html = '<span contenteditable=false style="-moz-user-select: all; -webkit-user-select: all;">' + context + '</span>';
     }
 
     this.insertHTML(html);
@@ -1597,7 +1609,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         
       }
     }
-    
     this.set('selectedImage', currentImage);
     this.set('selectedHyperlink', currentHyperlink);
     if (currentHyperlink === null) this.removeLink();

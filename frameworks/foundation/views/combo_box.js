@@ -464,17 +464,9 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
       this._updateListPaneLayout();
       this._listPane.popup(this, SC.PICKER_MENU);
-
-      // HACK: [JL] (Or is it?)  Tell the list view that its visible area
-      // has changed when showing the list.  Otherwise if the list was previously
-      // dismissed with the scroll bar not all the way at the top of the list,
-      // the list items render with off-screen layouts -- out of sync with the
-      // scroll view for some reason.
-      this._listView.reload();
-      // END HACK
     }
   },
-  
+
   // Hide the drop down list if visible.
   hideList: function() {
     if (this._listPane && this._listPane.get('isPaneAttached')) {

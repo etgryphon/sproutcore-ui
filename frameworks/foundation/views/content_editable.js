@@ -1581,7 +1581,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       node = range.startContainer.childNodes[range.startOffset] ;
       
       if (range.startContainer === range.endContainer) {   
-        if (range.startContainer.parentNode.nodeName === 'A' && range.commonAncestorContiner !== node) {
+        if (range.startContainer.parentNode.nodeName === 'A' && range.commonAncestorContainer !== node) {
           currentHyperlink = range.startContainer.parentNode;
         } 
         else if(range.startContainer.parentNode.nodeName === 'A' && SC.browser.safari){ //question for mo here...

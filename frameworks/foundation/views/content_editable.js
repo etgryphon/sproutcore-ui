@@ -1580,11 +1580,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       range = selection.getRangeAt(0);      
       node = range.startContainer.childNodes[range.startOffset] ;
       
-      if (range.startContainer === range.endContainer) {      
-        
+      if (range.startContainer === range.endContainer) {   
         if (range.startContainer.parentNode.nodeName === 'A' && range.commonAncestorContiner !== node) {
           currentHyperlink = range.startContainer.parentNode;
-        } else {
+        } 
+        else if(range.startContainer.parentNode.nodeName === 'A' && SC.browser.safari){ //question for mo here...
+          currentHyperlink = range.startContainer.parentNode;
+        }
+        else {
           currentHyperlink = null;
         }
                 
@@ -1609,8 +1612,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         
       }
     }
-    this.set('selectedImage', currentImage);
-    this.set('selectedHyperlink', currentHyperlink);
+
     if (currentHyperlink === null) this.removeLink();
     
   }.observes('selection'),

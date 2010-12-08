@@ -847,16 +847,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
             })
           })
         })
-      }),
-
-      // HACK: [JL] Override mouseDown to return NO since without this
-      // Firefox won't detect clicks on the scroll buttons.
-      // This disables pane-dragging functionality for the picker pane, but we
-      // don't need that.
-      mouseDown: function(evt) {
-        sc_super();
-        return NO;
-      }
+      })
     });
 
     this._listView = this._listPane.getPath('contentView.listView.contentView');

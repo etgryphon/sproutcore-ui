@@ -81,13 +81,24 @@ SCUI.SimpleButton = {
     ON mouse up, trigger the action only if we are enabled and the mouse was released inside of the view.
   */  
   mouseUp: function(evt) {
+    var bb;
     this._isMouseDown = this._isContinuedMouseDown = false;
     if (!this.get('isEnabledInPane')) return YES;
     
-    if (this.get('buttonBehavior') === SCUI.RADIO_BEHAVIOR && this.get('inState')) {
-      this._canFireAction = false;
-      this.displayDidChange();
-      return YES;
+    // Button Behavior parsing to see what actions should occur 
+    bb = this.get('buttonBehavior'); 
+    if (bb === SCUI.RADIO_BEHAVIOR){
+      if (this.get('inState')) {
+        this._canFireAction = false;
+        this.displayDidChange();
+        return YES;
+      }
+      else {
+        this.set('inState', YES);
+      }
+    }
+    else if (bb === SCUI.TOGGLE_BEHAVIOR ){
+      this.set('inState', !this.get('inState'));
     }
     
     //console.log('SimpleButton#mouseUp()...');
@@ -103,9 +114,6 @@ SCUI.SimpleButton = {
         // newer action method + optional target syntax...
         this.getPath('pane.rootResponder').sendAction(action, target, this, this.get('pane'));
       }
-    }
-    if (this.get('buttonBehavior') !== SCUI.ACTION_BEHAVIOR && this.get('buttonBehavior') !== SCUI.RADIO_BEHAVIOR) {
-      this.set('inState', !this.get('inState'));
     }
     this._canFireAction = false;
     this.displayDidChange(); 

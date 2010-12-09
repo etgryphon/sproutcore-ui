@@ -84,7 +84,7 @@ SCUI.SimpleButton = {
     this._isMouseDown = this._isContinuedMouseDown = false;
     if (!this.get('isEnabledInPane')) return YES;
     
-    if (this.get('buttonBehavior') === SCUI.RADIO_BUTTON && this.get('inState')) {
+    if (this.get('buttonBehavior') === SCUI.RADIO_BEHAVIOR && this.get('inState')) {
       this._canFireAction = false;
       this.displayDidChange();
       return YES;
@@ -104,7 +104,7 @@ SCUI.SimpleButton = {
         this.getPath('pane.rootResponder').sendAction(action, target, this, this.get('pane'));
       }
     }
-    if (this.get('buttonBehavior') !== SCUI.ACTION_BEHAVIOR) {
+    if (this.get('buttonBehavior') !== SCUI.ACTION_BEHAVIOR && this.get('buttonBehavior') !== SCUI.RADIO_BEHAVIOR) {
       this.set('inState', !this.get('inState'));
     }
     this._canFireAction = false;

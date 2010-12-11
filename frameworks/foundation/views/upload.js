@@ -218,7 +218,7 @@ SCUI.UploadView = SC.View.extend(
     Starts the file upload (by submitting the form) and alters the status from READY to BUSY.
   */
   startUpload: function() {
-    var i, listlen, handler, f;
+    var i, listLen, handler, f;
     this.set('serverResponse', null);
     
     f = this._getForm();

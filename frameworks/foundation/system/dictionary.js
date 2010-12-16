@@ -24,11 +24,17 @@ SCUI.Dictionary = SC.Object.extend(SC.Enumerable, {
   */
   length: 0,
   
+  /*
+    @read-only
+  */
+  keys: null,
+  
   // PUBLIC METHODS
 
   init: function() {
     sc_super();
     this._index = {};
+    this.set('keys', SC.Set.create());
   },
 
   nextObject: function(index, previousObject, context) {
@@ -64,6 +70,7 @@ SCUI.Dictionary = SC.Object.extend(SC.Enumerable, {
 
       // add to the index
       this._index[key] = node;
+      this.get('keys').add(key);
       
       if (!this._tail) { // if this is the first node
         this._root = node; // this node becomes the root and the tail
@@ -108,6 +115,7 @@ SCUI.Dictionary = SC.Object.extend(SC.Enumerable, {
       }
 
       delete this._index[key]; // remove from the index
+      this.get('keys').remove(key);
       
       this.set('length', this.get('length') - 1); // decrement length
       this.enumerableContentDidChange(); // notify observers
@@ -119,12 +127,13 @@ SCUI.Dictionary = SC.Object.extend(SC.Enumerable, {
   
   clear: function() {
     this._index = {};
+    this.get('keys').clear();
     this._root = null;
     this._tail = null;
     this.set('length', 0);
     this.enumerableContentDidChange(); // notify observers
   },
-  
+
   contains: function(key) {
     return this._index[key] ? YES : NO;
   },

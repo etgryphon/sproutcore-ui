@@ -26,6 +26,8 @@ SCUI.DatePickerView = SC.View.extend(
   // Params for the textfield
   hint: "Click to choose...",
   dateFormat: null,
+  calendarLayout: null,
+  hasHelperButtons: YES,
   
   // @private
   _textfield: null,
@@ -40,59 +42,19 @@ SCUI.DatePickerView = SC.View.extend(
   init: function(){
     sc_super();
     
-    // init the dateString to whatever date we're starting with (if present)
-    this.set('dateString', this._genDateString(this.get('date')));
-    
     // Setup default layout values
     var layout = this.get('layout'), that = this;
     layout = SC.merge(this._layout, layout);
     this.set('layout', layout);
-    
-    // Create the reference to the calendar
-    this._calendar_popup = SC.PickerPane.create({
-      layout: { width: 205, height: 255 },
-      contentView: SC.View.design({
-        childViews: 'calendar todayButton noneButton'.w(),
-        calendar: SCUI.CalendarView.design({
-          classNames: ['calendar'],
-          layout: { left: 0, top: 0, height: 230, right: 0 },
-          selectedDateBinding: SC.Binding.from('date', that)
-        }),
-        todayButton: SC.View.extend(SCUI.SimpleButton, {
-          classNames: ['scui-datepicker-today'],
-          layout: {left: 10, bottom: 5, width: 50, height: 18},
-          target: this,
-          action: 'selectToday',
-          render: function(context, firstTime) {
-            if (firstTime) {
-              context.push('Today');
-            }
-          }
-        }),
-        noneButton: SC.View.design( SCUI.SimpleButton, {
-          classNames: ['scui-datepicker-none'],
-          layout: {right: 10, bottom: 5, width: 50, height: 18},
-          target: this,
-          action: 'clearSelection',
-          render: function(context, firstTime) {
-            if (firstTime) {
-              context.push('None');
-            }
-          }       
-        })
-      })
-    });
-    
-    // Setup the Binding to the SelectedDate
-    if (this._calendar_popup) {
-      this.bind('isShowingCalendar', '._calendar_popup.isPaneAttached');
-      this._calendar = this._calendar_popup.getPath('contentView.calendar');
-    }
   },
   
   createChildViews: function(){
     var view, childViews = [];
     var that = this;
+    
+    // init the dateString to whatever date we're starting with (if present)
+    this.set('dateString', this._genDateString(this.get('date')));
+    
     // First, Build the Textfield for the date chooser
     view = this._textfield = this.createChildView( 
       SC.TextFieldView.design( {
@@ -100,7 +62,7 @@ SCUI.DatePickerView = SC.View.extend(
         classNames: ['scui-datechooser-text'],
         isEnabled: YES,
         isEnabledBinding: SC.binding('isEnabled', that),
-        valueBinding: '.parentView.dateString',
+        valueBinding: SC.Binding.from('.dateString', that),
         hintBinding: SC.Binding.from('hint', that),
         mouseDown: function (evt) {
           that.toggle();
@@ -123,7 +85,57 @@ SCUI.DatePickerView = SC.View.extend(
     childViews.push(view);
     
     this.set('childViews', childViews);
+    this._createCalendarPopup();
     sc_super();
+  },
+  
+  _createCalendarPopup: function(){
+    var that = this,
+        cl = this.get('calendarLayout'),
+        hb = this.get('hasHelperButtons');
+    hb = SC.none(hb) ? YES : hb;
+    // Create the reference to the calendar
+    this._calendar_popup = SC.PickerPane.create({
+      layout: cl || { width: 205, height: 255 },
+      contentView: SC.View.design({
+        childViews: 'calendar todayButton noneButton'.w(),
+        calendar: SCUI.CalendarView.design({
+          classNames: ['calendar'],
+          layout: { left: 0, top: 0, height: 230, right: 0 },
+          selectedDateBinding: SC.Binding.from('date', that)
+        }),
+        todayButton: SC.View.extend(SCUI.SimpleButton, {
+          classNames: ['scui-datepicker-today'],
+          layout: {left: 10, bottom: 5, width: 50, height: 18},
+          target: this,
+          action: 'selectToday',
+          isVisible: hb,
+          render: function(context, firstTime) {
+            if (firstTime) {
+              context.push('Today');
+            }
+          }
+        }),
+        noneButton: SC.View.design( SCUI.SimpleButton, {
+          classNames: ['scui-datepicker-none'],
+          layout: {right: 10, bottom: 5, width: 50, height: 18},
+          target: this,
+          action: 'clearSelection',
+          isVisible: hb,
+          render: function(context, firstTime) {
+            if (firstTime) {
+              context.push('None');
+            }
+          }       
+        })
+      })
+    });
+    
+    // Setup the Binding to the SelectedDate
+    if (this._calendar_popup) {
+      this.bind('isShowingCalendar', '._calendar_popup.isPaneAttached');
+      this._calendar = this._calendar_popup.getPath('contentView.calendar');
+    }
   },
   
   /**  

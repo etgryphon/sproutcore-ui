@@ -2,7 +2,7 @@
 // SCUI.DropDown
 // ==========================================================================
 
-sc_require('core');
+/*globals SCUI*/
 
 /** @mixin
   This mixin allows a toggling view to show/hide a drop-down when the view
@@ -41,6 +41,7 @@ SCUI.DropDown = {
     var dropDown = this.get('dropDown');
     if (dropDown && SC.typeOf(dropDown) === SC.T_CLASS) {
       this._dropDownPane = dropDown.create();
+      this.set('dropDown', this._dropDownPane); // set as pointer to instance for convenience
       if (this._dropDownPane) {
         this.bind('isShowingDropDown', '._dropDownPane.isPaneAttached');
       }

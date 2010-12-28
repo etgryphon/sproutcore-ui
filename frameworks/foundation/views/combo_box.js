@@ -540,7 +540,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var value = this.get('textFieldView').get('value'),
         selection = this.get('textFieldView').get('selection'),
         wouldDeleteLastChar = NO;
-    if (!value.length) {
+    if (!value || !value.length) {
       wouldDeleteLastChar = YES;
     } else if (value.length === selection.length()) {
       wouldDeleteLastChar = YES;

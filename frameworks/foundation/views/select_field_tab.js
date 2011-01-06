@@ -111,7 +111,7 @@ SCUI.SelectFieldTab = SC.View.extend(
   */
   selectFieldView: SC.SelectButtonView.extend({
     layout: { left: 4, right: 0, height: 24 },
-
+    classNames: ['dark'],
     //litte items => objects alias so I can use the same properties as a tab view...
     items: function(key, value){
       if(value === undefined){

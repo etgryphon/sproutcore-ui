@@ -95,7 +95,7 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
       dd.didMove = YES; // so that mouseUp knows whether to report the new position.
       dX = evt.pageX - dd.startPageX;
       dY = evt.pageY - dd.startPageY;
-      dd.view.adjust({ centerX: dd.centerX + dX, centerY: dd.centerY + dY });
+      dd.view.adjust({ left: dd.left + dX, top: dd.top + dY });
     }
 
     return YES;
@@ -111,8 +111,8 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
       layout = this._dragData.view.get('layout');
       // try to update the widget data model with the new position
       if (content && layout) {
-        wx = layout.centerX || 0;
-        wy = layout.centerY || 0;
+        wx = layout.left || 0;
+        wy = layout.top || 0;
         finalPos = { x: wx, y: wy };
         this._setItemPosition(content, finalPos);
         
@@ -250,7 +250,7 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
     if (item) {
       pos = this._getItemPosition(item) || { x: 20, y: 20 };
       size = this._getItemSize(item) || { width: 300, height: 100 };
-      layout = { centerX: pos.x, centerY: pos.y, width: size.width, height: size.height };
+      layout = { left: pos.x, top: pos.y, width: size.width, height: size.height };
     }
     return layout;
   },
@@ -310,7 +310,9 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
       posKey = item.get('positionKey') || 'position';
       pos = item.get(posKey);
       if (pos) {
-        return { x: (parseFloat(pos.x) || 0), y: (parseFloat(pos.y) || 0) };
+        var x = parseFloat(pos.x) > 0 ? parseFloat(pos.x) : 0;
+        var y = parseFloat(pos.y) > 0 ? parseFloat(pos.y) : 0;
+        return { x: x, y: y };
       }
     }
 

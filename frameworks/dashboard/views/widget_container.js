@@ -215,7 +215,7 @@ SCUI.WidgetContainerView = SC.View.extend( SC.Control, {
     //console.log('%@._positionDidChange()'.fmt(this));
 
     if (pos) {
-      this.adjust({ centerX: (parseFloat(pos.x) || 0), centerY: (parseFloat(pos.y) || 0) });
+      this.adjust({ left: (parseFloat(pos.x) || 0), top: (parseFloat(pos.y) || 0) });
     }
   },
 

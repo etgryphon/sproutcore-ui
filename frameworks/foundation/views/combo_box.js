@@ -886,10 +886,21 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
   // default action for the list view
   _selectListItem: function() {
-    var selection = this._listView ? this._listView.getPath('selection.firstObject') : null;
-    if (selection) {
-      this.setIfChanged('selectedObject', selection);
+    var len = this.getPath('filteredObjects.length'),
+        lv = this._listView,
+        selection = lv ? lv.getPath('selection.firstObject') : null;
+    
+    if (lv && len === 1) {
+      var filter = this.get('filter'),
+          obj = lv.getPath('content').objectAt(0),
+          value = obj.get(this.get('nameKey'));
+          
+      if (value.toLowerCase() === filter.toLowerCase()) {
+        selection = obj;
+      } 
     }
+    
+    if (selection) this.setIfChanged('selectedObject', selection);
     this.hideList();
   },
 

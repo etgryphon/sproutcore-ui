@@ -9,8 +9,6 @@
 # instead.
 
 config :all, 
-  :layout         => 'scui:lib/index.rhtml',
-  :test_layout    => 'scui:lib/test.rhtml',
   :test_required  => ['sproutcore'],
   :debug_required => ['sproutcore']
 

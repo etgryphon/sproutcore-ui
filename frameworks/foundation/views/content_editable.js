@@ -1824,8 +1824,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var selection;
     if (SC.browser.msie) {
       selection = this._getDocument().selection;
-    } else {
-      selection = this._getFrame().contentWindow.getSelection();
+    } else if(frame.contentWindow){
+      selection = frame.contentWindow.getSelection();
     }
     return selection;
   },

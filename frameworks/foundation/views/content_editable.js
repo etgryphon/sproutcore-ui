@@ -1285,56 +1285,6 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var frame = this._iframe;
     if (! (doc && frame)) return NO;
     if (SC.none(value) || value === '') return NO;
-
-    /*
-      HACK: [MT] - This is an interesting hack... The problem with 
-      execCommand('createlink') is it only tells you if hyperlink 
-      creation was successful... it doesn't return the hyperlink that 
-      was created. 
-
-      To counter this problem, I'm creating a random string and
-      assigning it as the href. If the frame.contentWindow.getSelection()
-      method fails, I iterate over the children of the currently selected
-      node and find the anchor tag with the crazy url and assign it as the
-      currently selected hyperlink, after which I do a bit of cleanup
-      and set value to the href property.
-      
-      JWS: why didn't you just set it to the value uri up front and just look for that...well, i suppose that one could
-      already exist elsewhere in the doc...then again, this code doesn't do what you describe in any case...
-      
-      i'm going to just assign it the base url and then requery the selection and see what happens...
-    */
-    /*
-    var radomUrl = '%@%@%@%@%@'.fmt('http://', this.get('frameName'), new Date().getTime(), parseInt(Math.random() * 100000, 0), '.com/');
-
-    if (doc.execCommand('createlink', false, radomUrl)) {
-      var aTags = doc.getElementsByTagName('A'),
-      hyperlink,
-      child;
-
-      for (var x = 0,
-      y = aTags.length; x < y; x++) {
-        child = aTags[x];
-
-        if (child.href === radomUrl) {
-          hyperlink = child;
-          break;
-        }
-      }
-    }
-
-    if (hyperlink) {
-      hyperlink.href = value;
-      this.set('selectedHyperlink', hyperlink);
-      this.set('isEditing', YES);
-      return YES;
-
-    } else {
-      return NO;
-
-    }
-    */
-
     
     if (!this.get('selectedText').length && !this.get('selectedImage')) {
       return NO;

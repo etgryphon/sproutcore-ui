@@ -1018,6 +1018,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     var doc = this._document;
     if (!doc) return '';
 
+    if (!SC.browser.msie) {
+      doc.execCommand('styleWithCSS', false, true);
+    }
+
     if (value !== undefined) {
       if (this.get('selectionSaved') === YES) {
         this.restoreSelection();
@@ -1027,6 +1031,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         this.set('isEditing', YES);
         this._last_font_color_cache = value;
       }
+    }
+
+    if (!SC.browser.msie) {
+      doc.execCommand('styleWithCSS', false, false);
     }
 
     if (this._last_font_color_cache) {
@@ -1069,13 +1077,13 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
     }
 
+    if (!SC.browser.msie) {
+      doc.execCommand('styleWithCSS', false, false);
+    }
     if (this._last_background_color_cache) {
       return this._last_background_color_cache;
     } else {
       var color = doc.queryCommandValue(prop);
-      if (!SC.browser.msie) {
-        doc.execCommand('styleWithCSS', false, false);
-      }
       if (color !== 'transparent') {
         color = SC.browser.msie ? this.convertBgrToHex(color) : SC.parseColor(color);
         if (color) {

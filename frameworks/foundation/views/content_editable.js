@@ -301,6 +301,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.add(docBody, 'keyup', this, this.keyUp);
     SC.Event.add(docBody, 'paste', this, this.paste);
     SC.Event.add(docBody, 'dblclick', this, this.doubleClick);
+    SC.Event.add(docBody, 'mouseout', this, this.mouseOut);
     if (this.get('indentOnTab')) SC.Event.add(docBody, 'keydown', this, this.keyDown);
     // there are certian cases where the body of the iframe won't have focus
     // but the user will be able to type... this happens when the user clicks on
@@ -319,10 +320,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     SC.Event.remove(docBody, 'keyup', this, this.keyUp);
     SC.Event.remove(docBody, 'paste', this, this.paste);
     SC.Event.remove(docBody, 'dblclick', this, this.doubleClick);
+    SC.Event.remove(docBody, 'mouseout', this, this.mouseOut);
     SC.Event.remove(doc, 'click', this, this.focus);
-    SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
     SC.Event.remove(doc, 'mouseup', this, this.docMouseUp);
     SC.Event.remove(doc, 'contextmenu', this, this.contextmenu);
+    SC.Event.remove(this.$('iframe'), 'load', this, this.editorSetup);
   },
 
   willDestroyLayer: function() {
@@ -555,6 +557,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     case 'right':
     case 'up':
     case 'down':
+    case 'home':
+    case 'end':
     case 'return':
       this.querySelection();
       break;
@@ -611,6 +615,10 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
 
     SC.RunLoop.end();
+  },
+
+  mouseOut: function(evt) {
+    this.querySelection();
   },
 
   mouseUp: function(evt) {

@@ -1617,10 +1617,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     
     * if you DID just create a link, the range may be
     ** the start/end container (this is what it usually is on Chrome/Webkit)
-    ** the one and only object between the start and end nodes - this was REALLY tricky
+    ** the one and only object between the start and end nodes - (beginning and middle of a line) this was REALLY tricky
     *** it happens to be the next node of the start (which is the previous text block or node)
     *** and an ancestor of the end (which is itself the actual content inside the link)
     *** but ONLY if those two are the same.  otherwise, it'll likely be one of the above cases
+    ** the previous child to a <BR> tag if the BR tag is at the end of the selection
     
     * TODO [JS] still to test/fix:
     ** fix link colors (handle with fixing the rest of the firefox color problems)
@@ -1643,17 +1644,30 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     } else {
       // TODO [JS]: remove all logging statements when i'm finally sure it is all working right
       /*
-      SC.Logger.dir(range.startContainer);
+      SC.Logger.log(range.startContainer);
       SC.Logger.log(range.startOffset);
-      SC.Logger.dir(range.endContainer);
+      SC.Logger.log(range.endContainer);
       SC.Logger.log(range.endOffset);
+      
+      SC.Logger.log(range.startContainer.childNodes[range.startOffset]);
+      SC.Logger.log(range.endContainer.childNodes[range.endOffset]);
       */
       node = range.startContainer.childNodes[range.startOffset];
       if (!node && (range.startContainer === range.endContainer)) {
         node = range.startContainer;
       }
+      // this situation happens when in the beginning and middle of a line
+      // startContainer is modified to being the text node BEFORE the link
+      // endContainer is the deepest textnode at the end of the selection, so you need to climb up it to find the 'A' 
       if (!node && (range.startContainer.nextSibling === this._findAncestor(range.endContainer, 'A'))) {
         node = range.startContainer.nextSibling;
+      }
+      // this situation happens when at the END of a line, in front of the BR tag
+      // endContainer is the BODY, endContainer's offset child is the BR tag, the previous sibling from that is your 'A'
+      // also works for end of the document, where there's an implicit BR created automatically for you
+      // fortunately, this works even if the selected range was styled, because the a tag went around the styles
+      if (!node && (range.endContainer.childNodes[range.endOffset] && range.endContainer.childNodes[range.endOffset].previousSibling.tagName === 'A')) {
+        node = range.endContainer.childNodes[range.endOffset].previousSibling;
       }
     }
 

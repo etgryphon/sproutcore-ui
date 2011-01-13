@@ -732,7 +732,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }.property('selection').cacheable(),
 
   _selectionIsJustified: function(key, val, justify) {
-    var doc = this._document;
+    var doc = this._document, e = null;
     if (!doc) return NO;
 
     if (val !== undefined) {
@@ -745,8 +745,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       this.querySelection();
       this.set('isEditing', YES);
     }
-    // FIXME: [JS] queryCommandState('justifyXXXX') always returns false in safari...
-    return doc.queryCommandState(justify);
+    // [JS]: Firefox throws exception if this is called while the iframe is hidden
+    // this happens when transitioning from full to regular edit in dynamic content
+    // and sometimes when transitioning from src view to content-editable view in the other editors
+    try {
+      return doc.queryCommandState(justify);
+    } catch (e) {
+      return NO;
+    }
   },
 
   selectionIsCenterJustified: function(key, val) {

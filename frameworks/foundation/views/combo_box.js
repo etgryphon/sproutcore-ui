@@ -895,7 +895,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
           obj = lv.getPath('content').objectAt(0),
           value = obj.get(this.get('nameKey'));
           
-      if (value.toLowerCase() === filter.toLowerCase()) {
+      if (filter && (value.toLowerCase() === filter.toLowerCase())) {
         selection = obj;
       } 
     }

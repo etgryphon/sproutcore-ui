@@ -1154,8 +1154,11 @@
             }
             var id = o.getAttribute(fillString);
             id = id.match(/^url\(#(.*)\)$/);
-            id && SVG.defs.removeChild(doc.getElementById(id[1]));
-
+            try {
+              id && SVG.defs.removeChild(doc.getElementById(id[1]));
+            } catch (e) {
+              SC.Logger.warn('scui-sai exception removing element ' + id[1]);
+            }
             var el = $(type + "Gradient");
             el.id = createUUID();
             $(el, type == "radial" ? {fx: fx, fy: fy} : {x1: vector[0], y1: vector[1], x2: vector[2], y2: vector[3]});

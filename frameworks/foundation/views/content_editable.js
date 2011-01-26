@@ -1399,19 +1399,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     editor is not in focus then it appens the HTML at the end of the document.
 
     @param {String} HTML to be inserted
-    @param {Boolean} Optional boolean to determine if a single white space is to be 
-    inserted after the HTML snippet. Defaults to YES. This is enabled to protect
-    against certain FF bugs (e.g. If a user inserts HTML then presses space right
-    away, the HTML will be removed.)
   */
-  insertHTML: function(value, insertWhiteSpaceAfter) {
+  insertHTML: function(value) {
     var doc = this._document;
     if (!doc) return NO;
     if (SC.none(value) || value === '') return NO;
-
-    if (SC.none(insertWhiteSpaceAfter) || insertWhiteSpaceAfter) {
-      value += '\u00a0';
-    }
 
     if (SC.browser.msie) {
       if (!this.get('isFocused')) {
@@ -1422,7 +1414,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       return YES;
 
     } else {
+      // Firefox bug workaround - add a space so the cursor is outside of the inserted selection (field_merge) else the next user action might delete it
+      value += '\u00a0';
       if (doc.execCommand('inserthtml', false, value)) {
+        // Firefox bug workaround pt 2 - remove that added space
+        doc.execCommand('delete', false, null);
         this.set('isEditing', YES);
         return YES;
       }

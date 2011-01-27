@@ -21,7 +21,7 @@ SCUI.Permissible = {
     @optional
     What to append to the tooltip when unauthorized
   */
-  tooltipSuffix: " (unauthorized)".loc(),
+  tooltipSuffix: "(unauthorized)".loc(),
   
   _isPermittedDidChange: function() {
     if(this.get('isPermitted')) {
@@ -29,7 +29,7 @@ SCUI.Permissible = {
     }
     else {
       this._tooltip = this.get('toolTip');
-      this.set('toolTip', this._tooltip + this.get('tooltipSuffix'));
+      this.set('toolTip', (!(SC.none(this._tooltip)) ? (this._toolTip  + " ") : "") + this.get('tooltipSuffix'));
     }
   }.observes('isPermitted'),
 

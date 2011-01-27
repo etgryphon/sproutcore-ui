@@ -169,3 +169,4 @@ SCUI.MultiSelectView = SC.View.extend({
   }
   
 });
+

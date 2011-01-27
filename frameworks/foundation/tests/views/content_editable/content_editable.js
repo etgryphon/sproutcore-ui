@@ -49,7 +49,7 @@ test("Properties Tests", function() {
   editor.execCommand('underline', false, null);
   equals(ce.get('selectionIsUnderlined'), YES, 'Text should be underlined');
   
-  // FIXME: [MT] queryCommandState('justifyXXXX') always returns fasle in safari...
+  // HACK: [MT] queryCommandState('justifyXXXX') always returns fasle in safari...
   // find a workaround
   editor.execCommand('justifycenter', false, null);
   equals(ce.get('selectionIsCenterJustified'), YES, 'Text should be center justified');
@@ -69,11 +69,11 @@ test("Properties Tests", function() {
   editor.execCommand('insertunorderedlist', false, null);
   equals(ce.get('selectionIsUnorderedList'), YES, 'Text should be unordered list');
   
-  // FIXME: [MT] Text should be indented but property will return NO either way
+  // HACK: [MT] Text should be indented but property will return NO either way
   editor.execCommand('indent', false, null);
   equals(ce.get('selectionIsIndented'), NO, 'Text should be indented');
   
-  // FIXME: [MT] Text should be outdented but property will return NO either way
+  // HACK: [MT] Text should be outdented but property will return NO either way
   editor.execCommand('outdent', false, null);
   equals(ce.get('selectionIsOutdented'), NO, 'Text should be outdented');
   

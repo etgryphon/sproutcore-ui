@@ -1343,7 +1343,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 		
     // restore original selection
 		/*		  
-		// FIXME [JS] - this doesn't work when the link is around an IMG (and nothing else
+		// HACK [JS] - this doesn't work when the link is around an IMG (and nothing else
     		var selectionRange = doc.createRange();
     		selectionRange.setStart(selectionStartContainer, selectionStartOffset);
     		selectionRange.setEnd(selectionEndContainer, selectionEndOffset);		
@@ -1375,7 +1375,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return NO;
   },
 
-  // FIXME: [MT] Should do something similar to what's being done on
+  // HACK: [MT] Should do something similar to what's being done on
   // image creation (Assigning the newly created image to the selectedImage
   // property)
   // "fixed"? [JS] if no real selection, then selection returns next element

@@ -71,6 +71,13 @@ SCUI.SelectFieldTab = SC.View.extend(
   init: function() {
     sc_super();
     this._tab_nowShowingDidChange()._tab_itemsDidChange();
+
+    // propagate classNames to the selectFieldView (e.g., 'dark')
+    var classNames = this.get('classNames'), sfClassNames = this.selectFieldView.get('classNames');
+    classNames = classNames.without('sc-view').without('scui-select-field-tab-view');
+    sfClassNames = sfClassNames.uniq();
+    sfClassNames.pushObjects(classNames);
+    this.selectFieldView.set('classNames', sfClassNames);
   },
 
   createChildViews: function() {
@@ -111,7 +118,6 @@ SCUI.SelectFieldTab = SC.View.extend(
   */
   selectFieldView: SC.SelectButtonView.extend({
     layout: { left: 4, right: 0, height: 24 },
-    classNames: ['dark'],
     //litte items => objects alias so I can use the same properties as a tab view...
     items: function(key, value){
       if(value === undefined){

@@ -374,10 +374,6 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   sortObjects: function(objects) {
     var nameKey;
 
-    if (objects && !objects.sort && objects.toArray) {
-      objects = objects.toArray();
-    }
-
     if (!this.get('disableSort') && objects) {
       if (!objects.sort && objects.toArray) {
         objects = objects.toArray();

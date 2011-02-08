@@ -40,6 +40,7 @@ SCUI.DashboardDelegate = {
   },
   
   dashboardWidgetDidMove: function(dashboardView, widget) {
+    return null;
   },
 
   /**
@@ -56,6 +57,24 @@ SCUI.DashboardDelegate = {
     to front view.  Override if you want the notification.
   */
   dashboardWidgetDidCommitEditing: function(dashboardView, widget) {
+    return null;
+  },
+
+  /**
+   * Called by the SCUI.DashboardView when the view is initialized.
+   */
+  dashboardViewDidInitialize: function(dashboardView) {
+    return null;
+  },
+
+  /**
+   * Called by the SCUI.DashboardView when the size of the clipping frame changes.
+   *
+   * This is potentially useful, for example, if the dashboard widgets should be rearranged based
+   * on the currently available viewing space.
+   */
+  dashboardFrameDidChange: function(dashboardView, clippingFrame) {
+    return null;
   }
 
 };

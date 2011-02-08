@@ -37,7 +37,12 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
 
   didCreateLayer: function() {
     sc_super();
-    this._contentDidChange(); // force an init
+
+    // Force an init.
+    this._contentDidChange();
+
+    var del = this.get('dashboardDelegate');
+    if (del && del.dashboardViewDidInitialize) del.dashboardViewDidInitialize(this);
   },
 
   beginManaging: function() {
@@ -126,6 +131,21 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
     return YES;
   },
 
+  /**
+   * Overridden here so that we can invoke the delegate if the size of the clipping frame changes.
+   *
+   * The dashboard may want to perform certain actions in this case, like rerrange the widgets
+   * beased on the currently available viewing space.
+   */
+  viewDidResize: function() {
+    sc_super();
+
+    var clippingFrame = this.get('clippingFrame'), del = this.get('dashboardDelegate');
+    if (this._isClippingFrameSizeDifferent(clippingFrame) && del && del.dashboardFrameDidChange) {
+      del.dashboardFrameDidChange(this, clippingFrame);
+    }
+  },
+
   // PRIVATE METHODS
   
   _contentDidChange: function() {
@@ -139,6 +159,27 @@ SCUI.DashboardView = SC.View.extend( SCUI.DashboardDelegate, {
       v.setIfChanged('canDeleteWidget', canDelete);
     });
   }.observes('canDeleteContent'),
+
+  /*
+   * Returns YES if the size of the clipping frame is different than it was the last time this
+   * function was invoked (from viewDidResize()).
+   */
+  _isClippingFrameSizeDifferent: function(cf) {
+    if (!this._previousCFHeight) {
+      // We don't care about differences if the CF is only just now defined.
+      this._previousCFHeight = cf.height;
+      this._previousCFWidth = cf.width;
+      return YES;
+    } else {
+      if (this._previousCFHeight === cf.height && this._previousCFWidth === cf.width) {
+        return NO;
+      } else {
+        this._previousCFHeight = cf.height;
+        this._previousCFWidth = cf.width;
+        return YES;
+      }
+    }
+  },
 
   _updateItemViews: function() {
     var content = this.get('content');

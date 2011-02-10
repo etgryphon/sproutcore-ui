@@ -1009,13 +1009,14 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   }.property('selection').cacheable(),
 
   _findFontTag: function(elem) {
-    while (elem.nodeName !== 'BODY') {
+    while (elem && elem.nodeName !== 'BODY') {
       if (elem.nodeName === 'FONT') {
         return elem;
       } else {
         elem = elem.parentNode;
       }
     }
+    return null;
   },
 
   selectionFontColor: function(key, value) {
@@ -1330,28 +1331,21 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
 		var selectionStartOffset = selectionRange.startOffset;
 		var selectionEndContainer = selectionRange.endContainer;
 		var selectionEndOffset = selectionRange.endOffset;
-		
+		var returnValue = YES;
 		// select our link and unlink
 		var range = doc.createRange();
-		var a = this._getSelectedElement();
-		while (a.nodeName != "A") { a = a.parentNode; }
-		range.selectNode(a);
-		selection.removeAllRanges();
-		selection.addRange(range);
-		
-		var returnValue = doc.execCommand("unlink", false, null);
-		
-    // restore original selection
-		/*		  
-		// HACK [JS] - this doesn't work when the link is around an IMG (and nothing else
-    		var selectionRange = doc.createRange();
-    		selectionRange.setStart(selectionStartContainer, selectionStartOffset);
-    		selectionRange.setEnd(selectionEndContainer, selectionEndOffset);		
-    		selection.removeAllRanges();
-    		selection.addRange(selectionRange);
-    */
-    // right now, with that commented out, the selection will likely clear after an unlink
-    // in some oddball cases, it MAY end up selecting more
+		var a = this.get('selectedHyperlink');
+		if (a) {
+		  range.selectNode(a);
+		  selection.removeAllRanges();
+		  selection.addRange(range);
+		  returnValue = doc.execCommand("unlink", false, null);
+		  if (returnValue) {
+		    // clear the selection - Firefox Bug sometimes adds to the selection after an unlink, which is not desired
+		    selection.removeAllRanges();
+	    }
+	  }
+
 		this.querySelection();
     this.set('isEditing', YES);
 
@@ -1611,100 +1605,100 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       return;
     }
     range = this.get('selectionRange');
-    
-    /*
-    
-    The quest for the selected hyperlink is a nasty one, all based on whether or not you just created the link, because
-    it manipulates the selection range in different ways depending on what was selected.
-    
-    If you only selected an image, the IMG is the node unless it is wrapped in an A, in which case the A is the node and you have
-    to look for its child to get the image.
-    
-    If you selected a range of text, then several different things are possible
-    * if you did not just create a link, then you are in a text node and the link is
-    ** the range's common ancestor
-    ** or an ancestor of it
-    
-    * if you DID just create a link, the range may be
-    ** the start/end container (this is what it usually is on Chrome/Webkit)
-    ** the one and only object between the start and end nodes - (beginning and middle of a line) this was REALLY tricky
-    *** it happens to be the next node of the start (which is the previous text block or node)
-    *** and an ancestor of the end (which is itself the actual content inside the link)
-    *** but ONLY if those two are the same.  otherwise, it'll likely be one of the above cases
-    ** the previous child to a <BR> tag if the BR tag is at the end of the selection
-    
-    * TODO [JS] still to test/fix:
-    ** fix link colors (handle with fixing the rest of the firefox color problems)
-
-    BTW if a link failure happened (create link when you shouldn't have, as in there's no text selected or the browser thought there wasn't)
-    that is a MAJOR KISS YOUR ASS GOODBYE BUG - the content editable ceases to react properly, and selections are just hosed from that point on.
-
-    * TODO [JS] fix image border when image is inside link
-    when an image is inside a link, the border needs to be set to 0.  
-    HOWEVER, when the border is set to 0, you can't change it to 0 (SC doesn't detect a change)
-    Workaround set the border to 1, then to 0, and it goes away.
-
-    */
-    if (SC.browser.msie) {
-      // [JS] I'm concerned that this doesn't do "the right thing", but we're not focusing on IE in great detail yet.
-      if (range.length === 1) node = range.item();
-      if (range.parentElement) node = range.parentElement();
-      currentHyperlink = this._findAncestor(node, 'A');
-
-    } else {
-      // TODO [JS]: remove all logging statements when i'm finally sure it is all working right
+    if (range) {
       /*
-      SC.Logger.log(range.startContainer);
-      SC.Logger.log(range.startOffset);
-      SC.Logger.log(range.endContainer);
-      SC.Logger.log(range.endOffset);
-      
-      SC.Logger.log(range.startContainer.childNodes[range.startOffset]);
-      SC.Logger.log(range.endContainer.childNodes[range.endOffset]);
+    
+      The quest for the selected hyperlink is a nasty one, all based on whether or not you just created the link, because
+      it manipulates the selection range in different ways depending on what was selected.
+    
+      If you only selected an image, the IMG is the node unless it is wrapped in an A, in which case the A is the node and you have
+      to look for its child to get the image.
+    
+      If you selected a range of text, then several different things are possible
+      * if you did not just create a link, then you are in a text node and the link is
+      ** the range's common ancestor
+      ** or an ancestor of it
+    
+      * if you DID just create a link, the range may be
+      ** the start/end container (this is what it usually is on Chrome/Webkit)
+      ** the one and only object between the start and end nodes - (beginning and middle of a line) this was REALLY tricky
+      *** it happens to be the next node of the start (which is the previous text block or node)
+      *** and an ancestor of the end (which is itself the actual content inside the link)
+      *** but ONLY if those two are the same.  otherwise, it'll likely be one of the above cases
+      ** the previous child to a <BR> tag if the BR tag is at the end of the selection
+    
+      * TODO [JS] still to test/fix:
+      ** fix link colors (handle with fixing the rest of the firefox color problems)
+
+      BTW if a link failure happened (create link when you shouldn't have, as in there's no text selected or the browser thought there wasn't)
+      that is a MAJOR KISS YOUR ASS GOODBYE BUG - the content editable ceases to react properly, and selections are just hosed from that point on.
+
+      * TODO [JS] fix image border when image is inside link
+      when an image is inside a link, the border needs to be set to 0.  
+      HOWEVER, when the border is set to 0, you can't change it to 0 (SC doesn't detect a change)
+      Workaround set the border to 1, then to 0, and it goes away.
+
       */
-      node = range.startContainer.childNodes[range.startOffset];
-      if (!node && (range.startContainer === range.endContainer)) {
-        node = range.startContainer;
-      }
-      // this situation happens when in the beginning and middle of a line
-      // startContainer is modified to being the text node BEFORE the link
-      // endContainer is the deepest textnode at the end of the selection, so you need to climb up it to find the 'A' 
-      if (!node && (range.startContainer.nextSibling === this._findAncestor(range.endContainer, 'A'))) {
-        node = range.startContainer.nextSibling;
-      }
-      // this situation happens when at the END of a line, in front of the BR tag
-      // endContainer is the BODY, endContainer's offset child is the BR tag, the previous sibling from that is your 'A'
-      // also works for end of the document, where there's an implicit BR created automatically for you
-      // fortunately, this works even if the selected range was styled, because the a tag went around the styles
-      if (!node && (range.endContainer.childNodes[range.endOffset] && range.endContainer.childNodes[range.endOffset].previousSibling.tagName === 'A')) {
-        node = range.endContainer.childNodes[range.endOffset].previousSibling;
-      }
-    }
+      if (SC.browser.msie) {
+        // [JS] I'm concerned that this doesn't do "the right thing", but we're not focusing on IE in great detail yet.
+        if (range.length === 1) node = range.item();
+        if (range.parentElement) node = range.parentElement();
+        currentHyperlink = this._findAncestor(node, 'A');
 
-    if (node) {
-      //SC.Logger.log("node " + node);
-      currentImage = node.nodeName === 'IMG' ? node: null;
-      currentHyperlink = node.nodeName === 'A' ? node : this._findAncestor(node, 'A');
+      } else {
+        // TODO [JS]: remove all logging statements when i'm finally sure it is all working right
+        /*
+        SC.Logger.log(range.startContainer);
+        SC.Logger.log(range.startOffset);
+        SC.Logger.log(range.endContainer);
+        SC.Logger.log(range.endOffset);
+
+        SC.Logger.log(range.startContainer.childNodes[range.startOffset]);
+        SC.Logger.log(range.endContainer.childNodes[range.endOffset]);
+        */
+        node = range.startContainer.childNodes[range.startOffset];
+        if (!node && (range.startContainer === range.endContainer)) {
+          node = range.startContainer;
+        }
+        // this situation happens when in the beginning and middle of a line
+        // startContainer is modified to being the text node BEFORE the link
+        // endContainer is the deepest textnode at the end of the selection, so you need to climb up it to find the 'A' 
+        if (!node && (range.startContainer.nextSibling === this._findAncestor(range.endContainer, 'A'))) {
+          node = range.startContainer.nextSibling;
+        }
+        // this situation happens when at the END of a line, in front of the BR tag
+        // endContainer is the BODY, endContainer's offset child is the BR tag, the previous sibling from that is your 'A'
+        // also works for end of the document, where there's an implicit BR created automatically for you
+        // fortunately, this works even if the selected range was styled, because the a tag went around the styles
+        if (!node && (range.endContainer.childNodes[range.endOffset] && range.endContainer.childNodes[range.endOffset].previousSibling.tagName === 'A')) {
+          node = range.endContainer.childNodes[range.endOffset].previousSibling;
+        }
+      }
+
+      if (node) {
+        //SC.Logger.log("node " + node);
+        currentImage = node.nodeName === 'IMG' ? node: null;
+        currentHyperlink = node.nodeName === 'A' ? node : this._findAncestor(node, 'A');
       
-      // immediately after a selection & link of an IMG, the A tag becomes the node so we have to dig to find the IMG
-      if (currentHyperlink && currentHyperlink.childNodes.length === 1) {
-        currentImage = currentHyperlink.firstChild.nodeName === 'IMG' ? currentHyperlink.firstChild : null;
+        // immediately after a selection & link of an IMG, the A tag becomes the node so we have to dig to find the IMG
+        if (currentHyperlink && currentHyperlink.childNodes.length === 1) {
+          currentImage = currentHyperlink.firstChild.nodeName === 'IMG' ? currentHyperlink.firstChild : null;
+        }
+      } else {
+        //SC.Logger.log("commonAncestor " + range.commonAncestorContainer);
+        currentHyperlink = range.commonAncestorContainer.nodeName === 'A' ? range.commonAncestorContainer : this._findAncestor(range.commonAncestorContainer, 'A');
       }
-    } else {
-      //SC.Logger.log("commonAncestor " + range.commonAncestorContainer);
-      currentHyperlink = range.commonAncestorContainer.nodeName === 'A' ? range.commonAncestorContainer : this._findAncestor(range.commonAncestorContainer, 'A');
-    }
 
-    try {
-      currentText = selection.toString();
-    } catch (e) {
-      SC.Logger.dir(e);
+      try {
+        currentText = selection.toString();
+      } catch (e) {
+        SC.Logger.dir(e);
+      }
+    
+      //SC.Logger.log(currentImage);
+      //SC.Logger.log(currentHyperlink);
+      //SC.Logger.log(currentText);
     }
-    
-    //SC.Logger.log(currentImage);
-    //SC.Logger.log(currentHyperlink);
-    //SC.Logger.log(currentText);
-    
     this.set('selectedImage', currentImage);
     this.set('selectedHyperlink', currentHyperlink);
     this.set('selectedText', currentText);
@@ -1867,8 +1861,8 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
           }
         }
       }
-      return elm;
     }
+  return elm;
   },
 
   _resetColorCache: function() {

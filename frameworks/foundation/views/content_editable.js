@@ -1257,15 +1257,21 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   imageBorderStyle: function(key, value) {
     var image = this.get('selectedImage');
     if (!image) return '';
-
+    
     if (value !== undefined) {
       this.set('isEditing', YES);
       image.style.borderStyle = value;
+      if (value === 'none') { 
+        image.style.border = 0; // blow away the border to be safe.
+      }
+      else {
+        delete image.style.border;
+      }
       return value;
 
     } else {
       return image.style.borderStyle;
-
+  
     }
   }.property('selectedImage').cacheable(),
 

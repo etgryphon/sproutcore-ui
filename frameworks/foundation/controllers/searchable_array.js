@@ -26,7 +26,7 @@ SCUI.SearchableArrayController = SC.ArrayController.extend( SCUI.Searchable,
       curObj = content.objectAt(i);
       searchField = curObj.get(searchKey);
       if (!searchField) continue;
-      if ( searchField.match(searchRegex) ){
+      if ( searchField.toLowerCase().match(searchRegex) ){
         searchResults.push(curObj);
       }
     }

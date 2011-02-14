@@ -1,6 +1,7 @@
 // ========================================================================
 // SCUI.ContentEditableView Tests
 // ========================================================================
+/*globals NodeFilter SC SCUI sc_require rangy module test equals */
 
 var pane = SC.ControlTestPane.design()
   .add("ce", SCUI.ContentEditableView, {
@@ -10,7 +11,12 @@ var pane = SC.ControlTestPane.design()
   });
   
 pane.show();
-module("SCUI.ContentEditableView");
+
+module("SCUI.ContentEditableView", {
+  teardown: function() {
+    pane.view('ce').set('editorHTML', 'Lorem ipsum dolor sit amet.');
+  }
+});
 
 test("Verify value is being set properly", function() {
   function f() {
@@ -24,8 +30,6 @@ test("Verify value is being set properly", function() {
     SC.RunLoop.begin().end();
     equals(frame.contentDocument.body.innerHTML, 'lorem ipsum');
     window.start();
-    
-    window.start();
   }
   
   // give the iframe time to load
@@ -38,7 +42,7 @@ test("Properties Tests", function() {
   var frame = ce.$('iframe').get(0);
   var editor = frame.contentDocument;
   
-  editor.execCommand('selectall', false, null);
+  ce.selectContent();
   
   editor.execCommand('bold', false, null);
   equals(ce.get('selectionIsBold'), YES, 'Text should be bolded');
@@ -48,9 +52,29 @@ test("Properties Tests", function() {
   
   editor.execCommand('underline', false, null);
   equals(ce.get('selectionIsUnderlined'), YES, 'Text should be underlined');
+    
+  editor.execCommand('insertorderedlist', false, null);
+  equals(ce.get('selectionIsOrderedList'), YES, 'Text should be ordered list');
   
-  // HACK: [MT] queryCommandState('justifyXXXX') always returns fasle in safari...
-  // find a workaround
+  editor.execCommand('insertunorderedlist', false, null);
+  equals(ce.get('selectionIsUnorderedList'), YES, 'Text should be unordered list');
+    
+  editor.execCommand('subscript', false, null);
+  equals(ce.get('selectionIsSubscript'), YES, 'Text should be subscripted');
+  
+  editor.execCommand('superscript', false, null);
+  equals(ce.get('selectionIsSuperscript'), YES, 'Text should be superscripted');
+  
+});
+
+test("Alignment Tests (known failures)", function() {
+  var ce = pane.view('ce');
+  var frame = ce.$('iframe').get(0);
+  var editor = frame.contentDocument;
+  
+  ce.selectContent();
+  
+  // TOTDO: [JS] queryCommandState('justifyXXXX') always returns false in safari and firefox
   editor.execCommand('justifycenter', false, null);
   equals(ce.get('selectionIsCenterJustified'), YES, 'Text should be center justified');
   
@@ -63,49 +87,57 @@ test("Properties Tests", function() {
   editor.execCommand('justifyfull', false, null);
   equals(ce.get('selectionIsFullJustified'), YES, 'Text should be full justified');
   
-  editor.execCommand('insertorderedlist', false, null);
-  equals(ce.get('selectionIsOrderedList'), YES, 'Text should be ordered list');
-  
-  editor.execCommand('insertunorderedlist', false, null);
-  equals(ce.get('selectionIsUnorderedList'), YES, 'Text should be unordered list');
-  
-  // HACK: [MT] Text should be indented but property will return NO either way
-  editor.execCommand('indent', false, null);
-  equals(ce.get('selectionIsIndented'), NO, 'Text should be indented');
-  
-  // HACK: [MT] Text should be outdented but property will return NO either way
-  editor.execCommand('outdent', false, null);
-  equals(ce.get('selectionIsOutdented'), NO, 'Text should be outdented');
-  
-  editor.execCommand('subscript', false, null);
-  equals(ce.get('selectionIsSubscript'), YES, 'Text should be subscripted');
-  
-  editor.execCommand('superscript', false, null);
-  equals(ce.get('selectionIsSuperscript'), YES, 'Text should be superscripted');
-  
-  editor.execCommand('fontname', false, 'Arial');
-  equals(ce.get('selectionFontName'), 'Arial', 'Font type should be Arial');
-  
-  /** TODO: [MT] Write unit tests for font size */
-  /** TODO: [MT] Write unit tests for font color */
-  /** TODO: [MT] Write unit tests for background color */
 });
 
-
-test("Hyperlink Tests", function() {
+test("Indent Tests", function() {
   var ce = pane.view('ce');
   var frame = ce.$('iframe').get(0);
   var editor = frame.contentDocument;
   
-  editor.execCommand('selectall', false, null);
+  ce.selectContent();
+
+  // indent/outdent is not a fixed state, only an action, so always NO
+  editor.execCommand('indent', false, null);
+  equals(ce.get('selectionIsIndented'), NO, 'Text should be indented');
   
+  editor.execCommand('outdent', false, null);
+  equals(ce.get('selectionIsOutdented'), NO, 'Text should be outdented');
+  
+});
+
+test("Font and Color Tests (known failures)", function() {
+ var ce = pane.view('ce');
+ var frame = ce.$('iframe').get(0);
+ var editor = frame.contentDocument;
+ 
+ ce.selectContent();
+
+ editor.execCommand('fontname', false, 'Arial');
+ equals(ce.get('selectionFontName'), 'Arial', 'Font type should be Arial');
+ 
+ editor.execCommand('fontsize', false, '18px');
+ equals(ce.get('selectionFontSize'), '18px', 'Font size should be 18px');
+ 
+ editor.execCommand('fontcolor', false, '#FF0000');
+ equals(ce.get('selectionFontSize'), '#FF0000', 'Font color should be red');
+
+ editor.execCommand('backgroundcolor', false, '#0000FF');
+ equals(ce.get('selectionFontSize'), '#0000FF', 'background color should be blue');
+
+});
+
+test("Hyperlink Tests", function() {
+  var ce = pane.view('ce');
+  var link = 'http://www.google.com/';
+
+  ce.selectContent();
+
   var createFail = ce.createLink('');
-  equals(createFail, NO, 'Hyperlink creation shoud fail with empty string');
+  equals(createFail, NO, 'Hyperlink creation should fail with empty string');
   
-  var createSuccess = ce.createLink('http://www.google.com/');
-  equals(createSuccess, YES, 'Hyperlink creation shoud work with proper url');
-  
-  /** TODO: [MT] Write unit tests for the hyperlinkValue property */
+  var createSuccess = ce.createLink(link);
+  equals(createSuccess, YES, 'Hyperlink creation should work with proper url');
+  equals(ce.get('hyperlinkValue'), link, 'Hyperlink value should match what was created');
   
   var removeSuccess = ce.removeLink();
   equals(removeSuccess, YES, 'removeLink() should return true when successful');
@@ -116,7 +148,7 @@ test("Image Tests", function() {
   var frame = ce.$('iframe').get(0);
   var editor = frame.contentDocument;
   
-  editor.execCommand('selectall', false, null);
+  ce.selectContent();
   
   var createFail = ce.insertImage('');
   equals(createFail, NO, 'Image insertion should fail with empty string');
@@ -172,12 +204,19 @@ test("HTML/View Insertion", function() {
   var ce = pane.view('ce');
   var frame = ce.$('iframe').get(0);
   var editor = frame.contentDocument;
+  var html = '<span>Aliquam erat volutpat.</span>';
+  var label = SC.LabelView.create({value: "hi mom"});
+  var labelRendered = '<span style="-moz-user-select: all;" contenteditable="false"><span id="sc2926" class="sc-view sc-label-view sc-regular-size" style="left: 0px; right: 0px; top: 0px; bottom: 0px; text-align: left; font-weight: normal;">hi mom</span></span>';
   
   ce.set('editorHTML', '');
   
-  ce.insertHTML('<span>Aliquam erat volutpat.</span>', NO);
-  equals(ce.get('editorHTML'), '<span>Aliquam erat volutpat.</span>', 'Value is "Aliquam erat volutpat."');
+  ce.insertHTML(html, NO);
+  equals(ce.get('editorHTML'), html + "<br>", 'Value is "Aliquam erat volutpat."');
   
-  /** TODO: [MT] Write unit tests for the view insertion */
+  ce.insertView(label);
+  ok(ce.get('editorHTML').indexOf('hi mom'), 'value appended view label value');
+  ok(ce.get('editorHTML').indexOf('sc-label-view'), 'value appended view label className');
+  ok(ce.get('editorHTML').indexOf('contenteditable="false"'), 'value appended view contenteditable protection');
+
 });
 

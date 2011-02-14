@@ -112,18 +112,26 @@ test("Check toggle functionality", function() {
   equals(pane.view('invalidView').get('isShowingDropDown'), NO , 'invalidView.isShowingDropDown should be NO');
   
   // replicate mouse clicking
-  pane.view('buttonView').triggerAction();
-  equals(pane.view('buttonView').get('isShowingDropDown'), YES, 'buttonView.isVisibleInWindow should be YES');
+  if (pane.view('buttonView')._triggerActionAfterDelay) {
+    pane.view('buttonView')._triggerActionAfterDelay(); // SC 14
+  } else {
+    pane.view('buttonView').triggerAction(); // SC 10
+  }
+  equals(pane.view('buttonView').get('isShowingDropDown'), YES, 'buttonView.isShowingDropDown should be YES');
   
   pane.view('simpleButton').mouseDown();
   pane.view('simpleButton').mouseUp();
-  equals(pane.view('simpleButton').get('isShowingDropDown'), YES, 'simpleButton.isVisibleInWindow should be YES');
+  equals(pane.view('simpleButton').get('isShowingDropDown'), YES, 'simpleButton.isShowingDropDown should be YES');
   
-  pane.view('buttonView').triggerAction();
-  equals(pane.view('buttonView').get('isShowingDropDown'), NO, 'buttonView.isVisibleInWindow should be YES');
+  if (pane.view('buttonView')._triggerActionAfterDelay) {
+    pane.view('buttonView')._triggerActionAfterDelay(); // SC 14
+  } else {
+    pane.view('buttonView').triggerAction(); // SC 10
+  }
+  equals(pane.view('buttonView').get('isShowingDropDown'), NO, 'buttonView.isShowingDropDown should be NO');
   
   pane.view('simpleButton').mouseDown();
   pane.view('simpleButton').mouseUp();
-  equals(pane.view('simpleButton').get('isShowingDropDown'), NO, 'simpleButton.isVisibleInWindow should be YES');
+  equals(pane.view('simpleButton').get('isShowingDropDown'), NO, 'simpleButton.isShowingDropDown should be NO');
 });
 

@@ -32,7 +32,8 @@ module("SCUI.SearchableArrayController - search term", {
       TestObject.create({ title: "Object 3 Red" }),
       TestObject.create({ title: "Object 3 Green" })
     ];
-    controller = SCUI.SearchableArrayController.create({ content: content });
+    controller = SCUI.SearchableArrayController.create({ content: content, searchKey: 'title' });
+    controller.searchPause = null;
   },
   
   teardown: function() {
@@ -42,7 +43,7 @@ module("SCUI.SearchableArrayController - search term", {
 
 test("search term - EMPTY", function() {
   controller.set('search', '');
-  var c = controller.get('searchResults');
+  var c = controller.get('content');
   var contentLen = c.get('length');
   var sr = controller.get('searchResults');
   var searchLen = sr.get('length');
@@ -51,8 +52,9 @@ test("search term - EMPTY", function() {
 });
 
 test("search term - NULL", function() {
-  controller.set('search', null);
-  var c = controller.get('searchResults');
+  // [JS] search is "null" out of the box, so set doesn't call searchDidChange
+  controller.notifyPropertyChange('search', null);
+  var c = controller.get('content');
   var contentLen = c.get('length');
   var sr = controller.get('searchResults');
   var searchLen = sr.get('length');
@@ -62,7 +64,7 @@ test("search term - NULL", function() {
 
 test("search term - UNDEFINED", function() {
   controller.set('search', undefined);
-  var c = controller.get('searchResults');
+  var c = controller.get('content');
   var contentLen = c.get('length');
   var sr = controller.get('searchResults');
   var searchLen = sr.get('length');
@@ -72,7 +74,7 @@ test("search term - UNDEFINED", function() {
 
 test("search term - Blue", function() {
   controller.set('search', 'Blue');
-  var c = controller.get('searchResults');
+  var c = controller.get('content');
   var contentLen = c.get('length');
   var sr = controller.get('searchResults');
   var searchLen = sr.get('length');

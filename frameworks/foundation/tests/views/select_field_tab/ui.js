@@ -3,7 +3,7 @@
 // ========================================================================
 
 
-/*global module test htmlbody ok equals same stop start */
+/*global module test htmlbody ok equals same stop start SCUI */
 
 
 htmlbody('<style> .sc-static-layout { border: 1px red dotted; } </style>');
@@ -58,7 +58,7 @@ htmlbody('<style> .sc-static-layout { border: 1px red dotted; } </style>');
   // ..........................................................
   // TEST VIEWS
   // 
-  module('SC.TabView ui', pane.standardSetup());
+  module('SCUI.TabView ui', pane.standardSetup());
   
   test("Check that all tabViews are visible", function() {
     ok(pane.view('tabView1').get('isVisibleInWindow'), 'tabView1.isVisibleInWindow should be YES');
@@ -69,11 +69,13 @@ htmlbody('<style> .sc-static-layout { border: 1px red dotted; } </style>');
    
    test("Check that the tabView has the right classes set", function() {
      var viewElem=pane.view('tabView1').$();
-     var select=pane.view('tabView1').$('select');
+     var selectButton=pane.view('tabView1').get('childViews')[1];
+     var selectButtonElem=selectButton.$();
      ok(viewElem.hasClass('sc-view'), 'tabView1.hasClass(sc-view) should be YES');
-     ok(viewElem.hasClass('scui-select-field-tab-view'), 'tabView1.hasClass(sc-tab-view) should be YES');
-     ok(select[0].className.indexOf('sc-select-field-view')>=0, 'tabView1 should contain a select view');
-     ok(select[0].options.length==3, 'tabView1 should have 3 options');
+     ok(viewElem.hasClass('scui-select-field-tab-view'), 'tabView1.hasClass(scui-select-field-tab-view) should be YES');
+     ok(selectButton != null, 'tabView1 should contain a selectButton view');
+     ok(selectButtonElem.hasClass('select-button'), 'tabView1 selectButton.hasClass(select-button) should be YES');
+     ok(selectButton.get('objects').get('length') === 3, 'tabView1 selectButton should have 3 items');
    });
   
 

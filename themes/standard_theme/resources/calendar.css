@@ -1,0 +1,132 @@
+/* ==========================================================================
+*  Project:   StandardTheme Theme Styles
+*  Copyright: ©2011 My Company, Inc.
+*  ==========================================================================
+*/
+
+/* 
+  Place any styles you want to define in this file.  You can also break your
+  styles into multiple files.  Just add them to your resources or .lrpoj
+  directories to be included in the build.
+*/
+
+/* Core
+---------------------------------------------- */
+
+/* Header */
+
+.sc-theme .calendar > .header {
+  width: 203px;
+  height: 31px;
+  border: 1px solid #910009;
+  border-bottom-color: #5d0006;
+  background: #c20a17;
+	-webkit-border-radius: 4px 4px 0 0;
+	-moz-border-radius: 4px 4px 0 0;
+	border-radius: 4px 4px 0 0;
+	-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+	-moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f41c2f', endColorstr='#a5000a');
+  background: -webkit-gradient(linear, left top, left bottom, from(#f41c2f), to(#a5000a));
+  background: -moz-linear-gradient(top, #f41c2f, #a5000a);
+}
+
+.sc-theme .calendar .month {
+  margin: 0 29px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 31px;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .7);
+}
+
+.sc-theme .calendar .button {
+  width: 9px;
+  height: 10px;
+  position: absolute;
+  top: 12px;
+}
+
+.sc-theme .calendar .previous {
+  left: 10px;
+}
+
+.sc-theme .calendar .next {
+  right: 10px;
+}
+
+/* Body */
+
+.sc-theme .calendar .body {
+  display: inline-block;
+  padding: 10px;
+  border: 1px solid #a6a09c;
+  border-top: 0;
+  background: #f7f2ee;
+	-webkit-border-radius: 0 0 4px 4px;
+	-moz-border-radius: 0 0 4px 4px;
+	border-radius: 0 0 4px 4px;
+}
+
+.sc-theme .calendar .grid {
+  width: 182px;
+  overflow: hidden;
+  border-top: 1px solid #c6c2be;
+  border-left: 1px solid #c6c2be;
+}
+
+.sc-theme .calendar .day {
+  width: 25px;
+  height: 25px;
+  float: left;
+  border-bottom: 1px solid #c6c2be;
+  border-right: 1px solid #c6c2be;
+  line-height: 25px;
+  text-align: center;
+}
+
+.sc-theme .calendar .day.header {
+  height: 12px;
+  border-color: transparent;
+  font-size: 10px;
+  line-height: 12px;
+}
+
+.sc-theme .calendar .day.present {
+  color: #353535;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+  background: #ededea;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f8f8f7', endColorstr='#e1e0dc');
+  background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f7), to(#e1e0dc));
+  background: -moz-linear-gradient(top, #f8f8f7, #e1e0dc);
+}
+
+.sc-theme .calendar .day.past {
+  color: #aaa;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+  background: #f6f6f6;
+}
+
+.sc-theme .calendar .day.today {
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .7);
+  background: #a2a8ae;
+	-webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .5);
+	-moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .5);
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, .5);
+}
+
+.sc-theme .calendar .day.sel {
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .7);
+  background: #db0c10;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f50f0f', endColorstr='#bd0915');
+  background: -webkit-gradient(linear, left top, left bottom, from(#f50f0f), to(#bd0915));
+  background: -moz-linear-gradient(top, #f50f0f, #bd0915);
+}
+
+body {
+	width: 205px;
+	height: 255px;
+}

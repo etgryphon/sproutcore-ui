@@ -66,7 +66,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   
   /**
   */
-  displayProperties: ['frame', 'links.[]'],
+  displayProperties: ['frame'],
   
   // PUBLIC METHODS
 
@@ -354,43 +354,44 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   
   _updateLinks: function() {
     //console.log('%@._updateLinks()'.fmt(this));
-    var links = [];
-    var nodes = this.get('content');
-     if (nodes) {
-       var numNodes = nodes.get('length');
-       var node, i, j, nodeLinks, key, len, link;
-       var startNode, endNode;
-     
-       for (i = 0; i < numNodes; i++) {
-         node = nodes.objectAt(i);
-         if (node && (key = node.get('linksKey'))) {
-           nodeLinks = node.get(key) || [];
-           links = links.concat(nodeLinks);
-         }
-       }
+    var x, curr, links = [],
+        ni = this._nodeIndex || {},
+        nodes = this.get('content');
+    if (nodes) {
+      var numNodes = nodes.get('length');
+      var node, i, j, nodeLinks, key, len, link;
+      var startNode, endNode;
+      for( x in ni ){
+        node = ni[x];
+        if (node && (key = node.get('linksKey'))) {
+          nodeLinks = node.get(key);
+          links = links.concat(nodeLinks);
+        }
+      }
     
-       var linkSelection = this.get('linkSelection');
-       this.set('linkSelection', null);
-       if (linkSelection) {
-         var selectedID = LinkIt.genLinkID(linkSelection);
-         len = links.get('length');
-         for (i = 0; i < len; i++) {
-           link = links.objectAt(i);
-           if (LinkIt.genLinkID(link) === selectedID) {
-             this.set('linkSelection', link);
-             link.set('isSelected', YES);
-             break;
-           }
-         }
-       }
-     }
-     this.set('links', links);
+      var linkSelection = this.get('linkSelection');
+      this.set('linkSelection', null);
+      if (linkSelection) {
+        var selectedID = LinkIt.genLinkID(linkSelection);
+        len = links.get('length');
+        for (i = 0; i < len; i++) {
+          link = links.objectAt(i);
+          if (LinkIt.genLinkID(link) === selectedID) {
+            this.set('linkSelection', link);
+            link.set('isSelected', YES);
+            break;
+          }
+        }
+      }
+    }
+    this._links = links;
+    this.updateCanvas();
   },
 
   /**
   */
   _drawLinks: function(context) {
-    var links = this.get('links');
+    var links = this._links;
     var numLinks = links.get('length');
     var link, points, i, linkID;
     for (i = 0; i < numLinks; i++) {
@@ -440,7 +441,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   */
   _selectLink: function(pt) {
     //console.log('%@._selectLink()'.fmt(this));
-    var links = this.get('links') || [];
+    var links = this._links || [];
     var len = links.get('length');
     var link, dist, i;
 
@@ -494,18 +495,16 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     var nodes = this.get('content');
     var numNodes = 0;
     var node, nodeID;
-    
-    this.set('_nodeIndex', {});
-
+    this._nodeIndex = this._nodeIndex || {};
     if (nodes) {
       numNodes = nodes.get('length');
-    
       for (var i = 0; i < numNodes; i++) {
         node = nodes.objectAt(i);
-        node.registerInvalidationDelegate(this, 'linksDidChange');
-
         nodeID =  SC.guidFor(node);
-        this._nodeIndex[nodeID] = { node: node };
+        if (SC.none(this._nodeIndex[nodeID])){
+          node.registerInvalidationDelegate(this, 'linksDidChange');
+          this._nodeIndex[nodeID] = node;
+        } 
       }
     }
 

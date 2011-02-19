@@ -114,11 +114,13 @@ LinkIt.Node = {
     Fired by an observer on the links array that gets setup in initMixin.
   */
   _linksDidChange: function() {
-    //console.log('%@._linksDidChange()'.fmt(this));
+    // console.log('%@._linksDidChange()'.fmt(this));
     // Call invalidate function
-    if (this._invalidationDelegate) {
-      var method = this._invalidationDelegate[this._invalidationAction];
-      if (method) method.apply(this._invalidationDelegate);
+    var func, inact, indel = this._invalidationDelegate;
+    if (this._invalidationDelegate ) {
+      inact = this._invalidationAction;
+      func = indel[inact];
+      if (func) indel.invokeLast(inact);
     }
   }
   

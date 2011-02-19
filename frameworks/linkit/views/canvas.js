@@ -123,8 +123,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     var ctx, ce, frame = this.get('frame');
     
     if (firstTime && !SC.browser.msie) {
-      context.push('<canvas class="base-layer" width="%@" height="%@">You can\'t use canvas tags</canvas>'.fmt(frame.width, frame.height));
-      this._canvasContext = null;
+      context.push('<canvas class="base-layer" width="%@" height="%@"></canvas>'.fmt(frame.width, frame.height));
     }
 
     this.invokeOnce('updateCanvas');
@@ -431,7 +430,6 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   /**
   */
   _drawLinks: function(context) {
-  	if (!this._links) return;
     var links = this._links;
     var numLinks = links.get('length');
     var link, points, i, linkID;
@@ -536,7 +534,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     var nodes = this.get('content');
     var numNodes = 0;
     var node, nodeID;
-    this._nodeIndex = {};
+    this._nodeIndex = this._nodeIndex || {};
     if (nodes) {
       numNodes = nodes.get('length');
       for (var i = 0; i < numNodes; i++) {

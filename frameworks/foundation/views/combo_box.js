@@ -158,6 +158,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */
   dropDownMenuWidth: null,
   
+
   /**
     When 'isBusy' is true, the combo box shows a busy indicator at the bottom of the
     drop down pane.  Set its height here.

@@ -962,7 +962,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         this.set('isEditing', YES);
       }
     } else {
-      var elm = this._findFontTag(this._getSelectedElement());
+      var elm = this._findFontTag(this._getSelectedElement(), "fontFamily");
       if (elm && elm.nodeName.toLowerCase() === 'font') {
         ret = elm.style.fontFamily;
       } else {
@@ -998,7 +998,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         return value;
       }
     } else {
-      var elm = this._findFontTag(this._getSelectedElement());
+      var elm = this._findFontTag(this._getSelectedElement(), "fontSize");
       if (elm && elm.nodeName.toLowerCase() === 'font') {
         ret = elm.style.fontSize;
       } else {
@@ -1008,9 +1008,9 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     }
   }.property('selection').cacheable(),
 
-  _findFontTag: function(elem) {
+  _findFontTag: function(elem, property) {
     while (elem && elem.nodeName !== 'BODY') {
-      if (elem.nodeName === 'FONT') {
+      if (elem.nodeName === 'FONT' && elem.style && elem.style[property]) {
         return elem;
       } else {
         elem = elem.parentNode;

@@ -144,6 +144,11 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   statusIndicatorHeight: 20,
 
   /**
+    True allows the user to clear the value by deleting all characters in the textfield.  False will reset the textfield to the last entered value.
+  */
+  canDeleteValue: YES,
+
+  /**
     'objects' above, filtered by 'filter', then optionally sorted.
     If 'useExternalFilter' is YES, this property does nothing but
     pass 'objects' through unchanged.
@@ -510,6 +515,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   },
   
   _checkDeletedAll: function(delBackward) {
+    if (!this.get('canDeleteValue')) return;
     var value = this.get('textFieldView').get('value'),
         selection = this.get('textFieldView').get('selection'),
         wouldDeleteLastChar = NO;

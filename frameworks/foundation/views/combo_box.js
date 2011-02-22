@@ -235,7 +235,8 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   */
   textFieldView: SC.TextFieldView.extend({
     classNames: 'scui-combobox-text-field-view',
-    layout: { top: 0, left: 0, height: 22, right: 28 }
+    layout: { top: 0, left: 0, height: 22, right: 28 },
+    spellCheckEnabled: NO
   }),
 
   /**

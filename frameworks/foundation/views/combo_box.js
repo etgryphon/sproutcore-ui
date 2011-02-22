@@ -146,13 +146,18 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   /**
     The drop down pane resizes automatically.  Set the maximum allowed height here.
   */
-  maxListHeight: 194, // 10 rows at rowHeight (18px), plus 7px margin on top and bottom
-
+  maxListHeight: 194, // 10 rows at 18px, plus 7px margin on top and bottom
+  
   /**
     If a custom class name is desired for the picker, add it here.
   */
   customPickerClassName: null,
-
+  
+  /**
+    The drop down pane width
+  */
+  dropDownMenuWidth: null,
+  
   /**
     When 'isBusy' is true, the combo box shows a busy indicator at the bottom of the
     drop down pane.  Set its height here.
@@ -855,7 +860,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
     if (this._listView && this._listPane && this._listScrollView) {
       frame = this.get('frame');
-      width = frame ? frame.width : 200;
+      width = this.get('dropDownMenuWidth') ? this.get('dropDownMenuWidth') : frame ? frame.width : 200;
 
       isBusy = this.get('isBusy');
       spinnerHeight = this.get('statusIndicatorHeight');

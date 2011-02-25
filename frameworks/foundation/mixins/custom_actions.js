@@ -1,34 +1,35 @@
 
 /**
- The SCUI.classActions mixin allows actions and custom mouse events for any
- element that has a class on it. Useful for when you have a custom render method.
-
- Class names that you want to attach an action to should be unique
+ The SCUI.CustomActions mixin allows actions and custom mouse events for any
+ element that has an id or class on it.
+ Useful for when you have a custom render method.
 
  Example:
 
  {{{
    SC.View.extend(SCUI.classActions, {
 
-     classActions: {
-       "search": {
+     actions: {
+       "#my-search": {  // Match on ID
          target: 'Orion.globalSearchRecord',
          action: 'show'
        },
-       "help":   {target: 'Orion.helpController',     action: 'show'},
-       "logout": {
+       // Or match on Class
+       ".help":   {target: 'Orion.helpController', action: 'show'},
+       ".logout": {
          action: 'logout',
          mouseMoved: function(evt) {
-
+           // We can also have any of the mouse actions too
+           // mouseUp,mouseDown,mouseEntered,mouseExited,mouseMoved
          }
        }
      },
 
      render: function(context, firstTime) {
        context.push(
-         "<div class='sc-view search' title='", "_Search".loc(),"'><div></div></div>",
-         "<div class='sc-view help' "_Help".loc(),"'><div></div></div>",
-         "<div class='sc-view logout' "_Logout".loc(),"'><div></div></div>"
+         "<div id='my-search' class='search' title='", "_Search".loc(),"'></div>",
+         "<div class='help' "_Help".loc(),"'></div>",
+         "<div class='logout' "_Logout".loc(),"'></div>"
        );
      }
 
@@ -36,8 +37,8 @@
  }}}
 
  */
-SCUI.classActions = {
-  classActions:{},
+SCUI.CustomActions = {
+  actions:{},
 
   hoverClass: 'hover',
   activeClass: 'active',
@@ -58,7 +59,7 @@ SCUI.classActions = {
 
     classNames = this._classNames = [];
 
-    actions = this.classActions;
+    actions = this.actions;
     for(name in actions){
       if(actions.hasOwnProperty(name)) {
         classNames.push(name);
@@ -79,7 +80,7 @@ SCUI.classActions = {
     while(!ret && el.length>0 && (el[0] !== layer)) {
       i = clength;
       while(!ret && ((i--)>=0) ) {
-        if (el.hasClass(classNames[i])) ret = classNames[i] ;
+        if (el.is(classNames[i])) ret = classNames[i] ;
       }
       el = el.parent() ;
     }
@@ -89,7 +90,7 @@ SCUI.classActions = {
 
   mouseDown: function(evt) {
     var className = this._isInsideNamedClass(evt),
-        classDetails = this.classActions[className];
+        classDetails = this.actions[className];
 
     if(classDetails) {
       this._mouseDown(className, evt, classDetails);
@@ -99,7 +100,7 @@ SCUI.classActions = {
 
   mouseUp: function(evt) {
     var className = this._isInsideNamedClass(evt),
-        classDetails = this.classActions[className];
+        classDetails = this.actions[className];
 
     if(classDetails) {
       this._mouseUp(className, evt, classDetails);
@@ -108,7 +109,7 @@ SCUI.classActions = {
   },
 
 //  mouseEntered: function(evt) {
-//
+//    console.log("Entered!");
 //  },
 
   mouseExited: function(evt) {
@@ -116,66 +117,71 @@ SCUI.classActions = {
     if(overClass) {
       this._mouseExited(overClass, evt);
     }
+    this._mouseDownClass = null;
   },
 
   /**
    * Event Dispatchers to subviews.
    */
   _mouseDown: function(className, evt, classDetails) {
-    if(!classDetails) classDetails = this.classActions[className];
+    if(!classDetails) classDetails = this.actions[className];
     this._isContinuedMouseDown = YES;
     this._mouseDownClass = className;
-    this.$('.'+className).addClass(this.activeClass);
+    this.$(className).addClass(this.activeClass);
     if (classDetails.mouseDown) classDetails.mouseDown(evt);
   },
 
   _mouseUp: function(className, evt, classDetails) {
     var target, action;
-    if(!classDetails) classDetails = this.classActions[className];
-    console.log("Mouse Up ", this._mouseDownClass, className);
+    if(!classDetails) classDetails = this.actions[className];
     if (this._mouseDownClass == className) {
-      console.log('Run Action');
       // Trigger the action
       target = classDetails['target'] || null;
       action = classDetails['action'];
+      console.log("Calling Action ", action, "on target", target);
+      if (target === undefined && SC.typeOf(action) === SC.T_FUNCTION) {
+        action.call(this, evt);
+      }
+      else if (target !== undefined && SC.typeOf(action) === SC.T_FUNCTION) {
+        action.apply(target, [evt]);
+      } else {
+        this.getPath('pane.rootResponder')
+            .sendAction(action, target, this, this.get('pane'));
+      }
 
-      this.getPath('pane.rootResponder')
-          .sendAction(action, target, this, this.get('pane'));
-    } else {
-      console.log('No Action!');
     }
-    this.$('.'+className).removeClass(this.activeClass);
+    this.$(className).removeClass(this.activeClass);
     this._isContinuedMouseDown = NO;
     this._mouseDownClass = null;
   },
 
   _mouseEntered: function(className, evt, classDetails) {
-    if(!classDetails) classDetails = this.classActions[className];
+    if(!classDetails) classDetails = this.actions[className];
 
-    this.$('.'+className).addClass(this.hoverClass);
+    this.$(className).addClass(this.hoverClass);
     if (this._isContinuedMouseDown && this._mouseDownClass == className) {
-      this.$('.'+className).addClass(this.activeClass);
+      this.$(className).addClass(this.activeClass);
     }
     if (classDetails.mouseEntered) classDetails.mouseEntered(evt);
     this._mouseOverClass = className;
   },
 
   _mouseExited: function(className, evt, classDetails) {
-    if(!classDetails) classDetails = this.classActions[className];
+    if(!classDetails) classDetails = this.actions[className];
 
-    this.$('.'+className).removeClass(this.hoverClass).removeClass(this.activeClass);
+    this.$(className).removeClass(this.hoverClass).removeClass(this.activeClass);
     if (classDetails.mouseExited) classDetails.mouseExited(evt);
     this._mouseOverClass = null;
   },
 
   _mouseMoved:function(className, evt, classDetails) {
-    if(!classDetails) classDetails = this.classActions[className];
+    if(!classDetails) classDetails = this.actions[className];
     if (classDetails.mouseMoved) classDetails.mouseMoved(evt);
   },
 
   mouseMoved: function(evt) {
     var className = this._isInsideNamedClass(evt),
-        classDetails = this.classActions[className],
+        classDetails = this.actions[className],
         overClass = this._mouseOverClass;
     if(classDetails) {
       if(className !== overClass) {

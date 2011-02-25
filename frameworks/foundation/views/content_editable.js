@@ -1020,10 +1020,11 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
   },
 
   selectionFontColor: function(key, value) {
-    if (!this.get('isVisibleInWindow')) return '';
+    var ret = '';
+    if (!this.get('isVisibleInWindow')) return ret;
 
     var doc = this._document;
-    if (!doc) return '';
+    if (!doc) return ret;
 
     if (!SC.browser.msie) {
       doc.execCommand('styleWithCSS', false, true);
@@ -1040,28 +1041,29 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
     }
 
-    if (!SC.browser.msie) {
-      doc.execCommand('styleWithCSS', false, false);
-    }
-
     if (this._last_font_color_cache) {
-      return this._last_font_color_cache;
+      ret = this._last_font_color_cache;
     } else {
       var color = doc.queryCommandValue('forecolor');
       if (color) {
         this._last_font_color_cache = SC.browser.msie ? this.convertBgrToHex(color) : SC.parseColor(color);
-        return this._last_font_color_cache;
+        ret = this._last_font_color_cache;
       }
     }
 
-    return '';
+    if (!SC.browser.msie) {
+      doc.execCommand('styleWithCSS', false, false);
+    }
+
+    return ret;
   }.property('selection').cacheable(),
 
   selectionBackgroundColor: function(key, value) {
-    if (!this.get('isVisibleInWindow')) return '';
+    var ret = '';
+    if (!this.get('isVisibleInWindow')) return ret;
 
     var doc = this._document;
-    if (!doc) return '';
+    if (!doc) return ret;
 
     var prop = SC.browser.msie ? 'backcolor': 'hilitecolor';
     if (!SC.browser.msie) {
@@ -1084,23 +1086,24 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
       }
     }
 
-    if (!SC.browser.msie) {
-      doc.execCommand('styleWithCSS', false, false);
-    }
     if (this._last_background_color_cache) {
-      return this._last_background_color_cache;
+      ret = this._last_background_color_cache;
     } else {
       var color = doc.queryCommandValue(prop);
       if (color !== 'transparent') {
         color = SC.browser.msie ? this.convertBgrToHex(color) : SC.parseColor(color);
         if (color) {
           this._last_background_color_cache = color;
-          return this._last_background_color_cache;
+          ret = this._last_background_color_cache;
         }
       }
     }
+    
+    if (!SC.browser.msie) {
+      doc.execCommand('styleWithCSS', false, false);
+    }
 
-    return '';
+    return ret;
   }.property('selection').cacheable(),
 
   hyperlinkValue: function(key, value) {

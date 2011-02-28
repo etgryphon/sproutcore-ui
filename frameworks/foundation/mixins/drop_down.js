@@ -74,8 +74,14 @@ SCUI.DropDown = {
 
     // Now show the menu
     if (this._dropDownPane && SC.typeOf(this._dropDownPane.popup) === SC.T_FUNCTION) {
-      var dropDownType = this.get('dropDownType');
-      this._dropDownPane.popup(this, dropDownType); // show the drop down
+      var dropDownType = this.get('dropDownType'),
+          view = this.get('layer') || this,
+          anchor = this.get('anchor') || this;
+      if(SC.typeOf(anchor) === SC.T_STRING) {
+        anchor = view.$(anchor).firstObject();
+        this.set('anchor', anchor); // cache the DOM reference, as this shouldn't change
+      }
+      this._dropDownPane.popup(anchor, dropDownType); // show the drop down
       this.set('isShowingDropDown', YES);
     }
   },

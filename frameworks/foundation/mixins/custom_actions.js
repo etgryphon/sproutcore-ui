@@ -88,6 +88,11 @@ SCUI.CustomActions = {
     return ret ;
   },
 
+  _setDetails: function(classDetails) {
+    if(classDetails.set) {classDetails.set('layer', this);}
+    else {classDetails['layer'] = this;}
+  },
+
   mouseDown: function(evt) {
     var className = this._isInsideNamedClass(evt),
         classDetails = this.actions[className];
@@ -125,6 +130,7 @@ SCUI.CustomActions = {
    */
   _mouseDown: function(className, evt, classDetails) {
     if(!classDetails) classDetails = this.actions[className];
+    this._setDetails(classDetails);
     this._isContinuedMouseDown = YES;
     this._mouseDownClass = className;
     this.$(className).addClass(this.activeClass);
@@ -136,8 +142,13 @@ SCUI.CustomActions = {
     if(!classDetails) classDetails = this.actions[className];
     if (this._mouseDownClass == className) {
       // Trigger the action
-      target = classDetails['target'] || null;
-      action = classDetails['action'];
+      if (classDetails.get){
+        target = classDetails.get('target') || null;
+        action = classDetails.get('action');
+      } else {
+        target = classDetails['target'] || null;
+        action = classDetails['action'];
+      }
       console.log("Calling Action ", action, "on target", target);
       if (target === undefined && SC.typeOf(action) === SC.T_FUNCTION) {
         action.call(this, evt);

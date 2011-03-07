@@ -29,6 +29,14 @@ SCUI.LoadingSpinnerView = SC.View.extend({
   //determines if the view is playing
   isPlaying: false,
   
+  //if we decided that its taking too long we should do something
+  stopIfTakingTooLong: false,
+  
+  //pass a target and action to be calld if taking too long
+  stopIfSlowTarget: null,
+  
+  stopIfSlowAction: null,
+  
   render: function(context, firstTime){
     if(firstTime){
       var classNames = ['loadingSpinner', 'lightTrans'];
@@ -44,7 +52,14 @@ SCUI.LoadingSpinnerView = SC.View.extend({
     this.$('div.loadingSpinner').css('background-position','0px %@px'.fmt(offsetY));
     //schedule next frame if animation is still supposed to play
     if(this.get('isPlaying')){
-      this.invokeLater(this.animate, 150);  
+      this.invokeLater(this.animate, 150);
+      if(this.get('stopIfTakingTooLong') && 
+          this._startTime && (Date.now() - this._startTime) >= 10000){//if its been more than 10 seconds its taking too long!
+
+        var target = this.get('stopIfSlowTarget'), action = this.get('stopIfSlowAction');
+        if(target && target.sendEvent && action) target.sendEvent(action);
+        this._startTime = Date.now();
+      }
     }
     
     currentFrame+=1;
@@ -62,11 +77,13 @@ SCUI.LoadingSpinnerView = SC.View.extend({
         that.set('isVisible',true);
         that.set('isPlaying', true);
         that.animate();
+        if(this.get('stopIfTakingTooLong')) that._startTime = Date.now();
       });
     
     }
     else if(isPlaying && this.get('callCount') <= 0){
       this.invokeOnce(function(){
+        if(that.get('stopIfTakingTooLong')) that._startTime = null;
         that.set('isPlaying', false);
         that.set('isVisible', false);
       });

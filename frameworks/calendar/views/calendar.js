@@ -59,7 +59,7 @@ SCUI.CalendarView = SC.View.extend({
                       .begin('div').addClass('body');
     
     for (var i = 0; i < 7; i++) {
-      context = context.begin('div').addClass('day header').text(weekdayStrings[i]).end();
+      context = context.begin('div').addClass('day name').text(weekdayStrings[i]).end();
     }
     
     context = context.begin('div').addClass('grid');

@@ -12,6 +12,7 @@ sc_require('mixins/simple_button');
 
   @extends SC.View, SC.Control, SC.Editable
   @author Jonathan Lewis
+  @author Peter Bergström
 */
 
 SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
@@ -116,6 +117,11 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   useExternalFilter: NO,
   
   /**
+    If you want to highlight the filtered text, then set this to YES.
+  */
+  highlightFilterOnListItem: NO,
+  
+  /**
     Bound internally to the status of the 'objects' array, if present
   */
   status: null,
@@ -128,6 +134,11 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   }.property('status').cacheable(),
 
   /**
+    Row height for each item.
+  */
+  rowHeight: 18,
+
+  /**
     The drop down pane resizes automatically.  Set the minimum allowed height here.
   */
   minListHeight: 18,
@@ -135,7 +146,12 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   /**
     The drop down pane resizes automatically.  Set the maximum allowed height here.
   */
-  maxListHeight: 194, // 10 rows at 18px, plus 7px margin on top and bottom
+  maxListHeight: 194, // 10 rows at rowHeight (18px), plus 7px margin on top and bottom
+
+  /**
+    If a custom class name is desired for the picker, add it here.
+  */
+  customPickerClassName: null,
 
   /**
     When 'isBusy' is true, the combo box shows a busy indicator at the bottom of the
@@ -689,8 +705,15 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
     var spinnerHeight = this.get('statusIndicatorHeight');
     var csv = this.get('customScrollView') || SC.ScrollView;
 
+    var classNames = ['scui-combobox-list-pane', 'sc-menu'],
+        customPickerClassName = this.get('customPickerClassName');
+    
+    if(customPickerClassName) {
+      classNames.push(customPickerClassName);
+    }
+
     this._listPane = SC.PickerPane.create({
-      classNames: ['scui-combobox-list-pane', 'sc-menu'],
+      classNames: classNames,
       acceptsKeyPane: NO,
       acceptsFirstResponder: NO,
 
@@ -708,6 +731,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
             layout: { left: 0, right: 0, top: 0, bottom: 0 },
             allowsMultipleSelection: NO,
             target: this,
+            rowHeight: this.get('rowHeight'),
             action: '_selectListItem', // do this when [Enter] is pressed, for example
             contentBinding: SC.Binding.from('filteredObjects', this).oneWay(),
             contentValueKey: this.get('nameKey'),
@@ -721,17 +745,31 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
             exampleView: SC.ListItemView.extend({
               maxNameLength: this.get('maxNameLength'),
               localize: this.get('localize'),
+              
+              displayProperties: ['highlightSpan'],
+
+              highlightFilteredSpan: this.get('highlightFilterOnListItem'),
+
+              comboBoxView: this,
 
               renderLabel: function(context, label) {
+                
                 var maxLength = this.get('maxNameLength');
                 
                 if (!SC.none(maxLength)) {
                   label = this.truncateMaxLength(label, maxLength);
-                  context.push('<label>', label || '', '</label>');
                 }
-                else {
-                  return sc_super();
+
+                if(this.get('highlightFilteredSpan')) {
+                  var filter = this.getPath('comboBoxView.filter');
+                  
+                  if(filter.length > 2) {
+                    label = label.replace(filter, '<span class="highlight-filtered-text">'+filter+'</span>');
+                  }
                 }
+                
+                context.push('<label>', label || '', '</label>');
+
               },
               
               truncateMaxLength: function(str, maxLength) {
@@ -815,7 +853,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
 
       isBusy = this.get('isBusy');
       spinnerHeight = this.get('statusIndicatorHeight');
-      rowHeight = this._listView.get('rowHeight') || 18;
+      rowHeight = this._listView.get('rowHeight') || this.get('rowHeight');
 
       // even when list is empty, show at least one row's worth of height,
       // unless we're showing the busy indicator there

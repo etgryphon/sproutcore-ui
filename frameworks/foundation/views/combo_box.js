@@ -763,7 +763,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
                 if(this.get('highlightFilteredSpan')) {
                   var filter = this.getPath('comboBoxView.filter');
                   
-                  if(filter.length > 2) {
+                  if(filter.length > 1) {
                     label = label.replace(filter, '<span class="highlight-filtered-text">'+filter+'</span>');
                   }
                 }

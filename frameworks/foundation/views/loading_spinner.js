@@ -54,7 +54,7 @@ SCUI.LoadingSpinnerView = SC.View.extend({
     if(this.get('isPlaying')){
       this.invokeLater(this.animate, 150);
       if(this.get('stopIfTakingTooLong') && 
-          this._startTime && (Date.now() - this._startTime) >= 10000){//if its been more than 10 seconds its taking too long!
+          this._startTime && (Date.now() - this._startTime) >= 30000){//if its been more than 30 seconds its taking too long!
 
         var target = this.get('stopIfSlowTarget'), action = this.get('stopIfSlowAction');
         if(target && target.sendEvent && action) target.sendEvent(action);

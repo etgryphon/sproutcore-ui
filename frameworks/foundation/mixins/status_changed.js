@@ -36,10 +36,12 @@ SCUI.StatusChanged = {
     (eg display an error message) in UI when a record's status changes
   */
   _sc_content_status_changed: function(){
-    var status, content;
+    var status, content, last = this._last_status || 0, that = this;
     if(this.get('contentKey') && this.get) content = this.get(this.get('contentKey'));
     if(content && content.get) status = content.get('status');
-    if(this.get('notifyOnContentStatusChange') && status && this.contentStatusDidChange) this.contentStatusDidChange(status);
+    if (last === status) return;
+    this._last_status = status;
+    if(this.get('notifyOnContentStatusChange') && status && last !== status && this.contentStatusDidChange ) this.invokeLast(function(){ that.contentStatusDidChange(status); });
   },
   
   initMixin: function(){

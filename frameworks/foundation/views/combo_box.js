@@ -167,7 +167,7 @@ SCUI.ComboBoxView = SC.View.extend( SC.Control, SC.Editable, {
   /**
     True allows the user to clear the value by deleting all characters in the textfield.  False will reset the textfield to the last entered value.
   */
-  canDeleteValue: YES,
+  canDeleteValue: NO,
 
   /**
     'objects' above, filtered by 'filter', then optionally sorted.

@@ -1,6 +1,7 @@
 // ========================================================================
 // SCUI.UploadView
 // ========================================================================
+/*globals SCUI FormData*/
 
 /** @class
 
@@ -284,6 +285,7 @@ SCUI.UploadView = SC.View.extend(
   },
 
   _uploadCheck: function(response) {
+    this.set('fullServerResponse', response);
     this.set('serverResponse', response.get('body'));
     this._uploadDone();
   },

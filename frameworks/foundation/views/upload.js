@@ -96,7 +96,7 @@ SCUI.UploadView = SC.View.extend(
                     .begin('input')
                       .attr('type', 'file')
                       .attr('name', inputName)
-                      .styles({ 'position': 'relative',
+                      .addStyle({ 'position': 'relative',
                                 'height': '100%',
                                 'width': 'auto',
                                 'opacity': '0',

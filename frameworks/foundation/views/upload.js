@@ -81,8 +81,7 @@ SCUI.UploadView = SC.View.extend(
       this._firstTime = YES;
       
       if (cssImageClass) {
-                
-        context .begin('form')
+        context.begin('form')
                   .attr('method', 'post')
                   .attr('enctype', 'multipart/form-data')
                   .attr('action', uploadTarget)
@@ -97,7 +96,7 @@ SCUI.UploadView = SC.View.extend(
                     .begin('input')
                       .attr('type', 'file')
                       .attr('name', inputName)
-                      .styles({ 'position': 'relative',
+                      .addStyle({ 'position': 'relative',
                                 'height': '100%',
                                 'width': 'auto',
                                 'opacity': '0',

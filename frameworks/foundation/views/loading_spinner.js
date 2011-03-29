@@ -38,8 +38,10 @@ SCUI.LoadingSpinnerView = SC.View.extend({
   stopIfSlowAction: null,
   
   render: function(context, firstTime){
+    var theme = this.get('theme') || 'lightTrans';
+    
     if(firstTime){
-      var classNames = ['loadingSpinner', 'lightTrans'];
+      var classNames = ['loadingSpinner', theme];
       context.begin('div').addClass(classNames).addStyle({width: 18, height: 18, position: 'absolute'}).end();
     }
   },

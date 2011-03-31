@@ -42,6 +42,21 @@ SCUI.Undoable = {
       valueCache[key] = this.get(key);
     }
   },
+  
+  /**
+   * Remove undoable property observer...
+   * @private
+   */
+  destroyMixin: function () {
+    var up = this.get('undoableProperties');
+    var idx = up.length;
+    while (--idx >= 0) {
+      var key = up[idx];
+      this.removeObserver(key, this, this.undoablePropertyDidChange);
+    } 
+    
+    this._undoableProperty_didChange_valueCache = null;
+  },
 
   /**
     This method is invoked whenever an undoable property changes.  It will register 
@@ -54,9 +69,12 @@ SCUI.Undoable = {
     
     if (this.undoablePropertyShouldRegisterUndo(key, oldValue, newValue)) {
       // register undo operation with old value
-      this.get('undoManager').registerUndo(function() {
-        this.set(key, oldValue);
-      }, this);
+      var undoManager = this.get('undoManager');
+      if (undoManager) {
+        undoManager.registerUndo(function() {
+          this.set(key, oldValue);
+        }, this);
+      }
       // update the cache
       valueCache[key] = newValue; 
     }

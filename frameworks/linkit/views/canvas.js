@@ -495,7 +495,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
     var nodes = this.get('content');
     var numNodes = 0;
     var node, nodeID;
-    this._nodeIndex = this._nodeIndex || {};
+    this._nodeIndex = {};
     if (nodes) {
       numNodes = nodes.get('length');
       for (var i = 0; i < numNodes; i++) {

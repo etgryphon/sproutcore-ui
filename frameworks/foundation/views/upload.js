@@ -226,6 +226,7 @@ SCUI.UploadView = SC.View.extend(
   */
   clearFileUpload: function() {
     var f = this._getForm();
+    this.set('value', null);
     if (f) {
       
       // remove event before calling f.innerHTML = f.innerHTML

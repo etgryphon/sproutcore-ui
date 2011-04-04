@@ -42,6 +42,7 @@ module("SCUI.ModalPane", pane.standardSetup());
 
 test("Check basic visibility", function() {
   picker.append();
+  picker.remove();
 });
 
 

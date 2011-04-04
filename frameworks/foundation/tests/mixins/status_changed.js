@@ -39,9 +39,17 @@ test("setting a content object without a status shouldn't call statusDidChange",
 
 test("setting content with status should change status", function() {
   content = SC.Object.create({status: 'what now'});
+  
+  SC.RunLoop.begin();
   controller.set('content', content);
+  SC.RunLoop.end();
+  
   equals(statusChangeCount, 1, 'statusChanged should fire count is 1');
+  
+  SC.RunLoop.begin();
   content.set('status', "hello nurse");
+  SC.RunLoop.end();
+  
   equals(statusChangeCount, 2, 'statusChanged should fire count is 2');
   
 });

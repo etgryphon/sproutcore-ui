@@ -31,6 +31,13 @@ SCUI.DatePickerView = SC.View.extend(
   
   isEditing: NO,
   
+  /** 
+    The isTextFieldEnabled property determines if the textfield view is enabled
+    
+    @property {Boolean}
+  */
+  isTextFieldEnabled: YES,
+  
   // @private
   _textfield: null,
   _date_button: null,
@@ -57,20 +64,27 @@ SCUI.DatePickerView = SC.View.extend(
     // init the dateString to whatever date we're starting with (if present)
     this.set('dateString', this._genDateString(this.get('date')));
     
+    var textFieldDesign = {
+      layout: {left: 0, top: 0, right: 0, bottom: 0},
+      classNames: ['scui-datechooser-text'],
+      isEnabled: YES,
+      valueBinding: SC.Binding.from('.dateString', that),
+      hintBinding: SC.Binding.from('hint', that),
+      mouseDown: function (evt) {
+        that.toggle();
+        sc_super();
+      }
+    };
+    
+    if (this.get('isTextFieldEnabled')) {
+      textFieldDesign.isEnabledBinding = SC.binding('isEnabled', that);
+    } else {
+      textFieldDesign.isEnabled = NO;
+    }
+    
     // First, Build the Textfield for the date chooser
     view = this._textfield = this.createChildView( 
-      SC.TextFieldView.design( {
-        layout: {left: 0, top: 0, right: 0, bottom: 0},
-        classNames: ['scui-datechooser-text'],
-        isEnabled: YES,
-        isEnabledBinding: SC.binding('isEnabled', that),
-        valueBinding: SC.Binding.from('.dateString', that),
-        hintBinding: SC.Binding.from('hint', that),
-        mouseDown: function (evt) {
-          that.toggle();
-          sc_super();
-        }
-      })
+      SC.TextFieldView.design(textFieldDesign)
     );
     childViews.push(view);
     this.bind('isEditing', SC.Binding.from('isEditing', view).oneWay());

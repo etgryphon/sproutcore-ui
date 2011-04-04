@@ -141,9 +141,35 @@ SCUI.UploadView = SC.View.extend(
     sc_super();
   },
   
-  mouseDown: function(evt) {
-    if (evt.target.nodeName === 'LABEL') {
-      this.$('input')[0].click();
+  /**
+   * Well, unfortunatley programmatically firing the click event doesn't 
+   * work in all browsers (namely FF 1.5 - 3.6 && Opera)
+   * So I am implementing the moving button trick on mouse move
+   */
+  mouseMoved: function(evt) {
+    if (evt && evt.target.nodeName === 'LABEL') {
+      var elem = evt.target;
+      var fileElem = document.getElementsByClassName('hidden-upload-input')[0];
+      evt.target.file = fileElem;
+      
+			var ox = 0, oy = 0;
+			
+			if (evt.target.offsetParent) {
+				ox = evt.target.offsetLeft;
+				oy = evt.target.offsetTop;
+				while (elem = elem.offsetParent) {
+					ox += elem.offsetLeft;
+					oy += elem.offsetTop;
+				}
+			}
+
+			var x = evt.pageX - ox;
+			var y = evt.pageY - oy;
+			var w = evt.target.file.offsetWidth;
+			var h = evt.target.file.offsetHeight;
+
+			evt.target.file.style.top		= y - (h / 2)  + 'px';
+			evt.target.file.style.left	= x - (w - 30) + 'px'; 
     }
   },
   

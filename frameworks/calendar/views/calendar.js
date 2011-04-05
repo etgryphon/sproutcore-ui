@@ -19,26 +19,29 @@ SCUI.CalendarView = SC.View.extend({
   mouseDown: function(evt) {
     var date = this._parseSelectedDate(evt.target.id);
     if (date) this.set('selectedDate', date);
+    var target = evt.target;
+    var className = target.className;
     
-    if (evt.target.className === 'button previous') {
-      this.$('.button.previous').addClass('active');
-    } else if (evt.target.className === 'button next') {
-      this.$('.button.next').addClass('active');
-    }
+    if (className.match('button')) { this.$(target).addClass('active'); }
+    
     return YES;
   },
   
   mouseUp: function(evt) {
     var monthStartOn = this.get('monthStartOn');
     
-    if (evt.target.className === 'button previous active') {
-      this.set('monthStartOn', monthStartOn.advance({month: -1}));
-      this.$('.button.previous').removeClass('active');
-    } else if (evt.target.className === 'button next active') {
-      this.set('monthStartOn', monthStartOn.advance({month: 1}));
-      this.$('.button.next').removeClass('active');
-      
+    var className = evt.target.className, param;
+    var unit = className.match('previous') ? -1 : 1;    
+    
+    if (className.match('year')) {
+      param = {year: unit};
+    } else {
+      param = {month: unit};
     }
+    
+    this.set('monthStartOn', monthStartOn.advance(param));
+    this.$('.button.active').removeClass('active');
+    
     return YES;
   },
   
@@ -55,6 +58,8 @@ SCUI.CalendarView = SC.View.extend({
                         .begin('div').addClass('month').text(monthStartOn.toFormattedString('%B %Y')).end()
                         .begin('div').addClass('button previous').end()
                         .begin('div').addClass('button next').end()
+                        .begin('div').addClass('button previous year').end()
+                        .begin('div').addClass('button next year').end()
                       .end()
                       .begin('div').addClass('body');
     

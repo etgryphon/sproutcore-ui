@@ -27,7 +27,7 @@ SCUI.Searchable = {
         
     // Check for min length
     if (s.length < mc) {
-      c = this.get('content');
+      c = this.get('content') || [];
       this.set('searchResults', c);
       return;
     }
@@ -73,6 +73,9 @@ SCUI.Searchable = {
       this._lastSearch = search;
       sk = this.get('searchKey');
       sr = this.runSearch(search, c, sk);
+    }
+    else if (!c) {
+      sr = [];
     }
     this.set('searchResults', sr);
   },

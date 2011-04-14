@@ -1698,7 +1698,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
         // endContainer is the BODY, endContainer's offset child is the BR tag, the previous sibling from that is your 'A'
         // also works for end of the document, where there's an implicit BR created automatically for you
         // fortunately, this works even if the selected range was styled, because the a tag went around the styles
-        if (!node && (range.endContainer.childNodes[range.endOffset] && range.endContainer.childNodes[range.endOffset].previousSibling.tagName === 'A')) {
+        if (!node && (range.endContainer.childNodes[range.endOffset] && range.endContainer.childNodes[range.endOffset].previousSibling && range.endContainer.childNodes[range.endOffset].previousSibling.tagName === 'A')) {
           node = range.endContainer.childNodes[range.endOffset].previousSibling;
         }
       }

@@ -108,7 +108,6 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   },
   
   didCreateLayer: function() {
-    sc_super();
     if (SC.browser.msie) {
       var frame = this.get('frame');
       var canvas = document.createElement('CANVAS');

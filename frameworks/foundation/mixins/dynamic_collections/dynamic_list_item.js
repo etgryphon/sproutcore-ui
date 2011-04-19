@@ -2,8 +2,6 @@
 // SCUI.DynamicListItem
 // ==========================================================================
 
-sc_require('core');
-
 /** @mixin
   This mixin allows for dynamic root controllers and dynamic root heights
   

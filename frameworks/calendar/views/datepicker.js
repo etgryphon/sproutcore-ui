@@ -3,8 +3,6 @@
 // ==========================================================================
 /*globals SCUI */
 
-sc_require('core');
-
 /** @class
 
   This is the Date Chooser View that creates a text field, a button that launches a calendar chooser

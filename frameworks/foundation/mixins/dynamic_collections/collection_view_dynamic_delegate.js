@@ -2,8 +2,6 @@
 // SCUI.CollectionViewDynamicDelegate
 // ==========================================================================
 
-sc_require('core');
-
 /** @mixin
   
   TODO: [EG] Add Documentation

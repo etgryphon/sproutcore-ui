@@ -1,7 +1,5 @@
 /*globals SCUI*/
 
-sc_require('core');
-
 /**
   @namespace
   

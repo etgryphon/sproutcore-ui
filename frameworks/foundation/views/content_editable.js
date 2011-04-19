@@ -3,7 +3,6 @@
 // ==========================================================================
 /*globals NodeFilter SC SCUI sc_require */
 
-sc_require('core');
 sc_require('panes/context_menu_pane');
 
 /** @class
@@ -1397,7 +1396,7 @@ SCUI.ContentEditableView = SC.WebView.extend(SC.Editable,
     return NO;
   },
 
-  // HACK: [MT] Should do something similar to what's being done on
+  // HACK: [JS] Should do something similar to what's being done on
   // image creation (Assigning the newly created image to the selectedImage
   // property)
   // "fixed"? [JS] if no real selection, then selection returns next element

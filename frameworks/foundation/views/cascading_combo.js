@@ -1,7 +1,7 @@
 //============================================================================
 // SCUI.MasterDetailComboView
 //============================================================================
-sc_require('core');
+
 /**
 
   This view will display two combo boxes with labels.
@@ -49,12 +49,7 @@ SCUI.CascadingComboView = SC.View.extend({
   
   detailLabel: null,
 
-  // PUBLIC METHODS
-  
-  init: function() {
-    sc_super();
-  },
-  
+  // PUBLIC METHODS  
   createChildViews: function() {
     var childViews = [], view;
     var required = ['contentPath', 'masterValueKey', 'detailValueKey', 

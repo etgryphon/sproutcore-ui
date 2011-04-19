@@ -2,8 +2,6 @@
 // SCUI.CollapsibleView
 // ==========================================================================
 
-sc_require('core');
-
 /** @class
 
   This is a really simple view that toggles between two view for an expanded and a collapsed view

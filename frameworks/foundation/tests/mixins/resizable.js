@@ -4,7 +4,6 @@
 /**
   @author Brandon Blatnick
 */
-sc_require('core');
 
 var basic = 
 SC.View.design({

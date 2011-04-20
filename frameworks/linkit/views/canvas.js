@@ -67,9 +67,50 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   /**
   */
   displayProperties: ['frame'],
+
+  /**
+  * Easy to use detection of the canvas class
+  */
+  isCanvas : YES,
+  
+  //*** SC.DropTarget ***
+  /**
+  	Must be true when your view is instantiated.
+
+  	Drop targets must be specially registered in order to receive drop
+  	events.  SproutCore knows to register your view when this property
+  	is true on view creation.
+  */  
+  isDropTarget: YES,
   
   // PUBLIC METHODS
-
+  
+  /**
+   * You would need to override this function with your specific handler
+   * to handle Drops to the canvas.
+   */
+  acceptCanvasDrop: YES,
+  
+  computeDragOperations: function(drag, evt) {
+  	// Make it dependent on acceptCanvasDrop
+    return this.acceptCanvasDrop?SC.DRAG_LINK:SC.DRAG_NONE;
+  }, 
+  
+  /**
+   * Overridden perform drag operation so that CollectionView#performDragOperation will
+   * not get called.
+   * If you would like to implement a Canvas Drop to Create a new element
+   * just override this operation to do what you need to do 
+   * 
+   * @param drag
+   * @param op
+   * @returns
+   */
+  performDragOperation: function(drag, op) {
+  	return SC.DRAG_NONE;
+  },
+  
+ 
   /**
     Call this to trigger a links refresh
   */

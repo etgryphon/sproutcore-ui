@@ -7,13 +7,13 @@ This is a basic library for some great native Sproutcore UI functionality includ
 - Foundation:
   [ALPHA] Basic View and Mixin framework that has general oriented UI treatments that are helpful
 - Calendar:
-  [ALPHA] Basic Calendar Functionality: Datepicker, CalendarView
+  [BETA] Basic Calendar Functionality: Datepicker, CalendarView
 - Dashboard:
   [EXPERIMENTAL] Develop the OSX/Windows 7 Freeform Dashboard, very early stages with lots of bugs
 - Drawing
   [ALPHA] Basic drawing framework that uses the canvas tag, SVG to be added soon.
 - LinkIt
-  [ALPHA] Complex framework for building directed and non-directed graphs much like Yahoo Pipes and WireIt
+  [BETA] Complex framework for building directed and non-directed graphs much like Yahoo Pipes and WireIt
 - Sai
   [ALPHA] A set of wrapping views for Raphael.js
 
@@ -36,6 +36,7 @@ Contributors:
   - Brandon Blatnick
   - Devin Torres
   - Ryan Mudryk
+  - Renat Zubairov
 
 === FUTURE DEVELOPMENT ===
 - Dashboard

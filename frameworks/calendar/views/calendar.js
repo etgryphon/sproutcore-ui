@@ -10,7 +10,7 @@ SCUI.CalendarView = SC.View.extend({
   selectedDate: null,
   showYearButtons: YES,
   
-  displayProperties: ['monthStartOn'],
+  displayProperties: ['monthStartOn', 'selectedDate'],
   
   resetToSelectedDate: function(){
     var selectedDate = this.get('selectedDate');
@@ -31,19 +31,25 @@ SCUI.CalendarView = SC.View.extend({
   mouseUp: function(evt) {
     var monthStartOn = this.get('monthStartOn');
     
-    var className = evt.target.className, param;
-    var unit = className.match('previous') ? -1 : 1;    
+    var className = evt.target.className,
+        param;
     
-    if (className.match('year')) {
-      param = {year: unit};
+    if (className.match('button')) {
+      var unit = className.match('previous') ? -1 : 1;    
+    
+      if (className.match('year')) {
+        param = {year: unit};
+      } else {
+        param = {month: unit};
+      }
+    
+      this.set('monthStartOn', monthStartOn.advance(param));
+      this.$('.button.active').removeClass('active');
+      return YES;
     } else {
-      param = {month: unit};
+      return NO;
     }
     
-    this.set('monthStartOn', monthStartOn.advance(param));
-    this.$('.button.active').removeClass('active');
-    
-    return YES;
   },
   
   render: function(context, firstTime) {

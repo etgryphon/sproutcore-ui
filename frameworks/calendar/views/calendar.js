@@ -8,6 +8,7 @@ SCUI.CalendarView = SC.View.extend({
   
   monthStartOn: SC.DateTime.create({day: 1}),
   selectedDate: null,
+  showYearButtons: YES,
   
   displayProperties: ['monthStartOn'],
   
@@ -57,10 +58,14 @@ SCUI.CalendarView = SC.View.extend({
     context = context .begin('div').addClass('header')
                         .begin('div').addClass('month').text(monthStartOn.toFormattedString('%B %Y')).end()
                         .begin('div').addClass('button previous').end()
-                        .begin('div').addClass('button next').end()
-                        .begin('div').addClass('button previous year').end()
-                        .begin('div').addClass('button next year').end()
-                      .end()
+                        .begin('div').addClass('button next').end();
+
+    if (this.get('showYearButtons')) {
+      context = context .begin('div').addClass('button previous year').end()
+                        .begin('div').addClass('button next year').end();
+    }  
+                        
+    context = context .end()
                       .begin('div').addClass('body');
     
     for (var i = 0; i < 7; i++) {

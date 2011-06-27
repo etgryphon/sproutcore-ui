@@ -7,22 +7,31 @@
 
   This is a ComboBox specialized to choose a time.
 
-  @extends SC.View
+  @extends SC.ComboBox
   @author Luke Melia
   @version 0.1
   @since 0.1
 */
 SCUI.TimePickerDateTimeWrapper = SC.Object.extend({
   dateTime: null,
-  formattedTime: function(dateTime) {
-    return dateTime.toFormattedString('%i:%M %p');
-  },
+  show24HourTime: YES,
+  separator: ':',
+  formatString: function(){
+    if (this.get('show24HourTime')) {
+      return '%H' + this.get('separator') + '%M';
+    } else {  // use 12-hour format
+      return '%i' + this.get('separator') + '%M %p';
+    }   
+  }.property('show24HourTime', 'separator'),
   toString: function(){
-    return this.formattedTime(this.get('dateTime'));
+    return this.get('dateTime').toFormattedString(this.get('formatString'));
   },
   stringified: function(){
     return this.toString();
-  }.property('dateTime')
+  }.property('dateTime'),
+  isEqual: function(other) {
+    return this.get('dateTime').isEqual(other.get('dateTime'));
+  }
 });
 
 SCUI.TimePickerView = SCUI.ComboBoxView.extend(  
@@ -32,12 +41,13 @@ SCUI.TimePickerView = SCUI.ComboBoxView.extend(
   startTime: SC.DateTime.create({hour:0}),
   endTime: SC.DateTime.create({hour:23, minute:30}),
   separator: ':',
-  show24HourTime: true,
+  show24HourTime: YES,
   canDeleteValue: YES,
 
   disableSort: YES,
   dropDownButtonView: null,
   nameKey: 'stringified',
+  valueKey: 'dateTime',
   
   init: function() {
     sc_super();
@@ -45,7 +55,7 @@ SCUI.TimePickerView = SCUI.ComboBoxView.extend(
     this.set('objects', this.get('timeChoices'));
   },
   textFieldView: SC.TextFieldView.extend({
-    classNames: 'scui-combobox-text-field-view',
+    classNames: 'scui-timepicker-text-field-view'.w(),
     layout: { top: 0, left: 0, height: 22, right: 0 },
     spellCheckEnabled: NO,
     fieldDidFocus: function() {
@@ -54,7 +64,6 @@ SCUI.TimePickerView = SCUI.ComboBoxView.extend(
     }
   }),
   setFromString: function(timeString, format) {
-    console.log('TimePickerView#setFromString', timeString, format);
     if (SC.empty(timeString)) {
       this.set('value', null);
     } else {
@@ -62,25 +71,21 @@ SCUI.TimePickerView = SCUI.ComboBoxView.extend(
           matchingObject = this.get('objects').find(function(item){
         return (item.get('dateTime') === parsedDateTime) ? YES : NO;
       });
-      this.setIfChanged('value', matchingObject);
+      this.setIfChanged('value', this._getObjectValue(matchingObject, this.get('valueKey')));
     }
-  },
-  twelveHourFormatter: function(dateTime) {
-    var formatString = '%i' + this.get('separator') + '%M %p';
-    return dateTime.toFormattedString(formatString);
-  },
-  twentyFourHourFormatter: function(dateTime) {
-    var formatString = '%H' + this.get('separator') + '%M';
-    return dateTime.toFormattedString(formatString);
   },
   timeChoices: function(){
     var times = [],
         time = this.get('startTime'),
-        formatter = this.get('show24HourTime') ? _.bind(this.twelveHourFormatter, this) : _.bind(this.twentyFourHourFormatter, this);
-    while(time <= this.get('endTime')) {
+        endTime = this.get('endTime');
+    if (!(SC.DateTime.compare(time, endTime) < 0)) {
+      throw "startTime must be less than endTime";
+    }
+    while(SC.DateTime.compare(time, endTime) <= 0) {
       times.pushObject(SCUI.TimePickerDateTimeWrapper.create({
         dateTime:time,
-        formattedTime: formatter
+        show24HourTime: this.get('show24HourTime'),
+        separator: this.get('separator')
       }));
       time = time.advance({minute: this.get('step')});
     }

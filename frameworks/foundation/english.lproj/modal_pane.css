@@ -4,7 +4,7 @@
   background: static_url('images/lower-right-drag.png') no-repeat;
 }
 .header {
-  background: static_url('images/header-bg.png') repeat-x;
+  background: static_url('images/title-bar-bg.png') repeat-x;
 }
 .header .modal-title {
   top: 10px !important;

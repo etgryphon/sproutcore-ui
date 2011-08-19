@@ -1,7 +1,7 @@
 sc_require('views/template_collection');
 
 SCUI.HeaderedTemplateCollectionView = SC.TemplateCollectionView.extend({
-  groupByProperty: 'header',
+  groupByPropertyPath: 'header',
   headerView: 'SC.TemplateView',
 
   /**
@@ -173,9 +173,9 @@ SCUI.HeaderedTemplateCollectionView = SC.TemplateCollectionView.extend({
         item = content.objectAt(idx);
         previousHeaderValue = headerValue;
         if (item.get) {
-          headerValue = item.get(this.get('groupByProperty'));
+          headerValue = item.getPath(this.get('groupByPropertyPath'));
         } else {
-          throw "items must have a property '" + this.get('groupByProperty') + "'";
+          throw "items must have a property path '" + this.get('groupByPropertyPath') + "'";
         }
         if (previousHeaderValue !== headerValue) {
           // Add header row

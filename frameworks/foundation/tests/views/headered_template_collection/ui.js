@@ -22,7 +22,7 @@ test("creating a headered collection view works", function() {
   var DefinitionTermChildView = CollectionChildView.extend({ tagName: "dt" });
 
   var CollectionView = SCUI.HeaderedTemplateCollectionView.extend({
-    groupByProperty: 'category',
+    groupByPropertyPath: 'category',
     content: [
               SC.Object.create({title: 'Hello', category: 'Greetings'}),
               SC.Object.create({title: 'Hola', category: 'Greetings'}),
@@ -71,7 +71,7 @@ test("should include an id attribute if id is set in the options hash", function
              ]
   });
   var view = SC.TemplateView.create({
-    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView" id="baz" groupByProperty="category"}}foo{{/collection}}')
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView" id="baz" groupByPropertyPath="category"}}foo{{/collection}}')
   });
 
   view.createLayer();

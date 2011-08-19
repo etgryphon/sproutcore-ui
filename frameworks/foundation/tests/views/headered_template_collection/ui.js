@@ -57,7 +57,6 @@ test("creating a headered collection view works", function() {
   equals(ulCollectionView.$('li').not('.header').length, 4, "List item view was rendered");
   equals(ulCollectionView.$('li.header').length, 2, "List item header was rendered");
 
-  console.log(olCollectionView.$().html());
   ok(olCollectionView.$().is("ol"), "Ordered collection collection view was rendered");
   equals(olCollectionView.$('li').not('.subhead').length, 4, "List item view was rendered");
   equals(olCollectionView.$('li.subhead').length, 2, "List item header was rendered");

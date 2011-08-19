@@ -177,8 +177,6 @@ SCUI.HeaderedTemplateCollectionView = SC.TemplateCollectionView.extend({
         } else {
           throw "items must have a property '" + this.get('groupByProperty') + "'";
         }
-        console.log("previousHeaderValue was ", previousHeaderValue);
-        console.log("headerValue is ", headerValue);
         if (previousHeaderValue !== headerValue) {
           // Add header row
           childView = this._createTemplatedChildView(headerViewClass, itemOptions, item, headerRenderFunc);

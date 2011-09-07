@@ -12,83 +12,125 @@
   @version 0.1
   @since 0.1
 */
-SCUI.TimePickerDateTimeWrapper = SC.Object.extend({
-  dateTime: null,
-  show24HourTime: YES,
-  separator: ':',
-  formatString: function(){
-    if (this.get('show24HourTime')) {
-      return '%H' + this.get('separator') + '%M';
-    } else {  // use 12-hour format
-      return '%i' + this.get('separator') + '%M %p';
-    }   
-  }.property('show24HourTime', 'separator'),
-  toString: function(){
-    return this.get('dateTime').toFormattedString(this.get('formatString'));
-  },
-  stringified: function(){
-    return this.toString();
-  }.property('dateTime'),
-  isEqual: function(other) {
-    return this.get('dateTime').isEqual(other.get('dateTime'));
-  }
-});
-
 SCUI.TimePickerView = SCUI.ComboBoxView.extend(  
 /** @scope SCUI.TimePickerView.prototype */ {
   classNames: ['scui-timepicker-view'],
   step:30,
-  startTime: SC.DateTime.create({hour:0}),
-  endTime: SC.DateTime.create({hour:23, minute:30}),
+  startTime: SC.DateTime.create({year:1970, month:1, day:1, hour:7, minute: 0, millisecond:0}),
+  endTime:   SC.DateTime.create({year:1970, month:1, day:2, hour:6, minute:30, millisecond:0}),
   separator: ':',
   show24HourTime: YES,
   canDeleteValue: YES,
-
   disableSort: YES,
   dropDownButtonView: null,
-  nameKey: 'stringified',
-  valueKey: 'dateTime',
-  
-  init: function() {
-    sc_super();
-    var _this = this;
-    this.set('objects', this.get('timeChoices'));
-  },
+  nameKey: null,
+  valueKey: null,
+
   textFieldView: SC.TextFieldView.extend({
     classNames: 'scui-timepicker-text-field-view'.w(),
     layout: { top: 0, left: 0, bottom: 0, right: 0 },
     spellCheckEnabled: NO,
     fieldDidFocus: function() {
       sc_super();
-      this.parentView.showList();
+      var filteredObjects = this.parentView.get('filteredObjects');
+      if (filteredObjects.length > 0) {
+        this.parentView.showList();
+      }
     }
   }),
-  setFromString: function(timeString, format) {
-    if (SC.empty(timeString)) {
-      this.set('value', null);
-    } else {
-      var parsedDateTime = SC.DateTime.parse(timeString, format),
-          matchingObject = this.get('objects').find(function(item){
-        return (item.get('dateTime') === parsedDateTime) ? YES : NO;
-      });
-      this.setIfChanged('value', this._getObjectValue(matchingObject, this.get('valueKey')));
+  filteredObjectsDidChange: function () {
+    var filteredObjects = this.get('filteredObjects');
+    if (filteredObjects.length == 0) {
+      this.hideList();
     }
+  }.observes('filteredObjects'),
+
+
+  setFromString: function(timeString) {
+    var format = this.get('timeFormat'),
+        dateTime;
+    if (!SC.empty(timeString)) {
+      try {
+        dateTime = SC.DateTime.parse(timeString, format);
+      } catch(exp){
+      }
+    }
+    this.setFromDateTime(dateTime);
   },
-  timeChoices: function(){
+  setFromDateTime: function(dateTime) {
+    var format = this.get('timeFormat'),
+        newValue = null;
+    if (!SC.empty(dateTime)) {
+      newValue = dateTime.toFormattedString(format);
+    }
+    this.setIfChanged('value', newValue);
+    this.setIfChanged('selectedTime', dateTime);
+  },
+
+  objects: function(){
     var times = [],
+        step = this.get('step'),
+        format = this.get('timeFormat'),
         time = this.get('startTime'),
         endTime = this.get('endTime');
     if (!(SC.DateTime.compare(time, endTime) < 0)) {
       throw "startTime must be less than endTime";
     }
     while(SC.DateTime.compare(time, endTime) <= 0) {
-      times.pushObject(SCUI.TimePickerDateTimeWrapper.create({
-        dateTime:time,
-        show24HourTime: this.get('show24HourTime'),
-        separator: this.get('separator')
-      }));
-      time = time.advance({minute: this.get('step')});
+      times.push(time.toFormattedString(format));
+      time = time.advance({minute: step});
     }
     return times;
-  }.property('startTime', 'endTime', 'step')
+  }.property('startTime', 'endTime', 'step', 'timeFormat'),
+
+  timeFormat: function(){
+    var separator = this.get('separator'),
+        format;
+    if (this.get('show24HourTime')) {
+      format = '%H' + separator + '%M';
+    } else {
+      format = '%i' + separator + '%M %p';
+    }
+    return format;
+  }.property('separator', 'show24HourTime'),
+
+  selectedTime: null,
+
+  commitEditing: function() {
+    var textField = this.get('textFieldView'),
+        format = this.get('timeFormat'),
+        value = textField.get('value'),
+        dateTime = null;
+
+    if (!SC.empty(value)) {
+      try {
+        dateTime = SC.DateTime.parse(value, format);
+      } catch(exp){
+      }
+    }
+
+    if (this.get('isEditing')) {
+      this.set('isEditing', NO);
+
+      if (dateTime) {
+        this.setIfChanged('selectedTime', dateTime);
+        this.setIfChanged('value', value);
+      }
+      // in IE, as soon as you the user browses through the results in the picker pane by 
+      // clicking on the scroll bar or the scroll thumb, the textfield loses focus causing 
+      // commitEditing to be called and subsequently hideList which makes for a very annoying 
+      // experience. With this change, clicking outside the pane will hide it (same as original behavior), 
+      // however, if the user directly shifts focus to another text field, then the pane 
+      // won't be removed. This behavior is still buggy but less buggy than it was before.
+      if (!SC.browser.msie) {
+        this.hideList();
+      }
+    }
+
+    if (textField && textField.get('isEditing')) {
+      textField.commitEditing();
+    }
+    return YES;
+  }
 });
+

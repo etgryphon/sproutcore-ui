@@ -112,7 +112,9 @@ SCUI.TimePickerView = SCUI.ComboBoxView.extend(
     if (this.get('isEditing')) {
       this.set('isEditing', NO);
 
-      if (dateTime) {
+      // Only commit if the value is blank or a valid time
+      // otherwise we revert back
+      if (SC.empty(value) || dateTime) {
         this.setIfChanged('selectedTime', dateTime);
         this.setIfChanged('value', value);
       }

@@ -56,7 +56,7 @@ SCUI.TimePickerView = SCUI.ComboBoxView.extend(
   },
   textFieldView: SC.TextFieldView.extend({
     classNames: 'scui-timepicker-text-field-view'.w(),
-    layout: { top: 0, left: 0, height: 22, right: 0 },
+    layout: { top: 0, left: 0, bottom: 0, right: 0 },
     spellCheckEnabled: NO,
     fieldDidFocus: function() {
       sc_super();

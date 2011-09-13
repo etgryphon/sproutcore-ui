@@ -1,5 +1,3 @@
-sc_require('views/template_collection');
-
 SCUI.HeaderedTemplateCollectionView = SC.TemplateCollectionView.extend({
   groupByPropertyPath: 'header',
   headerView: 'SC.TemplateView',

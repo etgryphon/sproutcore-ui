@@ -1,7 +1,6 @@
 // ===========================================================================
 // SCUI.DisclosedView
 // ===========================================================================
-require('core');
 /** @class
 
   This is a view that gives you the ability to collapse a containerView with a 

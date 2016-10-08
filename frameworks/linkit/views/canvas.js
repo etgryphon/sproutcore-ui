@@ -430,6 +430,7 @@ LinkIt.CanvasView = SC.CollectionView.extend({
   /**
   */
   _drawLinks: function(context) {
+  	if (!this._links) return;
     var links = this._links;
     var numLinks = links.get('length');
     var link, points, i, linkID;
